@@ -41,14 +41,14 @@ npm run dev
 ---
 
 ## Comando de Git de ayuda para crear el repositorio 
--git init
--git add .
--git commit -m "feat: API inicial con CRUD en memoria"
+- git init
+- git add .
+- git commit -m "feat: API inicial con CRUD en memoria"
 
 ## Crear el repositorio remoto en GitHub y conectarlo
--git remote add origin <https://github.com/BrendaMorena/poncho-digital-backend.git>
--git branch -M main
--git push -u origin main
+- git remote add origin <https://github.com/BrendaMorena/poncho-digital-backend.git>
+- git branch -M main
+- git push -u origin main
 
 ---
 
