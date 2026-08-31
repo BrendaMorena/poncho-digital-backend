@@ -1,0 +1,29 @@
+{
+  "name": "poncho-digital-backend",
+  "version": "0.0.1",
+  "description": "API REST para el proyecto Poncho Digital",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+    
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrendaMorena/poncho-digital-backend.git"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Aguero Velez Lucas Gabriel, Barrionuevo Brenda Morena, Reyna Sebastian Raúl",
+    "matricula": "00426, 00059, 00354"
+  },
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/BrendaMorena/poncho-digital-backend/issues"
+  },
+  "homepage": "https://github.com/BrendaMorena/poncho-digital-backend#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
