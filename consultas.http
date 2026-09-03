@@ -1,0 +1,37 @@
+### Obtener todos los artesanos
+GET http://localhost:5500/artesanos
+
+### Crear un nuevo artesano (POST)
+POST http://localhost:5500/artesanos
+Content-Type: application/json
+
+{
+  "nombre": "Brenda",
+  "rubro": "Tejido en telar",
+  "localidad": "Catamarca Capital"
+}
+
+### Probar la validación del POST (Falta la localidad, debería dar error 400)
+POST http://localhost:5500/artesanos
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "rubro": "Platería"
+}
+
+### Obtener un artesano específico
+GET http://localhost:5500/artesanos/1
+
+### Actualizar un artesano
+PUT http://localhost:5500/artesanos/6
+Content-Type: application/json
+
+{
+  "nombre": "Juan Perez Editado",
+  "rubro": "Textil Premium",
+  "localidad": "Belén"
+}
+
+### Eliminar un artesano
+DELETE http://localhost:5500/artesanos/1

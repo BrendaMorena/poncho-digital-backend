@@ -1,4 +1,8 @@
 import express from 'express';
+import artesanosRoutes from './routes/artesanos.routes.js';
+import { noEncontrado } from './middlewares/noEncontrado.js';  
+import { manejadorErrores } from './middlewares/manejadorErrores.js';
+import { logger } from './middlewares/logger.js';
 
 
 const app = express();

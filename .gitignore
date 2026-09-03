@@ -4,3 +4,6 @@
 
 # dependencies
 node_modules/
+
+#consultas de la extensión REST client
+.http
