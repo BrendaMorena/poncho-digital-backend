@@ -7,4 +7,3 @@ export const artesanos = [
 
 ];
 
-export const siguienteId = (artesanos) => artesanos.length > 0 ? Math.max(...artesanos.map(e => e.id)) + 1 : 1;

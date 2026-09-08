@@ -1,5 +1,6 @@
-import {artesanos, siguienteId} from '../data/artesanos.js';
+import {artesanos} from '../data/artesanos.js';
 import { crearError } from '../utils/errores.js';
+import { siguienteId } from '../utils/siguienteId.js';
 
 
 export const obtenerArtesanos = (req, res) => {
