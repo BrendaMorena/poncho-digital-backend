@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "node --watch src/app.js"
-    
   },
   "repository": {
     "type": "git",
@@ -25,5 +24,8 @@
   "homepage": "https://github.com/BrendaMorena/poncho-digital-backend#readme",
   "dependencies": {
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^10.9.1"
   }
 }
