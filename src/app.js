@@ -3,6 +3,7 @@ import standsRoutes from './routes/stands.routes.js'
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
+import "dotenv/config";
 
 const app = express();
 app.use(logger); // Middleware de registro de solicitudes

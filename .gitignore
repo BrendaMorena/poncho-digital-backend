@@ -7,3 +7,8 @@ node_modules/
 
 # consultas de la extensión REST client
 .http
+/src/generated/prisma
+
+.agents
+.claude
+.windsurf
