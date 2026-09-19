@@ -3,20 +3,25 @@ import { crearError } from '../utils/errores.js';
 import { siguienteId } from '../utils/siguienteId.js';
 
 
-export const obtenerArtesanos = (req, res) => {
-    const { autor, anio } = req.query;
-
+export const obtenerArtesanos = async (req, res, next) => {
+    
+        try{
+            const { autor, anio } = req.query;
+        
         let resultado = artesanos;
 
         if (autor) {
-            resultado = resultado.filter(artesano => artesano.autor.toLowerCase().includes(autor.toLowerCase()));
-        }
+    where.autor = {contains: autor, mode: 'insensitive'};        }
 
         if (anio) {
             resultado = resultado.filter(artesano => artesano.anio === Number(anio));
         }
         res.json(resultado);
-};
+};}
+
+
+
+
 
 export const obtenerArtesanoPorId = (req, res, next) => {
 
@@ -44,24 +49,31 @@ export const crearArtesano = (req, res, next) => {
 };
 
 export const actualizarArtesano = (req, res, next) => {
+  const index = artesanos.findIndex((artesano) => artesano.id === req.artesanoId);
 
-    const artesano = artesanos.find(artesano => artesano.id === req.artesanoId);
+  if (index === -1) {
+    return next(crearError(`no existe un artesano con id ${req.artesanoId}`, 404));
+  }
 
-    if (!artesano) {
-        return next(crearError(`no existe un artesano con id ${req.artesanoId}`, 404));
-    }
+  const { nombre, rubro, localidad } = req.body;
 
-    const { nombre, rubro, localidad } = req.body;
+  if (!nombre && !rubro && !localidad) {
+    return next(
+      crearError(
+        'Tiene que haber al menos un campo para actualizar: nombre, rubro o localidad',
+        400,
+      ),
+    );
+  }
 
-    if (!nombre || !rubro || !localidad) {
-        return next(crearError('Faltan datos obligatorios: nombre, rubro y localidad son requeridos', 400));
-    }
+  const cambios = {};
+  if (nombre) cambios.nombre = nombre;
+  if (rubro) cambios.rubro = rubro;
+  if (localidad) cambios.localidad = localidad;
 
-    artesano.nombre = nombre;
-    artesano.rubro = rubro;
-    artesano.localidad = localidad;
+  artesanos[index] = { ...artesanos[index], ...cambios };
 
-    res.json(artesano);
+  res.json(artesanos[index]);
 };
 
 export const eliminarArtesano = (req, res, next) => {

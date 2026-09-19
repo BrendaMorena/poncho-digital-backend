@@ -4,6 +4,6 @@ export const artesanos = [
   { id: 3, nombre: 'Carlos López', rubro: 'Madera', localidad: 'Santa Rosa' },
   { id: 4, nombre: 'Ana Torres', rubro: 'Joyería', localidad: 'Banda de Varela' },
   { id: 5, nombre: 'Lucía Fernández', rubro: 'Pintura', localidad: 'Tinogasta' }
-
+//agregar telefono y correo
 ];
 
