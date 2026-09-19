@@ -1,13 +1,9 @@
-import express from 'express';
-import { obtenerArtesanos, obtenerArtesanoPorId, crearArtesano, actualizarArtesano, eliminarArtesano } from '../controllers/artesanos.controller.js';
-import { validarArtesanosId } from '../middlewares/validarId.js';
+import express from "express";
+import {} from "../controllers/stands.controller.js";
+import { validarAutoresId } from "../middlewares/validarId.js";
 
 const router = express.Router();
 
-router.get('/', obtenerArtesanos);
-router.get('/:id', validarArtesanosId, obtenerArtesanoPorId);
-router.post('/', crearArtesano);
-router.put('/:id', validarArtesanosId, actualizarArtesano);
-router.delete('/:id', validarArtesanosId, eliminarArtesano);
+router.get("/:id", validarAutoresId);
 
 export default router;

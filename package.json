@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "node --watch src/app.js"
-    
   },
   "repository": {
     "type": "git",
@@ -24,6 +23,14 @@
   },
   "homepage": "https://github.com/BrendaMorena/poncho-digital-backend#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "dotenv": "^18.0.1",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.9.1",
+    "prisma": "^7.10.0"
   }
 }

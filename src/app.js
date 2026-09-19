@@ -1,9 +1,9 @@
 import express from 'express';
-import artesanosRoutes from './routes/artesanos.routes.js';
-import { noEncontrado } from './middlewares/noEncontrado.js';  
-import { manejadorErrores } from './middlewares/manejadorErrores.js';
+import standsRoutes from './routes/stands.routes.js'
 import { logger } from './middlewares/logger.js';
-
+import { manejadorErrores } from './middlewares/manejadorErrores.js';
+import { noEncontrado } from './middlewares/noEncontrado.js';
+import "dotenv/config";
 
 const app = express();
 app.use(logger); // Middleware de registro de solicitudes
@@ -24,7 +24,8 @@ app.get('/info', (req, res) => {
     });
 } );
 
-app.use('/artesanos', artesanosRoutes);
+// app.use('/artesanos', artesanosRoutes);
+app.use('/stands', standsRoutes)
 //app.use('/', Routes);
 
 
