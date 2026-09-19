@@ -1,5 +1,8 @@
 import express from 'express';
-
+import standsRoutes from './routes/stands.routes.js'
+import { logger } from './middlewares/logger.js';
+import { manejadorErrores } from './middlewares/manejadorErrores.js';
+import { noEncontrado } from './middlewares/noEncontrado.js';
 
 const app = express();
 app.use(logger); // Middleware de registro de solicitudes
@@ -20,7 +23,8 @@ app.get('/info', (req, res) => {
     });
 } );
 
-app.use('/artesanos', artesanosRoutes);
+// app.use('/artesanos', artesanosRoutes);
+app.use('/stands', standsRoutes)
 //app.use('/', Routes);
 
 
