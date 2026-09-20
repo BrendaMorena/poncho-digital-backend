@@ -32,6 +32,13 @@ model Artesano {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  usuarioId Int @unique
+  usuario Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
+
+  rubroId Int 
+  rubro Rubro @relation(fields:[rubroId], references: [id_rubro])
+
 }
 
 model Busqueda {
@@ -71,6 +78,10 @@ model Usuario {
   localidad   String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  artesano Artesano?
+  solicitud Solicitud?
+
 }
 
 model Rubro {
@@ -78,6 +89,8 @@ model Rubro {
   nombre      String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  artesanos   Artesano[]
 }
 
 enum EstadoSolicitud {
@@ -91,10 +104,13 @@ model Solicitud {
   id_solicitud                  Int @id @default(autoincrement())
   descripcion                   String 
   estado_solicitud              EstadoSolicitud @default(PENDIENTE)
-  observaciones_admin           String
+  observaciones_admin           String?
   descripcion_emprendimiento    String
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime @updatedAt
+
+  usuarioId Int @unique
+  usuario Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
 }
 
 model Localidad {
