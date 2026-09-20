@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
   output = "../src/generated/prisma"
@@ -19,11 +14,109 @@ enum EstadoStand {
 }
 
 model Stand {
-  id         Int @id @default(autoincrement())
-  sector     String @unique
-  pabellon   String
-  estado     EstadoStand @default(DISPONIBLE)
-  coordenada Json
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id_stand       Int @id @default(autoincrement())
+  numero_stand   String
+  sector         String @unique
+  pabellon       String 
+  estado         EstadoStand @default(DISPONIBLE)
+  coordenada     Json
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Artesano {
+  id_artesano    Int @id @default(autoincrement())
+  descripcion    String
+  id_solicitudP  String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Busqueda {
+  id_busqueda          Int      @id @default(autoincrement())
+  termino_busqueda     String?
+  rubro_filtrado       Int?
+  localidad_filtrada   String?
+  pabellon_filtrado    String?
+  
+  createdAt   DateTime @default(now()) 
+  updatedAt   DateTime @updatedAt
+}
+
+model Producto {
+  id_producto       Int @id @default(autoincrement())
+  nombre_producto   String
+  precio            Float
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Rol {
+  id_rol        Int @id @default(autoincrement())
+  nombre        String @unique 
+  descripcion   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Usuario {
+  id_usuario  Int @id @default(autoincrement())
+  nombre      String
+  apellido    String
+  Email       String @unique 
+  telefono    String
+  localidad   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Rubro {
+  id_rubro    Int      @id @default(autoincrement())
+  nombre      String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum EstadoSolicitud {
+  APROBADO
+  RECHAZADO
+  PENDIENTE
+  MODIFICACION_SOLICITADA
+}
+
+model Solicitud {
+  id_solicitud                  Int @id @default(autoincrement())
+  descripcion                   String 
+  estado_solicitud              EstadoSolicitud @default(PENDIENTE)
+  observaciones_admin           String
+  descripcion_emprendimiento    String
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+}
+
+model Localidad {
+  id_localidad      Int @id @default(autoincrement())
+  nombre_locacion   String @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Pabellon {
+  id_pabellon             Int @id @default(autoincrement())
+  nombre_pabellon         String @unique
+  descripcion_pabellon    String
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model Sector {
+  id_sector       Int @id @default(autoincrement())
+  codigo_sector   String @unique
+  nombre_sector   String @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
