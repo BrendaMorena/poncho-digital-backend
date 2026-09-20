@@ -15,7 +15,7 @@ enum EstadoStand {
 
 model Stand {
   id_stand       Int @id @default(autoincrement())
-  numero_stand   String
+  numero_stand   String @unique
   estado         EstadoStand @default(DISPONIBLE)
   coordenada     Json
 
@@ -100,6 +100,7 @@ model Usuario {
   id_usuario  Int @id @default(autoincrement())
   nombre      String
   apellido    String
+  password    String
   email       String @unique 
   telefono    String
 
