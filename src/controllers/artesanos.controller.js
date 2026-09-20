@@ -3,22 +3,29 @@ import { crearError } from '../utils/errores.js';
 import { siguienteId } from '../utils/siguienteId.js';
 
 
-export const obtenerArtesanos = async (req, res, next) => {
-    
-        try{
-            const { autor, anio } = req.query;
-        
-        let resultado = artesanos;
 
-        if (autor) {
-    where.autor = {contains: autor, mode: 'insensitive'};        }
-
-        if (anio) {
-            resultado = resultado.filter(artesano => artesano.anio === Number(anio));
+const obtenerArtesanos = async (req, res, next) => {
+  try {
+    const artesanos = await prisma.artesano.findMany({
+      include: {
+        usuario: {
+          select: {
+            nombre: true,
+            apellido: true,
+            email: true,
+            localidad: true,
+            telefono: true
+          }
         }
-        res.json(resultado);
-};}
+      }
+    });
 
+    return res.status(200).json(artesanos);
+
+  } catch (error) {
+        next(error); 
+  }
+};
 
 
 

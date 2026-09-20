@@ -1,5 +1,5 @@
 import express from 'express';
-import standsRoutes from './routes/stands.routes.js'
+import standsRoutes from './routes/artesanos.routes.js'
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
