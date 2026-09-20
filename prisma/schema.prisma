@@ -42,6 +42,14 @@ model Artesano {
 
   stand Stand?
   productos Producto[]
+
+  usuarioId Int @unique
+  usuario Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
+
+  rubroId Int 
+  rubro Rubro @relation(fields:[rubroId], references: [id_rubro])
+
+
 }
 
 model Busqueda {
@@ -85,6 +93,9 @@ model Usuario {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  artesano Artesano?
+  solicitud Solicitud?
+
 }
 
 model Rubro {
@@ -92,6 +103,8 @@ model Rubro {
   nombre      String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  artesanos   Artesano[]
 }
 
 enum EstadoSolicitud {
@@ -109,6 +122,9 @@ model Solicitud {
   descripcion_emprendimiento    String
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime @updatedAt
+
+  usuarioId Int @unique
+  usuario Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
 }
 
 model Localidad {
