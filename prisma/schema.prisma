@@ -15,14 +15,21 @@ enum EstadoStand {
 
 model Stand {
   id_stand       Int @id @default(autoincrement())
-  numero_stand   String
-  sector         String @unique
-  pabellon       String 
+  numero_stand   String @unique
   estado         EstadoStand @default(DISPONIBLE)
   coordenada     Json
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  artesanoId     Int? @unique
+  artesano       Artesano? @relation(fields: [artesanoId], references: [id_artesano], onDelete: SetNull)
+
+  sectorId       Int 
+  sector         Sector @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
+
+  pabellonId     Int
+  pabellon       Pabellon @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
 }
 
 model Artesano {
@@ -30,19 +37,40 @@ model Artesano {
   descripcion    String
   id_solicitudP  String
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  stand          Stand?
+  productos      Producto[]
+
+  usuarioId      Int @unique
+  usuario        Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade)
+
+  rubroId        Int 
+  rubro          Rubro @relation(fields:[rubroId], references: [id_rubro])
+
+
 }
 
 model Busqueda {
   id_busqueda          Int      @id @default(autoincrement())
   termino_busqueda     String?
-  rubro_filtrado       Int?
-  localidad_filtrada   String?
-  pabellon_filtrado    String?
-  
-  createdAt   DateTime @default(now()) 
-  updatedAt   DateTime @updatedAt
+
+  createdAt            DateTime @default(now()) 
+  updatedAt            DateTime @updatedAt
+
+  usuarioId            Int?
+  usuario              Usuario? @relation(fields:[usuarioId], references:[id_usuario], onDelete: SetNull)
+
+  rubroId              Int?
+  rubro                Rubro? @relation(fields:[rubroId], references: [id_rubro], onDelete: SetNull)
+
+  localidadId          Int? 
+  localidad            Localidad? @relation(fields: [localidadId], references:[id_localidad], onDelete: SetNull)
+
+  pabellonId           Int?
+  pabellon             Pabellon? @relation(fields:[pabellonId], references:[id_pabellon], onDelete: SetNull)
+
 }
 
 model Producto {
@@ -50,34 +78,56 @@ model Producto {
   nombre_producto   String
   precio            Float
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  artesanoId        Int
+  artesano          Artesano @relation(fields: [artesanoId], references: [id_artesano], onDelete: Cascade)
 }
 
 model Rol {
   id_rol        Int @id @default(autoincrement())
   nombre        String @unique 
   descripcion   String
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  usuarios      Usuario[]
 }
 
 model Usuario {
   id_usuario  Int @id @default(autoincrement())
   nombre      String
   apellido    String
-  Email       String @unique 
+  password    String
+  email       String @unique 
   telefono    String
-  localidad   String
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  artesano    Artesano?
+  solicitud   Solicitud?
+  busquedas   Busqueda[]
+
+  rolId       Int
+  rol         Rol @relation(fields:[rolId],references:[id_rol], onDelete: Restrict)
+
+  localidadId Int
+  localidad   Localidad @relation(fields:[localidadId],references:[id_localidad], onDelete: Restrict)
+
 }
 
 model Rubro {
   id_rubro    Int      @id @default(autoincrement())
   nombre      String   @unique
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  artesanos   Artesano[]
+  busquedas   Busqueda[]
 }
 
 enum EstadoSolicitud {
@@ -91,25 +141,37 @@ model Solicitud {
   id_solicitud                  Int @id @default(autoincrement())
   descripcion                   String 
   estado_solicitud              EstadoSolicitud @default(PENDIENTE)
-  observaciones_admin           String
+  observaciones_admin           String?
   descripcion_emprendimiento    String
+  
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime @updatedAt
+
+  usuarioId                     Int @unique
+  usuario                       Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
 }
 
 model Localidad {
   id_localidad      Int @id @default(autoincrement())
   nombre_locacion   String @unique
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  Usuarios          Usuario[]
+  busquedas         Busqueda[]
 }
 
 model Pabellon {
   id_pabellon             Int @id @default(autoincrement())
   nombre_pabellon         String @unique
   descripcion_pabellon    String
+
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
+
+  stands                  Stand[]
+  busquedas               Busqueda[]
 }
 
 model Sector {
@@ -119,4 +181,6 @@ model Sector {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  stands          Stand[]
 }
