@@ -1,7 +1,7 @@
 import { stands } from "../data/stands.js";
 import { crearError } from "../utils/errores.js";
 import { siguienteId } from "../utils/siguienteId.js";
-import prisma from "../config/prisma.js";
+import { crearStand as crearStandService} from "../services/stand.service.js";
 
 
 export const obtenerStands = async (req, res, next) => {
@@ -25,30 +25,22 @@ export const obtenerStandsPorId = async (req, res, next) => {
   res.json(stand);
 };
 
+// Segun tengo entendido si devuelve P2002 ya existe en bd
 export const crearStand = async (req, res, next) => {
-    const { sector, numeroStand } = req.body;
+  try {
+    const crearStandDTO = req.body
+    const nuevoStand = await crearStandService(crearStandDTO)
 
-    if (!sector || !numeroStand ) {
-        return next(crearError('Faltan datos obligatorios: sector y numero del Stand son requeridos', 400));
+    return res.status(201).json(nuevoStand)
+  } catch (error) {
+
+    if(error.code === "P2002"){
+      return next(crearError(`El Stand ${req.body.numero_stand} ya existe en el sistema`, 409))
     }
-
-    const standOcupado = stands.some(stand => stand.numeroStand === numeroStand)
-
-    const standLibre = prisma.stand.create({
-      
-    })
-
-    if (standOcupado){
-      return next(crearError('Stand actualmente ocupado', 409));
-    }
-
-    const nuevoId = siguienteId(stands);
-
-    const nuevoStand = { id: nuevoId, nombre: null, sector: sector, numeroStand: numeroStand, artesanoId: null };
-    
-    stands.push(nuevoStand);
-    res.status(201).json(nuevoStand);
+    return next(error)
+  }
 };
+
 
 export const actualizarStand = (req, res, next) => {
   const index = stands.findIndex((a) => a.id === req.standId);
