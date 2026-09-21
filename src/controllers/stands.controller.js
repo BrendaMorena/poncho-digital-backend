@@ -1,39 +1,36 @@
-import { stands } from "../data/stands.js";
 import { crearError } from "../utils/errores.js";
-import { siguienteId } from "../utils/siguienteId.js";
-import { crearStand as crearStandService} from "../services/stand.service.js";
+import * as standService from "../services/stand.service.js";
 
 
 export const obtenerStands = async (req, res, next) => {
   try {
-    const stands = await prisma.stand.findMany()
-    return res.json(stands)
+    const stands = await standService.obtenerStands();
+    return res.status(200).json(stands);
   } catch (error) {
-    return next(error)
+    return next(error);
   }
 };
 
 export const obtenerStandsPorId = async (req, res, next) => {
-  const stand = await prisma.stand.findUnique({
-    where:{id_stand: req.standId}
-  })
-
-  if (!stand) {
-    return next(crearError(`Stand ${req.standId} no encontrado`, 404));
+  try {
+    const stand = await standService.obtenerStandPorId(req.standId)
+    if(!stand){
+      return next(crearError(`No existe el Stand con id ${req.params.id}`, 404))
+    }
+    res.status(200).json(stand)
+  } catch (error) {
+    next(error)
   }
-
-  res.json(stand);
 };
 
 // Segun tengo entendido si devuelve P2002 ya existe en bd
 export const crearStand = async (req, res, next) => {
   try {
     const crearStandDTO = req.body
-    const nuevoStand = await crearStandService(crearStandDTO)
+    const nuevoStand = await standService.crearStand(crearStandDTO)
 
     return res.status(201).json(nuevoStand)
   } catch (error) {
-
     if(error.code === "P2002"){
       return next(crearError(`El Stand ${req.body.numero_stand} ya existe en el sistema`, 409))
     }
@@ -41,32 +38,25 @@ export const crearStand = async (req, res, next) => {
   }
 };
 
-
-export const actualizarStand = (req, res, next) => {
-  const index = stands.findIndex((a) => a.id === req.standId);
-
-  if (index === -1) {
-    return next(crearError(`no existe un Stand con id ${req.standId}`, 404));
+export const actualizarStand = async (req, res, next) => {
+  try {
+    const idStand = req.standId
+    const actualizarStandDTO = req.body
+    const standActualizado = await standService.actualizarStand(idStand, actualizarStandDTO)
+    
+    if(!standActualizado){
+      return next(crearError(`No existe un Stand con id ${idStand}`, 404));
+    }
+    return res.json(standActualizado)
+  } catch (error) {
+    if (error.code === "P2025") {
+      return next(crearError(`No existe un Stand con id ${req.standId}`, 404));
+    }
+    if (error.code === "P2002") {
+      return next(crearError(`El número de stand ya está en uso`, 409));
+    }
+    return next(error)
   }
-
-  const { nombre, nacionalidad } = req.body;
-
-  if (!nombre && !nacionalidad) {
-    return next(
-      crearError(
-        "Tiene que haber al menos un campo obligatorio: nombre y nacionalidad son requeridos",
-        400,
-      ),
-    );
-  }
-
-  const cambios = {};
-  if (nombre) cambios.nombre = nombre;
-  if (nacionalidad) cambios.nacionalidad = nacionalidad;
-
-  autores[index] = { ...autores[index], ...cambios };
-
-  res.json(autores[index]);
 };
 
 // export const eliminarAutor = (req, res, next) => {

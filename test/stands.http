@@ -1,0 +1,207 @@
+@baseUrl = http://localhost:5500
+
+############################################################
+### 1. CREACIÓN DE STANDS (POST /stands)
+############################################################
+
+# Caso de Éxito 1: Stand adentro de un Pabellón (HTTP 201)
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "A-20",
+  "coordenada": {
+    "lat": -28.4682,
+    "lng": -65.7791
+  },
+  "pabellonId": 1
+}
+
+###
+
+# Caso de Éxito 2: Stand en un Sector al aire libre (HTTP 201)
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "EXT-10",
+  "coordenada": {
+    "lat": -28.4715,
+    "lng": -65.7820
+  },
+  "sectorId": 2
+}
+
+###
+
+# Error 400: Mandar AMBOS a la vez (Pabellón y Sector)
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "TEST-01",
+  "coordenada": {
+    "lat": -28.4682,
+    "lng": -65.7791
+  },
+  "pabellonId": 1,
+  "sectorId": 1
+}
+
+###
+
+# Error 400: Coordenada fuera de rango (Latitud mayor a 90)
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "TEST-02",
+  "coordenada": {
+    "lat": 150.5,
+    "lng": -65.7791
+  },
+  "pabellonId": 1
+}
+
+###
+
+# Error 404: Pabellón que no existe en la base de datos
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "TEST-03",
+  "coordenada": {
+    "lat": -28.4682,
+    "lng": -65.7791
+  },
+  "pabellonId": 9999
+}
+
+###
+
+# Error 409: Duplicado (Mandar el Caso 1 otra vez)
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "A-20",
+  "coordenada": {
+    "lat": -28.4682,
+    "lng": -65.7791
+  },
+  "pabellonId": 1
+}
+
+###
+
+############################################################
+### 2. OBTENER TODOS LOS STANDS (GET /stands)
+############################################################
+
+# Caso de Éxito: Listar todos los stands con sus relaciones (HTTP 200)
+GET {{baseUrl}}/stands/
+
+###
+
+############################################################
+### 3. OBTENER STAND POR ID (GET /stands/:id)
+############################################################
+
+# Caso de Éxito: Obtener un stand existente por ID (HTTP 200)
+GET {{baseUrl}}/stands/1
+
+###
+
+# Error 404: Stand con ID inexistente en la BD
+GET {{baseUrl}}/stands/9999
+
+###
+
+# Error 400: ID inválido con letras (Middleware validarStandId)
+GET {{baseUrl}}/stands/abc
+
+###
+
+# Error 400: ID negativo o cero (Middleware validarStandId)
+GET {{baseUrl}}/stands/0
+
+###
+
+############################################################
+### 4. ACTUALIZAR STAND (PATCH /stands/:id)
+############################################################
+
+# Caso de Éxito 1: Cambiar estado a MANTENIMIENTO (HTTP 200)
+# (Desvincula al artesano automáticamente)
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "estado": "MANTENIMIENTO"
+}
+
+###
+
+# Caso de Éxito 2: Volver a poner el stand en DISPONIBLE (HTTP 200)
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "estado": "DISPONIBLE"
+}
+
+###
+
+# Caso de Éxito 3: Actualizar únicamente coordenadas (HTTP 200)
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "coordenada": {
+    "lat": -28.4690,
+    "lng": -65.7800
+  }
+}
+
+###
+
+# Error 400: Estado no perteneciente al Enum
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "estado": "ROTO"
+}
+
+###
+
+# Error 400: ID de la URL con formato inválido
+PATCH {{baseUrl}}/stands/invalido
+Content-Type: application/json
+
+{
+  "estado": "DISPONIBLE"
+}
+
+###
+
+# Error 404: Intentar actualizar un stand que no existe en la BD
+PATCH {{baseUrl}}/stands/9999
+Content-Type: application/json
+
+{
+  "estado": "DISPONIBLE"
+}
+
+###
+
+# Error 409: Cambiar numero_stand por uno que ya está en uso
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "numero_stand": "EXT-10"
+}
+
+###

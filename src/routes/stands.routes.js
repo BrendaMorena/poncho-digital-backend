@@ -3,13 +3,15 @@ import {
   obtenerStands,
   obtenerStandsPorId,
   crearStand,
+  actualizarStand
 } from "../controllers/stands.controller.js";
-import { validarCreacionSchema } from "../middlewares/stands.middleware.js";
-
+import { validarStand, validarActualizarStand } from "../middlewares/stands.middleware.js";
+import { validarStandId } from "../middlewares/validarId.js";
 const router = express.Router();
 
 router.get("/", obtenerStands);
-router.get("/:id", obtenerStandsPorId);
-router.post("/", validarCreacionSchema, crearStand);
+router.get("/:id", validarStandId, obtenerStandsPorId);
+router.post("/", validarStand, crearStand);
+router.patch("/:id", validarStandId, validarActualizarStand, actualizarStand);
 
 export default router;

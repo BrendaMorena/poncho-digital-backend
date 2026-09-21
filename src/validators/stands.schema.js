@@ -1,12 +1,11 @@
-import { z } from "zod"
+import { z } from "zod";
 
-export const crearStandSchema = z.object({
-
+const standBaseSchema = z.object({
   numero_stand: z
-    .string({requiredError: "El número de stand es obligatorio"})
+    .string({ required_error: "El número de stand es obligatorio" })
     .trim()
     .min(1, "El número de Stand no puede estar vacío"),
-  
+
   coordenada: z.object(
     {
       lat: z
@@ -41,11 +40,19 @@ export const crearStandSchema = z.object({
     .positive("El sectorId debe ser un número positivo")
     .nullable()
     .optional(),
-}).refine(
-  // Regla de exclusión: Obligatoriamente uno O el otro (pero no ambos ni ninguno)
+
+  estado: z.enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
+    errorMap: () => ({ message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO" })
+  }).optional(),
+});
+
+export const standSchema = standBaseSchema.refine(
   (data) => Boolean(data.pabellonId) !== Boolean(data.sectorId),
   {
     message: "El stand debe pertenecer a un Pabellón O a un Sector, pero no a ambos ni a ninguno",
-    path:["pabellonId"]
+    path: ["pabellonId"]
   }  
 );
+
+// Esquema para ACTUALIZAR (PATCH)
+export const actualizarStandSchema = standBaseSchema.partial();
