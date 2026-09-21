@@ -4,26 +4,26 @@ import { siguienteId } from '../utils/siguienteId.js';
 
 
 
-const obtenerArtesanos = async (req, res, next) => {
+export const obtenerArtesanos = async (req, res, next) => {
   try {
     const artesanos = await prisma.artesano.findMany({
+      
       include: {
-        usuario: {
-          select: {
+        usuario: { 
+          select: { // Elegimos qué campos del usuario queremos mostrar
             nombre: true,
             apellido: true,
             email: true,
             localidad: true,
             telefono: true
           }
-        }
+        },
+        rubro: true 
       }
     });
-
     return res.status(200).json(artesanos);
-
   } catch (error) {
-        next(error); 
+    next(error); 
   }
 };
 
