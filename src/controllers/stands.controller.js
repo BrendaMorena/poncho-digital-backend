@@ -1,41 +1,51 @@
 import { stands } from "../data/stands.js";
 import { crearError } from "../utils/errores.js";
-import { siguienteId } from "../utils/siguienteId.js";
+import prisma from "../config/prisma.js";
 
-
-export const obtenerStands = (req, res) => {
-  res.json(stands)
+export const obtenerStands = async (req, res, next) => {
+  try {
+    const stands = await prisma.stand.findMany();
+    return res.json(stands);
+  } catch (error) {
+    return next(error);
+  }
 };
 
-export const obtenerStandsPorId = (req, res, next) => {
-  const stand = stands.find((stand) => stand.id === req.standId);
+export const obtenerStandsPorId = async (req, res, next) => {
+  const stand = await prisma.stand.findUnique({
+    where: { id_stand: req.standId },
+  });
 
   if (!stand) {
-    return next(crearError(`Stand no encontrado ${req.standId}`, 404));
+    return next(crearError(`Stand ${req.standId} no encontrado`, 404));
   }
 
   res.json(stand);
 };
 
-export const crearStand = (req, res, next) => {
-    const { sector, numeroStand } = req.body;
+export const crearStand = async (req, res, next) => {
+  try {
+    const { numero_stand, coordenada, pabellonId, sectorId } = req.body;
 
-    if (!sector || !numeroStand ) {
-        return next(crearError('Faltan datos obligatorios: sector y numero del Stand son requeridos', 400));
+    if (!coordenada || !numero_stand) {
+      return next(crearError("Faltan datos obligatorios: coordenadas y numero del Stand son requeridos", 400));
     }
 
-    const standOcupado = stands.some(stand => stand.numeroStand === numeroStand)
+    const standLibre = await prisma.stand.create({
+      data: {
+        numero_stand: numero_stand,
+        coordenada: coordenada,
+        pabellonId: 
+      },
+    });
 
-    if (standOcupado){
-      return next(crearError('Stand actualmente ocupado', 409));
+    if (standLibre) {
+      return next(crearError("Stand actualmente ocupado", 409));
     }
-
-    const nuevoId = siguienteId(stands);
-
-    const nuevoStand = { id: nuevoId, nombre: null, sector: sector, numeroStand: numeroStand, artesanoId: null };
-    
-    stands.push(nuevoStand);
-    res.status(201).json(nuevoStand);
+    res.status(201).json(standLibre);
+  } catch (error) {
+    return next(error)
+  }
 };
 
 export const actualizarStand = (req, res, next) => {

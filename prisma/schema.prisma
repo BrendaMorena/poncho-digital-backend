@@ -25,11 +25,11 @@ model Stand {
   artesanoId     Int? @unique
   artesano       Artesano? @relation(fields: [artesanoId], references: [id_artesano], onDelete: SetNull)
 
-  sectorId       Int 
-  sector         Sector @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
+  sectorId       Int ?
+  sector         Sector? @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
 
-  pabellonId     Int
-  pabellon       Pabellon @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
+  pabellonId     Int ?
+  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
 }
 
 model Artesano {
