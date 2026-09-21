@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Stand" ALTER COLUMN "pabellonId" DROP NOT NULL,
+ALTER COLUMN "sectorId" DROP NOT NULL;
