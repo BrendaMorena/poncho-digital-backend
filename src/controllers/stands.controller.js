@@ -1,23 +1,31 @@
 import { stands } from "../data/stands.js";
 import { crearError } from "../utils/errores.js";
 import { siguienteId } from "../utils/siguienteId.js";
+import prisma from "../config/prisma.js";
 
 
-export const obtenerStands = (req, res) => {
-  res.json(stands)
+export const obtenerStands = async (req, res, next) => {
+  try {
+    const stands = await prisma.stand.findMany()
+    return res.json(stands)
+  } catch (error) {
+    return next(error)
+  }
 };
 
-export const obtenerStandsPorId = (req, res, next) => {
-  const stand = stands.find((stand) => stand.id === req.standId);
+export const obtenerStandsPorId = async (req, res, next) => {
+  const stand = await prisma.stand.findUnique({
+    where:{id_stand: req.standId}
+  })
 
   if (!stand) {
-    return next(crearError(`Stand no encontrado ${req.standId}`, 404));
+    return next(crearError(`Stand ${req.standId} no encontrado`, 404));
   }
 
   res.json(stand);
 };
 
-export const crearStand = (req, res, next) => {
+export const crearStand = async (req, res, next) => {
     const { sector, numeroStand } = req.body;
 
     if (!sector || !numeroStand ) {
@@ -25,6 +33,10 @@ export const crearStand = (req, res, next) => {
     }
 
     const standOcupado = stands.some(stand => stand.numeroStand === numeroStand)
+
+    const standLibre = prisma.stand.create({
+      
+    })
 
     if (standOcupado){
       return next(crearError('Stand actualmente ocupado', 409));
