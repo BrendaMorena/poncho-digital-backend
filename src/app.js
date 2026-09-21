@@ -1,5 +1,6 @@
 import express from 'express';
-import standsRoutes from './routes/artesanos.routes.js'
+//import standsRoutes from './routes/artesanos.routes.js'
+import artesanosRoutes from './routes/artesanos.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
@@ -24,8 +25,8 @@ app.get('/info', (req, res) => {
     });
 } );
 
-// app.use('/artesanos', artesanosRoutes);
-app.use('/stands', standsRoutes)
+app.use('/artesanos', artesanosRoutes);
+//app.use('/stands', standsRoutes)
 //app.use('/', Routes);
 
 

@@ -1,7 +1,7 @@
 import {artesanos} from '../data/artesanos.js';
-import { crearError } from '../utils/errores.js';
-import { siguienteId } from '../utils/siguienteId.js';
-
+//import { crearError } from '../utils/errores.js';
+//import { siguienteId } from '../utils/siguienteId.js';
+import prisma from '../config/prisma.js';
 
 
 export const obtenerArtesanos = async (req, res, next) => {
@@ -29,7 +29,7 @@ export const obtenerArtesanos = async (req, res, next) => {
 
 
 
-
+/*
 export const obtenerArtesanoPorId = (req, res, next) => {
 
     const artesano = artesanos.find(artesano => artesano.id === req.artesanoId);
@@ -93,4 +93,4 @@ export const eliminarArtesano = (req, res, next) => {
 
     artesanos.splice(indice, 1);
     res.status(204).send();
-};
+};*/
