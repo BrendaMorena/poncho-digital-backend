@@ -205,3 +205,20 @@ Content-Type: application/json
 }
 
 ###
+
+############################################################
+### 5. ELIMINAR STAND (DELETE /stands/:id)
+############################################################
+# Caso de Éxito: Eliminar un stand existente (HTTP 204 No Content)
+# (Usamos el stand 2 que creamos con EXT-10, para no borrar el 1)
+DELETE {{baseUrl}}/stands/2
+###
+# Verificación posterior: Comprobar que el stand ya no existe (HTTP 404)
+GET {{baseUrl}}/stands/2
+###
+# Error 404: Intentar eliminar un stand que no existe en la BD
+DELETE {{baseUrl}}/stands/9999
+###
+# Error 400: ID de la URL con formato inválido (letras)
+DELETE {{baseUrl}}/stands/invalido
+###

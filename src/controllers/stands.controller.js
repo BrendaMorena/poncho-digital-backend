@@ -43,10 +43,7 @@ export const actualizarStand = async (req, res, next) => {
     const idStand = req.standId
     const actualizarStandDTO = req.body
     const standActualizado = await standService.actualizarStand(idStand, actualizarStandDTO)
-    
-    if(!standActualizado){
-      return next(crearError(`No existe un Stand con id ${idStand}`, 404));
-    }
+
     return res.json(standActualizado)
   } catch (error) {
     if (error.code === "P2025") {
@@ -59,14 +56,16 @@ export const actualizarStand = async (req, res, next) => {
   }
 };
 
-// export const eliminarAutor = (req, res, next) => {
+export const eliminarStand = async (req, res, next) => {
+  try {
+    const standId = req.standId
+    await standService.eliminarStand(standId)
 
-//     const indice = autores.findIndex(autor => autor.id === req.autorId);
-
-//     if (indice === -1) {
-//         return next(crearError(`no existe un autor con id ${req.autorId}`, 404));
-//     }
-
-//     autores.splice(indice, 1);
-//     res.status(204).send();
-// };
+    return res.status(204).send();
+  } catch (error) {
+    if (error.code === "P2025") {
+      return next(crearError(`No existe un Stand con id ${req.standId}`, 404));
+    }
+    return next(error);
+  }
+};

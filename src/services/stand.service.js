@@ -38,19 +38,18 @@ export const obtenerStands = async () => {
   });
 };
 
-export const obtenerStandPorId = async (standId) =>{
+export const obtenerStandPorId = async (standId) => {
   return await prisma.stand.findUnique({
     where: {
-      id_stand: standId
-    }, 
+      id_stand: standId,
+    },
     include: {
-      pabellon: true, 
+      pabellon: true,
       sector: true,
       artesano: true,
-    }
-  })
-  
-}
+    },
+  });
+};
 
 export const crearStand = async (crearStandDTO) => {
   const { numero_stand, coordenada, pabellonId, sectorId } = crearStandDTO;
@@ -79,9 +78,8 @@ export const crearStand = async (crearStandDTO) => {
 };
 
 export const actualizarStand = async (idStand, actualizarStandDTO) => {
-
   // Clonamos el DTO para manipularlo de forma segura
-  const data = {...actualizarStandDTO}
+  const data = { ...actualizarStandDTO };
 
   if (data.pabellonId) {
     await verificarPabellon(data.pabellonId);
@@ -97,13 +95,26 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
   }
 
   return prisma.stand.update({
-      where: { id_stand: idStand },
-      data: data,
-      include: {
-        pabellon: true,
-        sector: true,
-        artesano: true,
-      }
-    }
-  )
+    where: { id_stand: idStand },
+    data: data,
+    include: {
+      pabellon: true,
+      sector: true,
+      artesano: true,
+    },
+  });
+};
+
+export const eliminarStand = async (standId) => {
+  const stand = await prisma.stand.findUnique({
+    where: {id_stand: standId}
+  })
+  
+  if(stand && stand.artesanoId){
+    throw crearError("No se puede eliminar un Stand que tiene un artesano asignado", 400)
+  }
+
+  return await prisma.stand.delete({
+    where: { id_stand: standId },
+  });
 };
