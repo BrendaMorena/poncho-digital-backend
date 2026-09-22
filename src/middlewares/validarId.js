@@ -10,5 +10,5 @@ const validarId = elementoId => (req, res, next) => {
 
     next();
 };
-
-export const validarStandId = validarId("standId")
+export const validarArtesanoId = validarId("artesanoId");
+//export const validarStandId = validarId("standId")

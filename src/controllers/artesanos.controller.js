@@ -1,27 +1,12 @@
-import {artesanos} from '../data/artesanos.js';
 import { crearError } from '../utils/errores.js';
-//import { siguienteId } from '../utils/siguienteId.js';
 import prisma from '../config/prisma.js';
-
+import * as artesanoService from "../services/artesano.service.js";
 
 export const obtenerArtesanos = async (req, res, next) => {
   try {
-    const artesanos = await prisma.artesano.findMany({
-      
-      include: {
-        usuario: { 
-          select: { // Elegimos qué campos del usuario queremos mostrar
-            nombre: true,
-            apellido: true,
-            email: true,
-            localidad: true,
-            telefono: true
-          }
-        },
-        rubro: true 
-      }
-    });
+    const artesanos = await artesanoService.obtenerArtesanos();
     return res.status(200).json(artesanos);
+   
   } catch (error) {
     next(error); 
   }
@@ -30,26 +15,9 @@ export const obtenerArtesanos = async (req, res, next) => {
 
 export const obtenerArtesanoPorId = async (req, res, next) => {
 try{
-  const artesanoId = Number(req.params.id);
-  if (!Number.isInteger(artesanoId) || artesanoId <= 0) {
-    return next(crearError("El identificador del artesano debe ser un entero positivo.", 400));
-  }
+  const idArtesano = req.artesanoId;
 
-  const artesano = await prisma.artesano.findUnique({
-    where: { id_artesano: artesanoId },
-    include: {
-      usuario: { 
-        select: { 
-          nombre: true,
-            apellido: true,
-            email: true,
-            localidad: true,
-            telefono: true
-          }
-        },
-        rubro: true 
-      }
-    });
+  const artesano = await artesanoService.obtenerArtesanoPorId(idArtesano);
     if (!artesano) {
       return next(crearError("El artesano no existe.", 404));
 }
@@ -62,102 +30,38 @@ try{
 
 export const crearArtesano = async (req, res, next) => {
   try{
-    const { descripcion, usuarioId, rubroId } = req.body;
-
-    if (!descripcion || !usuarioId || !rubroId) {
-      return next(crearError("Faltan datos obligatorios.", 400));
-    }
-    const nuevoArtesano = await prisma.artesano.create({
-      data: {
-        descripcion: descripcion.trim(),
-        usuarioId: usuarioId,
-        rubroId: rubroId
-    },
-    include: {
-      usuario: { 
-        select: { 
-          nombre: true,
-            apellido: true,
-            email: true,
-            localidad: true,
-            telefono: true
-          }
-        },
-        rubro: true 
-      }
-  })
+    const crearArtesanoDTO = req.body;
+    const nuevoArtesano = await artesanoService.crearArtesano(crearArtesanoDTO);
+    
   return res.status(201).json(nuevoArtesano);
   }catch (error) {
-    return next(error);}
+    if(error.code === "P2002"){
+      return next(crearError(`El Stand ${req.body.numero_stand} ya existe en el sistema`, 409))
+    }
+    return next(error)
 };
-  
   
 
 export const actualizarArtesano = async (req, res, next) => {
   try {
-    const idArtesano = Number(req.params.id);
-    if (!Number.isInteger(idArtesano) || idArtesano <= 0) {
-      return next(crearError("El identificador del artesano debe ser un entero positivo.", 400));
-    }
-    const artesano = await prisma.artesano.findUnique({
-      where: { id_artesano: idArtesano }
-    });
-    if (!artesano) {
-      return next(crearError("El artesano no existe.", 404));
-    }
+    const idArtesano = req.artesanoId; // Obtenido de tu middleware validarId
+    const dto = req.body; // Esto ya fue validado por Zod
+    // Llamamos al servicio
+    const artesanoActualizado = await artesanoService.actualizarArtesano(idArtesano, dto);
     
-    const { descripcion, rubroId, nombre, apellido, localidadId } = req.body;
-    if (!descripcion && !rubroId && !nombre && !apellido && !localidadId) {
-      return next(crearError("Debes enviar al menos un campo para actualizar.", 400));
-    }
-    // Actualiza Artesano y Usuario a la vez
-    const artesanoActualizado = await prisma.artesano.update({
-      where: { id_artesano: idArtesano },
-      data: {
-        // datos directos de Artesano
-        ...(descripcion && { descripcion: descripcion.trim() }),
-        ...(rubroId && { rubroId: rubroId }),
-        // datos de usuario
-        ...((nombre || apellido || localidadId) && {
-          usuario: {
-            update: {
-              ...(nombre && { nombre: nombre.trim() }),
-              ...(apellido && { apellido: apellido.trim() }),
-              ...(localidadId && { localidadId: localidadId })
-            }
-          }
-        })
-      },
-      include: {
-        usuario: {
-          select: { nombre: true, apellido: true, email: true, localidad: true }
-        },
-        rubro: true
-      }
-    });
-    res.json(artesanoActualizado);
+    return res.json(artesanoActualizado);
   } catch (error) {
     return next(error);
   }
 };
-
-
 export const eliminarArtesano = async (req, res, next) => {
   try {
-    const idArtesano = Number(req.params.id);
-    if (!Number.isInteger(idArtesano) || idArtesano <= 0) {
-      return next(crearError("El identificador del artesano debe ser un entero positivo.", 400));
-    }
-    const artesano = await prisma.artesano.findUnique({
-      where: { id_artesano: idArtesano }
-    });
-    if (!artesano) {
-      return next(crearError("El artesano no existe.", 404));
-    }
-    const artesanoEliminado = await prisma.artesano.delete({
-      where: { id_artesano: idArtesano },
-    });
-    res.json(artesanoEliminado);
+    const idArtesano = req.artesanoId; 
+    
+    // Llamamos al servicio (no devuelve nada, solo ejecuta)
+    await artesanoService.eliminarArtesano(idArtesano);
+    
+    return res.status(204).send();
   } catch (error) {
     return next(error);
   }
