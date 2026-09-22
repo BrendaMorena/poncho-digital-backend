@@ -1,5 +1,5 @@
 import {artesanos} from '../data/artesanos.js';
-//import { crearError } from '../utils/errores.js';
+import { crearError } from '../utils/errores.js';
 //import { siguienteId } from '../utils/siguienteId.js';
 import prisma from '../config/prisma.js';
 
@@ -28,69 +28,137 @@ export const obtenerArtesanos = async (req, res, next) => {
 };
 
 
+export const obtenerArtesanoPorId = async (req, res, next) => {
+try{
+  const artesanoId = Number(req.params.id);
+  if (!Number.isInteger(artesanoId) || artesanoId <= 0) {
+    return next(crearError("El identificador del artesano debe ser un entero positivo.", 400));
+  }
 
-/*
-export const obtenerArtesanoPorId = (req, res, next) => {
-
-    const artesano = artesanos.find(artesano => artesano.id === req.artesanoId);
-
+  const artesano = await prisma.artesano.findUnique({
+    where: { id_artesano: artesanoId },
+    include: {
+      usuario: { 
+        select: { 
+          nombre: true,
+            apellido: true,
+            email: true,
+            localidad: true,
+            telefono: true
+          }
+        },
+        rubro: true 
+      }
+    });
     if (!artesano) {
-        return next(crearError(`no existe un artesano con id ${req.artesanoId}`, 404));
-    }
-
-    res.json(artesano);
+      return next(crearError("El artesano no existe.", 404));
+}
+  
+    return res.json(artesano);
+  }catch (error) {
+    return next(error);}
 };
 
 
-export const crearArtesano = (req, res, next) => {
-    const { nombre, rubro, localidad } = req.body;
+export const crearArtesano = async (req, res, next) => {
+  try{
+    const { descripcion, usuarioId, rubroId } = req.body;
 
-    if (!nombre || !rubro || !localidad) {
-        return next(crearError('Faltan datos obligatorios: nombre, rubro y localidad son requeridos', 400));
+    if (!descripcion || !usuarioId || !rubroId) {
+      return next(crearError("Faltan datos obligatorios.", 400));
     }
-
-    const nuevoArtesano = { id: siguienteId(artesanos), nombre, rubro, localidad };
-
-    artesanos.push(nuevoArtesano);
-    res.status(201).json(nuevoArtesano);
+    const nuevoArtesano = await prisma.artesano.create({
+      data: {
+        descripcion: descripcion.trim(),
+        usuarioId: usuarioId,
+        rubroId: rubroId
+    },
+    include: {
+      usuario: { 
+        select: { 
+          nombre: true,
+            apellido: true,
+            email: true,
+            localidad: true,
+            telefono: true
+          }
+        },
+        rubro: true 
+      }
+  })
+  return res.status(201).json(nuevoArtesano);
+  }catch (error) {
+    return next(error);}
 };
+  
+  
 
-export const actualizarArtesano = (req, res, next) => {
-  const index = artesanos.findIndex((artesano) => artesano.id === req.artesanoId);
-
-  if (index === -1) {
-    return next(crearError(`no existe un artesano con id ${req.artesanoId}`, 404));
+export const actualizarArtesano = async (req, res, next) => {
+  try {
+    const idArtesano = Number(req.params.id);
+    if (!Number.isInteger(idArtesano) || idArtesano <= 0) {
+      return next(crearError("El identificador del artesano debe ser un entero positivo.", 400));
+    }
+    const artesano = await prisma.artesano.findUnique({
+      where: { id_artesano: idArtesano }
+    });
+    if (!artesano) {
+      return next(crearError("El artesano no existe.", 404));
+    }
+    
+    const { descripcion, rubroId, nombre, apellido, localidadId } = req.body;
+    if (!descripcion && !rubroId && !nombre && !apellido && !localidadId) {
+      return next(crearError("Debes enviar al menos un campo para actualizar.", 400));
+    }
+    // Actualiza Artesano y Usuario a la vez
+    const artesanoActualizado = await prisma.artesano.update({
+      where: { id_artesano: idArtesano },
+      data: {
+        // datos directos de Artesano
+        ...(descripcion && { descripcion: descripcion.trim() }),
+        ...(rubroId && { rubroId: rubroId }),
+        // datos de usuario
+        ...((nombre || apellido || localidadId) && {
+          usuario: {
+            update: {
+              ...(nombre && { nombre: nombre.trim() }),
+              ...(apellido && { apellido: apellido.trim() }),
+              ...(localidadId && { localidadId: localidadId })
+            }
+          }
+        })
+      },
+      include: {
+        usuario: {
+          select: { nombre: true, apellido: true, email: true, localidad: true }
+        },
+        rubro: true
+      }
+    });
+    res.json(artesanoActualizado);
+  } catch (error) {
+    return next(error);
   }
-
-  const { nombre, rubro, localidad } = req.body;
-
-  if (!nombre && !rubro && !localidad) {
-    return next(
-      crearError(
-        'Tiene que haber al menos un campo para actualizar: nombre, rubro o localidad',
-        400,
-      ),
-    );
-  }
-
-  const cambios = {};
-  if (nombre) cambios.nombre = nombre;
-  if (rubro) cambios.rubro = rubro;
-  if (localidad) cambios.localidad = localidad;
-
-  artesanos[index] = { ...artesanos[index], ...cambios };
-
-  res.json(artesanos[index]);
 };
 
-export const eliminarArtesano = (req, res, next) => {
 
-    const indice = artesanos.findIndex(artesano => artesano.id === req.artesanoId);
-
-    if (indice === -1) {
-        return next(crearError(`no existe un artesano con id ${req.artesanoId}`, 404));
+export const eliminarArtesano = async (req, res, next) => {
+  try {
+    const idArtesano = Number(req.params.id);
+    if (!Number.isInteger(idArtesano) || idArtesano <= 0) {
+      return next(crearError("El identificador del artesano debe ser un entero positivo.", 400));
     }
-
-    artesanos.splice(indice, 1);
-    res.status(204).send();
-};*/
+    const artesano = await prisma.artesano.findUnique({
+      where: { id_artesano: idArtesano }
+    });
+    if (!artesano) {
+      return next(crearError("El artesano no existe.", 404));
+    }
+    const artesanoEliminado = await prisma.artesano.delete({
+      where: { id_artesano: idArtesano },
+    });
+    res.json(artesanoEliminado);
+  } catch (error) {
+    return next(error);
+  }
+};
