@@ -28,13 +28,43 @@ const verificarSector = async (sectorId) => {
   }
 };
 
-export const obtenerStands = async () => {
+export const obtenerStands = async (criteriosConsulta) => {
+  const { estado, pabellonId, sectorId, rubroId, ordenarPor, direccion } = criteriosConsulta
+  
+  const where = {}
+
+  if(estado !== undefined){
+    where.estado = estado;
+  }
+
+  if(pabellonId !== undefined){
+    where.pabellonId = pabellonId
+  }
+
+  if(sectorId !== undefined){
+    where.sectorId = sectorId
+  }
+
+  if(rubroId !== undefined){
+    where.artesano = {
+      rubroId: rubroId
+    }
+  }
+
   return await prisma.stand.findMany({
+    where, 
     include: {
       pabellon: true,
       sector: true,
-      artesano: true,
+      artesano: {
+        include: {
+          rubro: true
+        }
+      }
     },
+    orderBy: {
+      numero_stand: "asc"
+    }
   });
 };
 
@@ -83,10 +113,12 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
 
   if (data.pabellonId) {
     await verificarPabellon(data.pabellonId);
+    data.sectorId = null;
   }
 
   if (data.sectorId) {
     await verificarSector(data.sectorId);
+    data.pabellonId = null
   }
 
   // Regla de negocio: si el stand se libera o entra en mantenimiento, desvinculamos el artesano

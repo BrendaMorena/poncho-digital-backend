@@ -4,14 +4,15 @@ import * as standService from "../services/stand.service.js";
 
 export const obtenerStands = async (req, res, next) => {
   try {
-    const stands = await standService.obtenerStands();
-    return res.status(200).json(stands);
+    const criteriosConsulta = req.consultaStands
+    const stands = await standService.obtenerStands(criteriosConsulta);
+    return res.json(stands);
   } catch (error) {
     return next(error);
   }
 };
 
-export const obtenerStandsPorId = async (req, res, next) => {
+export const obtenerStandPorId = async (req, res, next) => {
   try {
     const stand = await standService.obtenerStandPorId(req.standId)
     if(!stand){

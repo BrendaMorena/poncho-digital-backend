@@ -96,13 +96,94 @@ Content-Type: application/json
 ###
 
 ############################################################
-### 2. OBTENER TODOS LOS STANDS (GET /stands)
+### 2. CONSULTA Y FILTRADO DE STANDS (GET /stands)
 ############################################################
 
-# Caso de Éxito: Listar todos los stands con sus relaciones (HTTP 200)
+# ==========================================================
+# A. CASOS DE ÉXITO (HTTP 200)
+# ==========================================================
+
+# Caso 1: Obtener todos los stands sin ningún filtro 
 GET {{baseUrl}}/stands/
 
 ###
+
+# Caso 2: Filtrar stands por Pabellón
+GET {{baseUrl}}/stands?pabellonId=1
+
+###
+
+# Caso 3: Filtrar stands por Sector 3 
+GET {{baseUrl}}/stands?sectorId=3
+
+###
+
+# Caso 4: Filtrar por Estado 'DISPONIBLE'
+GET {{baseUrl}}/stands?estado=DISPONIBLE
+
+###
+
+# Caso 5: Filtrar por Estado 'OCUPADO' 
+GET {{baseUrl}}/stands?estado=OCUPADO
+
+###
+
+# Caso 6: Filtrar por Estado 'MANTENIMIENTO'
+GET {{baseUrl}}/stands?estado=MANTENIMIENTO
+
+###
+
+# Caso 7: Filtro relacional por Rubro
+GET {{baseUrl}}/stands?rubroId=1
+
+###
+
+# Caso 8: Filtros combinados (Pabellón 1 + Estado DISPONIBLE)
+GET {{baseUrl}}/stands?pabellonId=1&estado=DISPONIBLE
+
+###
+
+# ==========================================================
+# B. CASOS SIN COINCIDENCIAS (HTTP 200 con arreglo vacío `[]`)
+# ==========================================================
+
+# Caso 9: Pabellón válido que no tiene ningún stand asignado en la BD
+GET {{baseUrl}}/stands?pabellonId=999
+
+###
+
+# Caso 10: Combinación de filtros que no coincide con ningún stand
+GET {{baseUrl}}/stands?pabellonId=2&estado=OCUPADO
+
+###
+
+# ==========================================================
+# C. CASOS DE ERROR DE VALIDACIÓN CON ZOD (HTTP 400 Bad Request)
+# ==========================================================
+
+# Error 400: Estado inexistente en el Enum
+GET {{baseUrl}}/stands?estado=CERRADO
+
+###
+
+# Error 400: pabellonId no numérico (letras)
+GET {{baseUrl}}/stands?pabellonId=central
+
+###
+
+# Error 400: pabellonId negativo o cero (violación de .positive())
+GET {{baseUrl}}/stands?pabellonId=-5
+
+###
+
+# Error 400: sectorId con formato inválido
+GET {{baseUrl}}/stands?sectorId=sectorUno
+
+###
+
+# Error 400: rubroId decimal (violación de .int())
+GET {{baseUrl}}/stands?rubroId=2.5
+
 
 ############################################################
 ### 3. OBTENER STAND POR ID (GET /stands/:id)

@@ -55,4 +55,61 @@ export const standSchema = standBaseSchema.refine(
 );
 
 // Esquema para ACTUALIZAR (PATCH)
-export const actualizarStandSchema = standBaseSchema.partial();
+export const actualizarStandSchema = standBaseSchema.partial()
+.refine(
+    (data) => Object.keys(data).length > 0,
+    {
+      message: "Debe enviar al menos un campo para actualizar",
+    }
+  )
+.refine(
+  (data) => {
+    // Solo validamos la regla si el cliente envió AMBOS campos en la petición
+    if (data.pabellonId !== undefined && data.sectorId !== undefined) {
+      const tienePabellon = data.pabellonId !== null;
+      const tieneSector = data.sectorId !== null;
+      // No puede tener ambos asignados, ni tampoco quedar ambos en null
+      return Boolean(tienePabellon) !== Boolean(tieneSector);
+    }
+    return true; // Si mandó solo uno o ninguno, pasa la validación del schema
+  },
+  {
+    message: "El stand no puede pertenecer a un Pabellón y a un Sector al mismo tiempo, ni quedar sin ninguno",
+    path: ["pabellonId"],
+  }
+);
+
+// Esquema para FILTRAR STANDS (GET /stands)
+export const consultarStandsSchema = z.object({
+  estado: z
+    .enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
+      errorMap: () => ({ message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO" }),
+    })
+    .optional(),
+
+  pabellonId: z.coerce
+    .number({ invalid_type_error: "El pabellonId debe ser un número" })
+    .int("El pabellonId debe ser un número entero")
+    .positive("El pabellonId debe ser positivo")
+    .optional(),
+
+  sectorId: z.coerce
+    .number({ invalid_type_error: "El sectorId debe ser un número" })
+    .int("El sectorId debe ser un número entero")
+    .positive("El sectorId debe ser positivo")
+    .optional(),
+
+  rubroId: z.coerce
+    .number({ invalid_type_error: "El rubroId debe ser un número" })
+    .int("El rubroId debe ser un número entero")
+    .positive("El rubroId debe ser positivo")
+    .optional(),
+
+  ordenarPor: z
+    .enum(["numero_stand", "createdAt", "rubro"])
+    .default("numero_stand"),
+
+  direccion: z
+    .enum(["asc", "desc"])
+    .default("asc"),
+});
