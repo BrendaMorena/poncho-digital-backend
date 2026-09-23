@@ -1,19 +1,9 @@
-### Obtener un artesano específico
-GET http://localhost:5500/artesanos/1
-
-### Crear un nuevo artesano (POST)
-POST http://localhost:5500/artesanos
-Content-Type: application/json
-
-{
-  "descripcion": "Mi nueva descripción de prueba",
-  "usuarioId": 6, 
-  "rubroId": 2
-}
-
 ### ==========================================
 ### 1. OBTENER ARTESANOS (GET)
 ### ==========================================
+
+### Obtener la lista de artesanos 
+GET http://localhost:5500/artesanos
 
 ### 1.1 Obtener todos (ÉXITO - Usando paginación y ordenamiento)
 GET http://localhost:5500/artesanos?page=1&limit=2&sortBy=nombre&sortOrder=desc
@@ -44,9 +34,10 @@ GET http://localhost:5500/artesanos/-5
 ### 2.1 Crear Artesano (ÉXITO) -> CAMBIA EL 10 POR EL ID DE MARIANA
 POST http://localhost:5500/artesanos
 Content-Type: application/json
+
 {
   "descripcion": "Artesanías en cerámica pintada a mano.",
-  "usuarioId": 10,
+  "usuarioId": 7,
   "rubroId": 2
 }
 
@@ -70,6 +61,7 @@ Content-Type: application/json
 ### 2.4 Crear Artesano (ERROR PRISMA - El usuario YA es artesano)
 POST http://localhost:5500/artesanos
 Content-Type: application/json
+
 {
   "descripcion": "Intentando duplicar mi perfil de artesano",
   "usuarioId": 1,
@@ -83,14 +75,16 @@ Content-Type: application/json
 ### 3.1 Actualizar Artesano (ÉXITO - Cambia descripción y nombre del usuario a la vez)
 PATCH http://localhost:5500/artesanos/1
 Content-Type: application/json
+
 {
   "descripcion": "Nueva descripción editada desde postman",
-  "nombre": "Carlos Editado"
+  "nombre": "Carlos Editado de nuevo"
 }
 
 ### 3.2 Actualizar Artesano (ERROR - No envía ningún dato en el body)
 PATCH http://localhost:5500/artesanos/1
 Content-Type: application/json
+
 {}
 
 ### ==========================================
@@ -99,6 +93,7 @@ Content-Type: application/json
 
 ### 4.1 Eliminar Artesano (ERROR 404 - Intenta borrar uno que no existe)
 DELETE http://localhost:5500/artesanos/9999
+
 ### 4.2 Eliminar Artesano (ÉXITO) -> Te devuelve 204 No Content y degrada a Mariana a Visitante
-### (Usa el ID del artesano que se creó en el paso 2.1)
-DELETE http://localhost:5500/artesanos/6
+
+DELETE http://localhost:5500/artesanos/8

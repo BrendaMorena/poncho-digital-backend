@@ -22,6 +22,9 @@ export const actualizarArtesanoSchema = z.object({
   nombre: z.string().min(2).optional(),
   apellido: z.string().min(2).optional(),
   localidadId: z.number().int().positive().optional()
+}).refine((datos) => Object.keys(datos).length > 0, {
+  // Este mensaje saldrá si envían un JSON vacío {}
+  message: "Debe enviar por lo menos un dato válido para actualizar." 
 });
 
 export const consultarArtesanosSchema = z.object({

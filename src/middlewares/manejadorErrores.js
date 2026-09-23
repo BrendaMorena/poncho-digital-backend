@@ -5,6 +5,10 @@ export const manejadorErrores = (err, req, res, next) => {
         console.error(err);
         return res.status(status).json({ error: 'Error interno del servidor' });
     }
-
-    res.status(status).json({ error: err.message });
+    // Si el error trae detalles de Zod
+    if (err.detalles) {
+        return res.status(status).json({ error: err.message, detalles: err.detalles });
+    }
+    // si no trae detalles, 
+     return res.status(status).json({ error: err.message });
 }
