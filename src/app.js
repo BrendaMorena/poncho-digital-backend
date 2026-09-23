@@ -10,7 +10,7 @@ const app = express();
 app.use(logger); // Middleware de registro de solicitudes
 app.use(express.json());
 
-const PORT = 5500;
+const PORT = process.env.PORT || 5500;
 
 app.get('/', (req, res) => {
     res.send('Bienvenido a la API REST de Poncho Digital');
