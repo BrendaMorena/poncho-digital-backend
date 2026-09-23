@@ -4,11 +4,14 @@ import artesanosRoutes from './routes/artesanos.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
+import { z } from 'zod';
 
 
+z.config(z.locales.es())
 const app = express();
 app.use(logger); // Middleware de registro de solicitudes
 app.use(express.json());
+
 
 const PORT = 5500;
 

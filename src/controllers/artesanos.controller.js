@@ -2,11 +2,11 @@ import { crearError } from '../utils/errores.js';
 import prisma from '../config/prisma.js';
 import * as artesanoService from "../services/artesano.service.js";
 import { consultarArtesanosSchema } from "../validators/artesanos.schemas.js";
-
+import { ZodError } from 'zod';
 
 export const obtenerArtesanos = async (req, res, next) => {
   try {
-    const { page, limit, sortBy, sortOrder } = consultarArtesanosSchema.parse(req.query);
+    const { page, limit, sortBy, sortOrder } = req.consultaArtesanos;
     const artesanos = await artesanoService.obtenerArtesanos(page, limit, sortBy, sortOrder);
     return res.status(200).json(artesanos);
    
@@ -14,6 +14,7 @@ export const obtenerArtesanos = async (req, res, next) => {
     next(error); 
   }
 };
+
 
 
 export const obtenerArtesanoPorId = async (req, res, next) => {

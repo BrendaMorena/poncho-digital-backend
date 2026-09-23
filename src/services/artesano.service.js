@@ -44,7 +44,7 @@ export const obtenerArtesanos = async (page, limit, sortBy, sortOrder) => {
 };
 
 export const obtenerArtesanoPorId = async (id) => {
-return artesano = await prisma.artesano.findUnique({
+return await prisma.artesano.findUnique({
     where: { id_artesano: id },
     include: {
       usuario: { 
