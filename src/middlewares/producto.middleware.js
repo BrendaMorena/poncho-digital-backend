@@ -30,7 +30,7 @@ export const validarActualizarProducto = (req, res, next) => {
 }
 
 export const validarConsultaProducto = (req, res, next) => {
-   const resultado = consultarProductoSchema.safeParse(req.body)
+  const resultado = consultarProductoSchema.safeParse(req.query)
 
   if (!resultado.success) {
     const detalles = detallarErroresZod(resultado.error)

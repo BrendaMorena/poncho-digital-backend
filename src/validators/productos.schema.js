@@ -60,7 +60,7 @@ export const consultarProductoSchema = z
       .optional(),
 
     ordenPor: z
-      .enum(["nombre_producto", "precio"], {
+      .enum(["nombre_producto", "precio", "createdAt"], {
         errorMap: () => ({ message: "El orden debe ser 'nombre_producto' o 'precio'" }),
       })
       .default("nombre_producto"),

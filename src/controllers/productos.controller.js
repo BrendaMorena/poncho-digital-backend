@@ -19,8 +19,8 @@ export const crearProducto = async (req, res, next) => {
 
 export const obtenerProductos = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.criteriosConsulta
-    const productos = await productoServices.obtenerProductos(criteriosConsulta)
+    const criteriosConsulta = criteriosConsulta
+    const productos = await productoServices.consultarProductos(criteriosConsulta)
     return res.json(productos)
   } catch (error) {
     return next(error)
