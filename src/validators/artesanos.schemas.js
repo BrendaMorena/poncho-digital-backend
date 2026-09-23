@@ -15,7 +15,7 @@ export const crearArtesanoSchema = z.object({
     required_error: "El ID del rubro es obligatorio",
   }).int().positive()
 });
-// Molde para ACTUALIZAR (Aquí todos son opcionales porque puedes actualizar solo una cosa)
+// Molde para ACTUALIZAR 
 export const actualizarArtesanoSchema = z.object({
   descripcion: z.string().min(10).optional(),
   rubroId: z.number().int().positive().optional(),
@@ -26,7 +26,7 @@ export const actualizarArtesanoSchema = z.object({
   // Este mensaje saldrá si envían un JSON vacío {}
   message: "Debe enviar por lo menos un dato válido para actualizar." 
 });
-
+// Molde para consultar (paginación y ordenamiento)
 export const consultarArtesanosSchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().max(100).optional().default(10),
