@@ -2,22 +2,46 @@ import prisma from "../config/prisma.js";
 import { crearError } from "../utils/errores.js";
 
 
-export const obtenerArtesanos = async () => {
-  return await prisma.artesano.findMany({
-  include: {
-        usuario: { 
-          select: { 
-            nombre: true,
-            apellido: true,
-            email: true,
-            localidad: true,
-            telefono: true
-          }
-        },
-        rubro: true, 
-  }
-});
-}
+export const obtenerArtesanos = async (page, limit, sortBy, sortOrder) => {
+  const skip = (page - 1) * limit;
+  // Creamos un "diccionario" con todas las opciones posibles de ordenamiento
+  const opcionesDeOrden = {
+    nombre:      { usuario: { nombre: sortOrder } },
+    apellido:    { usuario: { apellido: sortOrder } },
+    createdAt:   { createdAt: sortOrder },
+    id_artesano: { id_artesano: sortOrder }
+  };
+ 
+  const artesanos = await prisma.artesano.findMany({
+    skip: skip,
+    take: limit,
+    orderBy: opcionesDeOrden[sortBy], 
+    include: {
+      usuario: { 
+        select: { 
+          nombre: true, 
+          apellido: true, 
+          email: true, 
+          localidad: true,
+          telefono: true 
+        } 
+      },
+      rubro: true
+    }
+  });
+  
+  const totalArtesanos = await prisma.artesano.count();
+  
+  return {
+    paginacion: {
+      totalResultados: totalArtesanos,
+      paginasTotales: Math.ceil(totalArtesanos / limit),
+      paginaActual: page,
+      limitePorPagina: limit
+    },
+    datos: artesanos
+  };
+};
 
 export const obtenerArtesanoPorId = async (id) => {
 return artesano = await prisma.artesano.findUnique({

@@ -23,3 +23,11 @@ export const actualizarArtesanoSchema = z.object({
   apellido: z.string().min(2).optional(),
   localidadId: z.number().int().positive().optional()
 });
+
+export const consultarArtesanosSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
+  // ¡Agregamos nombre y apellido a la lista de permitidos!
+  sortBy: z.enum(['createdAt', 'id_artesano', 'nombre', 'apellido']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc')
+});

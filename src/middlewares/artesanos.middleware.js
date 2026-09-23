@@ -1,4 +1,3 @@
-import { artesanoSchema, actualizarArtesanoSchema } from "../validators/artesanos.schemas.js";
 import { crearError, detallarErroresZod } from "../utils/errores.js";
 
 export const validarArtesanos = (schema) => (req, res, next) => {
