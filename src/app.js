@@ -1,11 +1,13 @@
 import express from 'express';
-import standsRoutes from './routes/stands.routes.js'
-import { logger } from './middlewares/logger.js';
+import productosRoutes from "./routes/productos.routes.js";
+import { logger } from './middlewares/logger.js'
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
+import { z } from 'zod';
 
+z.config(z.locales.es())
 
-const app = express();
+const app = express()
 app.use(logger); // Middleware de registro de solicitudes
 app.use(express.json());
 
@@ -24,14 +26,14 @@ app.get('/info', (req, res) => {
     });
 } );
 
-// app.use('/artesanos', artesanosRoutes);
-app.use('/stands', standsRoutes)
+
+app.use('/productos', productosRoutes)
 //app.use('/', Routes);
 
 
-app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
-app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo
+app.use(noEncontrado) // Middleware de manejo de rutas no encontradas
+app.use(manejadorErrores) // Middleware de manejo de errores, siempre va al ultimo
 
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
-});
+})

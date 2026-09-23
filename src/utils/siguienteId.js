@@ -1,3 +1,0 @@
-// utils/siguienteId.js
-export const siguienteId = (array) => 
-  array.length > 0 ? Math.max(...array.map(e => e.id)) + 1 : 1;

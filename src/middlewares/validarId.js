@@ -9,6 +9,6 @@ const validarId = elementoId => (req, res, next) => {
     req[elementoId] = id;
 
     next();
-};
+}
 
-export const validarStandId = validarId("standId")
+export const validarProductoId = validarId("productoId")

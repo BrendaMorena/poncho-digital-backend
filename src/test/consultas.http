@@ -1,0 +1,331 @@
+@baseUrl = http://localhost:5500
+
+############################################################
+### 1. CONSULTA DE PRODUCTOS (GET /productos)
+############################################################
+
+# Caso 1: Obtener todos los productos con sus artesanos (HTTP 200)
+GET {{baseUrl}}/productos/
+
+###
+
+# Caso 2: Obtener producto por ID existente (HTTP 200)
+GET {{baseUrl}}/productos/8
+
+###
+
+# Error 404: Producto con ID inexistente en la BD
+GET {{baseUrl}}/productos/9999
+
+###
+
+# Error 400: ID no numérico (Middleware validarProductoId)
+GET {{baseUrl}}/productos/abc
+
+###
+
+# Error 400: ID menor o igual a cero (Middleware validarProductoId)
+GET {{baseUrl}}/productos/0
+
+###
+
+############################################################
+### 2. CREACIÓN DE PRODUCTOS (POST /productos)
+############################################################
+
+# Caso de Éxito: Crear producto válido (HTTP 201)
+POST {{baseUrl}}/productos/
+Content-Type: application/json
+
+{
+  "nombre_producto": "Cuchillo de alpaca y ciervo",
+  "precio": 45000.50,
+  "artesanoId": 3
+}
+
+###
+
+# Error 400: Faltan campos requeridos en el body (Zod)
+POST {{baseUrl}}/productos/
+Content-Type: application/json
+
+{
+  "nombre_producto": "Vasija sola"
+}
+
+###
+
+# Error 400: Campos vacíos o tipos inválidos (Zod)
+POST {{baseUrl}}/productos/
+Content-Type: application/json
+
+{
+  "nombre_producto": "   ",
+  "precio": -100,
+  "artesanoId": "invalido"
+}
+
+###
+
+# Error 400: Regla de negocio - Artesano inexistente en BD
+POST {{baseUrl}}/productos/
+Content-Type: application/json
+
+{
+  "nombre_producto": "Vasija de barro cocido",
+  "precio": 12000.00,
+  "artesanoId": 9999
+}
+
+###
+
+############################################################
+### 3. ACTUALIZACIÓN PARCIAL DE PRODUCTOS (PATCH /productos/:id)
+############################################################
+
+# Caso de Éxito 1: Modificar únicamente el precio (HTTP 200)
+PATCH {{baseUrl}}/productos/5
+Content-Type: application/json
+
+{
+  "precio": 59900.00
+}
+
+###
+
+# Caso de Éxito 2: Modificar solo el nombre (HTTP 200)
+PATCH {{baseUrl}}/productos/5
+Content-Type: application/json
+
+{
+  "nombre_producto": "Cuchillo de alpaca y ciervo grabado"
+}
+
+###
+
+# Caso de Éxito 3: Reasignar a otro artesano existente (HTTP 200)
+PATCH {{baseUrl}}/productos/6
+Content-Type: application/json
+
+{
+  "artesanoId": 2
+}
+
+###
+
+# Error 400: Body vacío {} (Validación .refine)
+PATCH {{baseUrl}}/productos/5
+Content-Type: application/json
+
+{}
+
+###
+
+# Error 400: Tipo o valor inválido en el campo enviado (Zod)
+PATCH {{baseUrl}}/productos/6
+Content-Type: application/json
+
+{
+  "precio": -500
+}
+
+###
+
+# Error 400: Regla de negocio - Asignar artesano inexistente
+PATCH {{baseUrl}}/productos/6
+Content-Type: application/json
+
+{
+  "artesanoId": 9999
+}
+
+###
+
+# Error 400: ID inválido en la URL (Middleware validarProductoId)
+PATCH {{baseUrl}}/productos/invalido
+Content-Type: application/json
+
+{
+  "precio": 10000.00
+}
+
+###
+
+# Error 404: Intentar actualizar un producto inexistente
+PATCH {{baseUrl}}/productos/9999
+Content-Type: application/json
+
+{
+  "precio": 10000.00
+}
+
+###
+
+############################################################
+### 4. ELIMINACIÓN DE PRODUCTOS (DELETE /productos/:id)
+############################################################
+
+# Caso de Éxito: Eliminar producto existente (HTTP 200)
+DELETE {{baseUrl}}/productos/12
+
+###
+
+# Verificación posterior: Comprobar que el producto ya no existe (HTTP 404)
+GET {{baseUrl}}/productos/12
+
+###
+
+# Error 404: Intentar eliminar un producto inexistente
+DELETE {{baseUrl}}/productos/9999
+
+###
+
+# Error 400: ID inválido con letras (Middleware validarProductoId)
+DELETE {{baseUrl}}/productos/abc
+
+###
+
+# Error 400: ID negativo o cero (Middleware validarProductoId)
+DELETE {{baseUrl}}/productos/0
+
+############################################################
+### 1. CONSULTA GENERAL Y PAGINACIÓN POR DEFECTO
+############################################################
+
+# Caso 1: Obtener la primera página con valores por defecto (Página 1, Límite 10)
+GET {{baseUrl}}/productos/
+
+###
+
+# Caso 2: Paginación personalizada (Página 1 con 2 productos por página)
+GET {{baseUrl}}/productos?pagina=1&limite=2
+
+###
+
+# Caso 3: Navegar a la Página 2 (mismo límite de 2 productos)
+GET {{baseUrl}}/productos?pagina=2&limite=2
+
+###
+
+############################################################
+### 2. BÚSQUEDA POR TEXTO (nombre_producto)
+############################################################
+
+# Caso 4: Búsqueda parcial de texto (ej: "poncho")
+GET {{baseUrl}}/productos?nombre_producto=poncho
+
+###
+
+# Caso 5: Búsqueda insensible a mayúsculas y minúsculas (ej: "MATE" en mayúsculas)
+GET {{baseUrl}}/productos?nombre_producto=MATE
+
+###
+
+############################################################
+### 3. FILTROS POR RANGO DE PRECIOS
+############################################################
+
+# Caso 6: Productos con precio mínimo (Mayor o igual a $10.000)
+GET {{baseUrl}}/productos?precioDesde=10000
+
+###
+
+# Caso 7: Productos con precio máximo (Menor o igual a $25.000)
+GET {{baseUrl}}/productos?precioHasta=25000
+
+###
+
+# Caso 8: Rango de precio completo (Entre $5.000 y $30.000)
+GET {{baseUrl}}/productos?precioDesde=5000&precioHasta=30000
+
+###
+
+############################################################
+### 4. FILTROS POR RELACIONES (artesanoId y rubroId)
+############################################################
+
+# Caso 9: Productos publicados por un artesano específico (ej: Artesano 1)
+GET {{baseUrl}}/productos?artesanoId=1
+
+###
+
+# Caso 10: Productos filtrados por Rubro artesanal (ej: Rubro 1 - Textil)
+GET {{baseUrl}}/productos?rubroId=1
+
+###
+
+############################################################
+### 5. ORDENAMIENTO
+############################################################
+
+# Caso 11: Ordenar por precio de menor a mayor (ascendente)
+GET {{baseUrl}}/productos?ordenPor=precio&direccion=asc
+
+###
+
+# Caso 12: Ordenar por precio de mayor a menor (descendente)
+GET {{baseUrl}}/productos?ordenPor=precio&direccion=desc
+
+###
+
+# Caso 13: Ordenar alfabéticamente por nombre de producto
+GET {{baseUrl}}/productos?ordenPor=nombre_producto&direccion=asc
+
+###
+
+# Caso 14: Ordenar por los más nuevos primero (createdAt desc)
+GET {{baseUrl}}/productos?ordenPor=createdAt&direccion=desc
+
+###
+
+############################################################
+### 6. COMBINACIÓN COMPLETA (Filtros + Rango + Orden + Paginación)
+############################################################
+
+# Caso 15: "Quiero la página 1 con 5 productos de Textil (Rubro 1), entre $5.000 y $60.000, ordenados del más barato al más caro"
+GET {{baseUrl}}/productos?rubroId=1&precioDesde=5000&precioHasta=60000&ordenPor=precio&direccion=asc&pagina=1&limite=5
+
+###
+
+############################################################
+### 7. CASOS SIN RESULTADOS (HTTP 200 con array vacío [])
+############################################################
+
+# Caso 16: Búsqueda de un producto que no existe
+GET {{baseUrl}}/productos?nombre_producto=inexistenteXYZ
+
+###
+
+# Caso 17: Rango de precio donde no hay productos disponibles
+GET {{baseUrl}}/productos?precioDesde=9999999
+
+###
+
+############################################################
+### 8. ERRORES DE VALIDACIÓN CON ZOD (HTTP 400 Bad Request)
+############################################################
+
+# Error 400: precioDesde mayor a precioHasta (frenado por el refine de Zod)
+GET {{baseUrl}}/productos?precioDesde=50000&precioHasta=10000
+
+###
+
+# Error 400: Página no entera o negativa
+GET {{baseUrl}}/productos?pagina=-1
+
+###
+
+# Error 400: Límite superior a 50 (frenado por max(50))
+GET {{baseUrl}}/productos?limite=100
+
+###
+
+# Error 400: Dirección no perteneciente a ["asc", "desc"]
+GET {{baseUrl}}/productos?direccion=arriba
+
+###
+
+# Error 400: Campo de ordenamiento inexistente
+GET {{baseUrl}}/productos?ordenPor=colorInexistente
+
+###

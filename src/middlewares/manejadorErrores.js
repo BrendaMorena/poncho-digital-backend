@@ -6,5 +6,10 @@ export const manejadorErrores = (err, req, res, next) => {
         return res.status(status).json({ error: 'Error interno del servidor' });
     }
 
-    res.status(status).json({ error: err.message });
+    const cuerpo = {error: err.message};
+    if (err.detalles) {
+        cuerpo.detalles = err.detalles;
+    }
+
+    res.status(status).json(cuerpo);
 }
