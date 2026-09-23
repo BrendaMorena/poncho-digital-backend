@@ -28,8 +28,17 @@ const verificarSector = async (sectorId) => {
   }
 };
 
+const verificarStand = async (idStand) =>{
+  const standActual = await prisma.stand.findUnique({
+    where: { id_stand: idStand },
+  });
+  if (!standActual) {
+    throw crearError(`No existe un Stand con id ${idStand}`, 404);
+  }
+}
+
 export const obtenerStands = async (criteriosConsulta) => {
-  const { estado, pabellonId, sectorId, rubroId, ordenarPor, direccion } = criteriosConsulta
+  const { estado, pabellonId, sectorId, rubroId, direccion } = criteriosConsulta
   
   const where = {}
 
@@ -63,7 +72,7 @@ export const obtenerStands = async (criteriosConsulta) => {
       }
     },
     orderBy: {
-      numero_stand: "asc"
+      numero_stand: direccion
     }
   });
 };
@@ -107,9 +116,19 @@ export const crearStand = async (crearStandDTO) => {
   });
 };
 
-export const actualizarStand = async (idStand, actualizarStandDTO) => {
+export const actualizarStand = async (idStand, actualizarStandDTO) => {  
+  
+  await verificarStand(idStand)
+
   // Clonamos el DTO para manipularlo de forma segura
   const data = { ...actualizarStandDTO };
+
+  const ubicacionPabellon = data.pabellonId !== undefined ? data.pabellonId : standActual.pabellonId;
+  const ubicacionSector   = data.sectorId !== undefined   ? data.sectorId   : standActual.sectorId;
+
+  if (!ubicacionPabellon && !ubicacionSector) {
+    throw crearError("El stand no puede quedar sin ubicación (debe tener un Pabellón o un Sector)", 400);
+  }
 
   if (data.pabellonId) {
     await verificarPabellon(data.pabellonId);
@@ -120,6 +139,7 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
     await verificarSector(data.sectorId);
     data.pabellonId = null
   }
+
 
   // Regla de negocio: si el stand se libera o entra en mantenimiento, desvinculamos el artesano
   if (data.estado === "DISPONIBLE" || data.estado === "MANTENIMIENTO") {
@@ -138,11 +158,9 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
 };
 
 export const eliminarStand = async (standId) => {
-  const stand = await prisma.stand.findUnique({
-    where: {id_stand: standId}
-  })
-  
-  if(stand && stand.artesanoId){
+  await verificarStand(idStand)
+
+  if(standActual && standActual.artesanoId){
     throw crearError("No se puede eliminar un Stand que tiene un artesano asignado", 400)
   }
 

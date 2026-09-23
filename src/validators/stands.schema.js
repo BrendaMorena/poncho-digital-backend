@@ -46,7 +46,9 @@ const standBaseSchema = z.object({
   }).optional(),
 });
 
-export const standSchema = standBaseSchema.refine(
+export const standSchema = standBaseSchema
+.omit({ estado: true })
+.refine(
   (data) => Boolean(data.pabellonId) !== Boolean(data.sectorId),
   {
     message: "El stand debe pertenecer a un Pabellón O a un Sector, pero no a ambos ni a ninguno",
@@ -55,7 +57,8 @@ export const standSchema = standBaseSchema.refine(
 );
 
 // Esquema para ACTUALIZAR (PATCH)
-export const actualizarStandSchema = standBaseSchema.partial()
+export const actualizarStandSchema = standBaseSchema
+.partial()
 .refine(
     (data) => Object.keys(data).length > 0,
     {
@@ -105,9 +108,9 @@ export const consultarStandsSchema = z.object({
     .positive("El rubroId debe ser positivo")
     .optional(),
 
-  ordenarPor: z
-    .enum(["numero_stand", "createdAt", "rubro"])
-    .default("numero_stand"),
+  // ordenarPor: z
+  //   .enum(["numero_stand", "createdAt", "rubro"])
+  //   .default("numero_stand"),
 
   direccion: z
     .enum(["asc", "desc"])
