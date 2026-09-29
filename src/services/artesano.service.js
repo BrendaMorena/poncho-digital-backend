@@ -123,11 +123,7 @@ export const eliminarArtesano = async (id) => {
   });
   if (!artesano) throw crearError("El artesano no existe.", 404);
 
-  await prisma.$transaction([
-    prisma.artesano.delete({ where: { id_artesano: id } }),
-    prisma.usuario.update({
-      where: { id_usuario: artesano.usuarioId },
-      data: { rolId: 3 } // Lo degrada a visitante
-    })
-  ]);
+  await prisma.usuario.delete({ 
+    where: { id_usuario: artesano.usuarioId } 
+  });
 };
