@@ -127,6 +127,7 @@ model Rubro {
 
   artesanos   Artesano[]
   busquedas   Busqueda[]
+  solicitudes   Solicitud[]
 }
 
 enum EstadoSolicitud {
@@ -147,6 +148,9 @@ model Solicitud {
 
   usuarioId                     Int @unique
   usuario                       Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
+
+  rubroId                       Int
+  rubro                         Rubro @relation(fields: [rubroId], references: [id_rubro])
 }
 
 model Localidad {
