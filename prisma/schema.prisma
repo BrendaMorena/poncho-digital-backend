@@ -27,9 +27,6 @@ model Stand {
 
   sectorId       Int ?
   sector         Sector? @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
-
-  pabellonId     Int ?
-  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
 }
 
 model Artesano {
@@ -172,7 +169,7 @@ model Pabellon {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
-  stands                  Stand[]
+  sectores                Sector[]
   busquedas               Busqueda[]
 }
 
@@ -185,4 +182,7 @@ model Sector {
   updatedAt       DateTime @updatedAt
 
   stands          Stand[]
+
+  pabellonId     Int ?
+  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
 }
