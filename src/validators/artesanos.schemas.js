@@ -11,6 +11,7 @@ export const crearArtesanoSchema = z.object({
     required_error: "El ID del usuario es obligatorio",
     invalid_type_error: "El ID del usuario debe ser un número"
   }).int().positive("El ID debe ser positivo"),
+  
   rubroId: z.number({
     required_error: "El ID del rubro es obligatorio",
   }).int().positive()
