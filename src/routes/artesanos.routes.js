@@ -10,9 +10,10 @@ const router = express.Router();
 
 router.get("/", validarConsultaArtesanos, obtenerArtesanos);
 router.get("/:id", validarArtesanoId, obtenerArtesanoPorId);
-router.post("/", validarArtesanos(crearArtesanoSchema), crearArtesano);
-router.patch("/:id", validarArtesanoId, validarArtesanos(actualizarArtesanoSchema), actualizarArtesano);
-router.delete("/:id", validarArtesanoId, eliminarArtesano)
+//router.post("/", validarArtesanos(crearArtesanoSchema), crearArtesano);
+router.patch("/:id", verificarEstadoAprobado, validarArtesanoId, validarArtesanos(actualizarArtesanoSchema), actualizarArtesano);
+// Agregar middleware verificarAdmin cuando hagamos el Login
+//router.delete("/:id", validarArtesanoId, eliminarArtesano)
 
 
 
