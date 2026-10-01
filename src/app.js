@@ -1,5 +1,6 @@
 import express from 'express';
-import standsRoutes from './routes/stands.routes.js'
+import standsRoutes from './routes/stands.routes.js';
+import pabellonesRoutes from './routes/pabellones.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
@@ -26,8 +27,8 @@ app.get('/info', (req, res) => {
 } );
 
 // app.use('/artesanos', artesanosRoutes);
-app.use('/stands', standsRoutes)
-//app.use('/', Routes);
+app.use('/stands', standsRoutes);
+app.use('/pabellones', pabellonesRoutes);
 
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas

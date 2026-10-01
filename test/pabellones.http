@@ -1,0 +1,105 @@
+@baseUrl = http://localhost:5500
+
+############################################################
+### 1. CREACIÓN DE PABELLONES (POST /pabellones)
+############################################################
+
+# Caso de Éxito: Crear Pabellón (HTTP 201)
+POST {{baseUrl}}/pabellones/
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "Pabellón Artesanías Tradicionales",
+  "descripcion_pabellon": "Espacio dedicado a artesanos tradicionales del Poncho"
+}
+
+###
+
+# Error 409: Nombre duplicado
+POST {{baseUrl}}/pabellones/
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "Pabellón Artesanías Tradicionales",
+  "descripcion_pabellon": "Intentando duplicar el nombre"
+}
+
+###
+
+# Error 400: Campos vacíos
+POST {{baseUrl}}/pabellones/
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "",
+  "descripcion_pabellon": ""
+}
+
+###
+
+############################################################
+### 2. OBTENER PABELLONES (GET /pabellones)
+############################################################
+
+# Obtener todos (sin paginación)
+GET {{baseUrl}}/pabellones/
+
+###
+
+# Obtener con paginación
+GET {{baseUrl}}/pabellones?pagina=1&limite=5
+
+###
+
+# Filtrar por nombre y ordenar
+GET {{baseUrl}}/pabellones?nombre_pabellon=Tradicionales&ordenarPor=nombre_pabellon&direccion=asc
+
+###
+
+############################################################
+### 3. OBTENER PABELLÓN POR ID (GET /pabellones/:id)
+############################################################
+
+# Caso de Éxito
+GET {{baseUrl}}/pabellones/1
+
+###
+
+# Error 404: ID inexistente
+GET {{baseUrl}}/pabellones/99999
+
+###
+
+# Error 400: ID inválido
+GET {{baseUrl}}/pabellones/abc
+
+###
+
+############################################################
+### 4. ACTUALIZAR PABELLÓN (PATCH /pabellones/:id)
+############################################################
+
+# Caso de Éxito
+PATCH {{baseUrl}}/pabellones/1
+Content-Type: application/json
+
+{
+  "descripcion_pabellon": "Nueva descripción actualizada para el pabellón"
+}
+
+###
+
+# Error 400: Body vacío
+PATCH {{baseUrl}}/pabellones/1
+Content-Type: application/json
+
+{}
+
+###
+
+############################################################
+### 5. ELIMINAR PABELLÓN (DELETE /pabellones/:id)
+############################################################
+
+# Eliminar pabellón (HTTP 204 o 400 si tiene sectores asociados)
+DELETE {{baseUrl}}/pabellones/1

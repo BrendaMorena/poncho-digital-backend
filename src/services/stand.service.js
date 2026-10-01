@@ -1,22 +1,12 @@
 import prisma from "../config/prisma.js";
 import { crearError } from "../utils/errores.js";
 
-// CONSIDERAR PARA MOVER A UTILS
+// CONSIDERAR FUNCION ORDEN SUPERIOR
 // const verificarAtributoId = async (modelo, atributoId) => {
 //   const pabellon = await prisma[modelo].findUnique({
 //     where:{id_pabellon: pabellonId} aqui falta ver como pasar el nombre de la col, traerlo como parametro
 //   })
 // }
-
-const verificarPabellon = async (pabellonId) => {
-  const pabellon = await prisma.pabellon.findUnique({
-    where: { id_pabellon: pabellonId },
-  });
-
-  if (!pabellon) {
-    throw crearError(`No existe un pabellon con id ${pabellonId}`, 400);
-  }
-};
 
 const verificarSector = async (sectorId) => {
   const sector = await prisma.sector.findUnique({
@@ -24,8 +14,10 @@ const verificarSector = async (sectorId) => {
   });
 
   if (!sector) {
-    throw crearError(`No existe un sector con id ${sectorId}`, 400);
+    throw crearError(`No existe un sector con id ${sectorId}`, 404);
   }
+
+  return sector
 };
 
 const verificarStand = async (idStand) =>{
@@ -35,19 +27,17 @@ const verificarStand = async (idStand) =>{
   if (!standActual) {
     throw crearError(`No existe un Stand con id ${idStand}`, 404);
   }
+
+  return standActual
 }
 
 export const obtenerStands = async (criteriosConsulta) => {
-  const { estado, pabellonId, sectorId, rubroId, direccion } = criteriosConsulta
+  const { estado, sectorId, rubroId, ordenarPor, direccion, pagina, limite } = criteriosConsulta
   
   const where = {}
 
   if(estado !== undefined){
     where.estado = estado;
-  }
-
-  if(pabellonId !== undefined){
-    where.pabellonId = pabellonId
   }
 
   if(sectorId !== undefined){
@@ -60,21 +50,55 @@ export const obtenerStands = async (criteriosConsulta) => {
     }
   }
 
-  return await prisma.stand.findMany({
-    where, 
-    include: {
-      pabellon: true,
-      sector: true,
-      artesano: {
-        include: {
-          rubro: true
-        }
-      }
+
+  const orderBy = ordenarPor === "rubro"
+    ? [{ artesano: { rubro: { nombre: direccion } } }, { id_stand: "asc" }]
+    : [{ [ordenarPor]: direccion }, { id_stand: "asc" }];
+
+  const include = {
+    sector: {
+      include: { pabellon: true },
     },
-    orderBy: {
-      numero_stand: direccion
-    }
+    artesano: {
+      include: { rubro: true },
+    },
+  };
+
+  if(pagina && limite ){
+    const desplazamiento = (pagina - 1) * limite;
+    const [stands, total] = await prisma.$transaction([
+      prisma.stand.findMany({
+        where,
+        include,
+        orderBy,
+        skip: desplazamiento,
+        take: limite,
+      }),
+      prisma.stand.count({ where }),
+    ]);
+
+    return {
+      stands,
+      paginacion: {
+        pagina,
+        limite,
+        total,
+        totalPaginas: Math.ceil(total / limite),
+      },
+    };
+  }
+
+  const stands = await prisma.stand.findMany({
+    where,
+    include,
+    orderBy,
   });
+
+  return {
+    stands,
+    paginacion: null, //{ stands, total: stands.length }
+  };
+
 };
 
 export const obtenerStandPorId = async (standId) => {
@@ -83,19 +107,14 @@ export const obtenerStandPorId = async (standId) => {
       id_stand: standId,
     },
     include: {
-      pabellon: true,
-      sector: true,
-      artesano: true,
-    },
+      sector: { include: { pabellon: true } },
+      artesano: { include: { rubro: true } },
+    }
   });
 };
 
 export const crearStand = async (crearStandDTO) => {
-  const { numero_stand, coordenada, pabellonId, sectorId } = crearStandDTO;
-
-  if (pabellonId) {
-    await verificarPabellon(pabellonId);
-  }
+  const { numero_stand, coordenada, sectorId } = crearStandDTO;
 
   if (sectorId) {
     await verificarSector(sectorId);
@@ -105,13 +124,11 @@ export const crearStand = async (crearStandDTO) => {
     data: {
       numero_stand: numero_stand,
       coordenada: coordenada,
-      pabellonId: pabellonId ?? null,
-      sectorId: sectorId ?? null,
+      sectorId: sectorId,
       estado: "DISPONIBLE",
     },
     include: {
-      pabellon: true,
-      sector: true,
+      sector: { include: { pabellon: true } },
     },
   });
 };
@@ -123,23 +140,9 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
   // Clonamos el DTO para manipularlo de forma segura
   const data = { ...actualizarStandDTO };
 
-  const ubicacionPabellon = data.pabellonId !== undefined ? data.pabellonId : standActual.pabellonId;
-  const ubicacionSector   = data.sectorId !== undefined   ? data.sectorId   : standActual.sectorId;
-
-  if (!ubicacionPabellon && !ubicacionSector) {
-    throw crearError("El stand no puede quedar sin ubicación (debe tener un Pabellón o un Sector)", 400);
-  }
-
-  if (data.pabellonId) {
-    await verificarPabellon(data.pabellonId);
-    data.sectorId = null;
-  }
-
   if (data.sectorId) {
     await verificarSector(data.sectorId);
-    data.pabellonId = null
   }
-
 
   // Regla de negocio: si el stand se libera o entra en mantenimiento, desvinculamos el artesano
   if (data.estado === "DISPONIBLE" || data.estado === "MANTENIMIENTO") {
@@ -150,17 +153,16 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
     where: { id_stand: idStand },
     data: data,
     include: {
-      pabellon: true,
-      sector: true,
+      sector: { include: { pabellon: true } },
       artesano: true,
     },
   });
 };
 
 export const eliminarStand = async (standId) => {
-  await verificarStand(idStand)
+  const standActual = await verificarStand(standId)
 
-  if(standActual && standActual.artesanoId){
+  if(standActual.artesanoId){
     throw crearError("No se puede eliminar un Stand que tiene un artesano asignado", 400)
   }
 

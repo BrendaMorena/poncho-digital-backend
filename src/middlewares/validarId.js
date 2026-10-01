@@ -12,3 +12,4 @@ const validarId = elementoId => (req, res, next) => {
 };
 
 export const validarStandId = validarId("standId");
+export const validarPabellonId = validarId("pabellonId");

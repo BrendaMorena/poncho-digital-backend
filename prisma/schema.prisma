@@ -25,11 +25,8 @@ model Stand {
   artesanoId     Int? @unique
   artesano       Artesano? @relation(fields: [artesanoId], references: [id_artesano], onDelete: SetNull)
 
-  sectorId       Int ?
-  sector         Sector? @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
-
-  pabellonId     Int ?
-  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
+  sectorId       Int 
+  sector         Sector @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
 }
 
 model Artesano {
@@ -127,6 +124,7 @@ model Rubro {
 
   artesanos   Artesano[]
   busquedas   Busqueda[]
+  solicitudes   Solicitud[]
 }
 
 enum EstadoSolicitud {
@@ -147,6 +145,9 @@ model Solicitud {
 
   usuarioId                     Int @unique
   usuario                       Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
+
+  rubroId                       Int
+  rubro                         Rubro @relation(fields: [rubroId], references: [id_rubro])
 }
 
 model Localidad {
@@ -168,7 +169,7 @@ model Pabellon {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
-  stands                  Stand[]
+  sectores                Sector[]
   busquedas               Busqueda[]
 }
 
@@ -181,4 +182,7 @@ model Sector {
   updatedAt       DateTime @updatedAt
 
   stands          Stand[]
+
+  pabellonId     Int ?
+  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
 }
