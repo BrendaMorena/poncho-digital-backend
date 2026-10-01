@@ -25,11 +25,34 @@ model Stand {
   artesanoId     Int? @unique
   artesano       Artesano? @relation(fields: [artesanoId], references: [id_artesano], onDelete: SetNull)
 
-  sectorId       Int ?
-  sector         Sector? @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
+  sectorId       Int 
+  sector         Sector @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
+}
+
+model Sector {
+  id_sector       Int @id @default(autoincrement())
+  codigo_sector   String @unique
+  nombre_sector   String @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  stands          Stand[]
 
   pabellonId     Int ?
   pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
+}
+
+model Pabellon {
+  id_pabellon             Int @id @default(autoincrement())
+  nombre_pabellon         String @unique
+  descripcion_pabellon    String
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  sectores                Sector[]
+  busquedas               Busqueda[]
 }
 
 model Artesano {
@@ -127,6 +150,7 @@ model Rubro {
 
   artesanos   Artesano[]
   busquedas   Busqueda[]
+  solicitudes   Solicitud[]
 }
 
 enum EstadoSolicitud {
@@ -147,6 +171,9 @@ model Solicitud {
 
   usuarioId                     Int @unique
   usuario                       Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
+
+  rubroId                       Int
+  rubro                         Rubro @relation(fields: [rubroId], references: [id_rubro])
 }
 
 model Localidad {
@@ -160,25 +187,3 @@ model Localidad {
   busquedas         Busqueda[]
 }
 
-model Pabellon {
-  id_pabellon             Int @id @default(autoincrement())
-  nombre_pabellon         String @unique
-  descripcion_pabellon    String
-
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-
-  stands                  Stand[]
-  busquedas               Busqueda[]
-}
-
-model Sector {
-  id_sector       Int @id @default(autoincrement())
-  codigo_sector   String @unique
-  nombre_sector   String @unique
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  stands          Stand[]
-}

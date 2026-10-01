@@ -1,10 +1,10 @@
-@baseUrl = http://localhost:5500
+@baseUrl = http://localhost:3000
 
 ############################################################
 ### 1. CREACIÓN DE STANDS (POST /stands)
 ############################################################
 
-# Caso de Éxito 1: Stand adentro de un Pabellón (HTTP 201)
+# Caso de Éxito 1: Stand con sectorId obligatorio (HTTP 201)
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
@@ -14,12 +14,12 @@ Content-Type: application/json
     "lat": -28.4682,
     "lng": -65.7791
   },
-  "pabellonId": 1
+  "sectorId": 1
 }
 
 ###
 
-# Caso de Éxito 2: Stand en un Sector al aire libre (HTTP 201)
+# Caso de Éxito 2: Otro stand en sector 2 (HTTP 201)
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
@@ -34,7 +34,7 @@ Content-Type: application/json
 
 ###
 
-# Error 400: Mandar AMBOS a la vez (Pabellón y Sector)
+# Error 400: Falta el campo obligatorio sectorId
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
@@ -43,9 +43,7 @@ Content-Type: application/json
   "coordenada": {
     "lat": -28.4682,
     "lng": -65.7791
-  },
-  "pabellonId": 1,
-  "sectorId": 1
+  }
 }
 
 ###
@@ -60,12 +58,12 @@ Content-Type: application/json
     "lat": 150.5,
     "lng": -65.7791
   },
-  "pabellonId": 1
+  "sectorId": 1
 }
 
 ###
 
-# Error 404: Pabellón que no existe en la base de datos
+# Error 404: Sector que no existe en la base de datos
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
@@ -75,12 +73,12 @@ Content-Type: application/json
     "lat": -28.4682,
     "lng": -65.7791
   },
-  "pabellonId": 9999
+  "sectorId": 9999
 }
 
 ###
 
-# Error 409: Duplicado (Mandar el Caso 1 otra vez)
+# Error 409: Duplicado (Mismo numero_stand que ya existe)
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
@@ -90,75 +88,94 @@ Content-Type: application/json
     "lat": -28.4682,
     "lng": -65.7791
   },
-  "pabellonId": 1
+  "sectorId": 1
 }
 
 ###
 
 ############################################################
-### 2. CONSULTA Y FILTRADO DE STANDS (GET /stands)
+### 2. CONSULTA, FILTRADO Y PAGINACIÓN DE STANDS (GET /stands)
 ############################################################
 
 # ==========================================================
-# A. CASOS DE ÉXITO (HTTP 200)
+# A. CONSULTAS BÁSICAS Y FILTROS (HTTP 200)
 # ==========================================================
 
-# Caso 1: Obtener todos los stands sin ningún filtro 
+# Caso 1: Obtener todos los stands (sin paginación -> paginacion: null)
 GET {{baseUrl}}/stands/
 
 ###
 
-# Caso 2: Filtrar stands por Pabellón
-GET {{baseUrl}}/stands?pabellonId=1
+# Caso 2: Filtrar stands por Sector 1
+GET {{baseUrl}}/stands?sectorId=1
 
 ###
 
-# Caso 3: Filtrar stands por Sector 3 
-GET {{baseUrl}}/stands?sectorId=3
-
-###
-
-# Caso 4: Filtrar por Estado 'DISPONIBLE'
+# Caso 3: Filtrar por Estado 'DISPONIBLE'
 GET {{baseUrl}}/stands?estado=DISPONIBLE
 
 ###
 
-# Caso 5: Filtrar por Estado 'OCUPADO' 
+# Caso 4: Filtrar por Estado 'OCUPADO'
 GET {{baseUrl}}/stands?estado=OCUPADO
 
 ###
 
-# Caso 6: Filtrar por Estado 'MANTENIMIENTO'
+# Caso 5: Filtrar por Estado 'MANTENIMIENTO'
 GET {{baseUrl}}/stands?estado=MANTENIMIENTO
 
 ###
 
-# Caso 7: Filtro relacional por Rubro
+# Caso 6: Filtro relacional por Rubro
 GET {{baseUrl}}/stands?rubroId=1
 
 ###
 
-# Caso 8: Filtros combinados (Pabellón 1 + Estado DISPONIBLE)
-GET {{baseUrl}}/stands?pabellonId=1&estado=DISPONIBLE
+# Caso 7: Filtros combinados (Sector 1 + Estado DISPONIBLE)
+GET {{baseUrl}}/stands?sectorId=1&estado=DISPONIBLE
 
 ###
 
 # ==========================================================
-# B. CASOS SIN COINCIDENCIAS (HTTP 200 con arreglo vacío `[]`)
+# B. PAGINACIÓN Y ORDENAMIENTO (HTTP 200 con paginacion: {...})
 # ==========================================================
 
-# Caso 9: Pabellón válido que no tiene ningún stand asignado en la BD
-GET {{baseUrl}}/stands?pabellonId=999
+# Caso 8: Consulta paginada (Página 1, 5 por página)
+GET {{baseUrl}}/stands?pagina=1&limite=5
 
 ###
 
-# Caso 10: Combinación de filtros que no coincide con ningún stand
-GET {{baseUrl}}/stands?pabellonId=2&estado=OCUPADO
+# Caso 9: Ordenar por numero_stand descendente
+GET {{baseUrl}}/stands?ordenarPor=numero_stand&direccion=desc
+
+###
+
+# Caso 10: Ordenar por rubro ascendente
+GET {{baseUrl}}/stands?ordenarPor=rubro&direccion=asc
+
+###
+
+# Caso 11: Combinar Filtro + Ordenamiento + Paginación
+GET {{baseUrl}}/stands?estado=DISPONIBLE&ordenarPor=numero_stand&direccion=asc&pagina=1&limite=10
 
 ###
 
 # ==========================================================
-# C. CASOS DE ERROR DE VALIDACIÓN CON ZOD (HTTP 400 Bad Request)
+# C. CASOS SIN COINCIDENCIAS (HTTP 200 con stands vacíos `[]`)
+# ==========================================================
+
+# Caso 12: Sector válido sin ningún stand asignado
+GET {{baseUrl}}/stands?sectorId=999
+
+###
+
+# Caso 13: Combinación de filtros que no coincide con ningún stand
+GET {{baseUrl}}/stands?sectorId=2&estado=OCUPADO
+
+###
+
+# ==========================================================
+# D. CASOS DE ERROR DE VALIDACIÓN CON ZOD (HTTP 400 Bad Request)
 # ==========================================================
 
 # Error 400: Estado inexistente en el Enum
@@ -166,30 +183,37 @@ GET {{baseUrl}}/stands?estado=CERRADO
 
 ###
 
-# Error 400: pabellonId no numérico (letras)
-GET {{baseUrl}}/stands?pabellonId=central
+# Error 400: sectorId no numérico (letras)
+GET {{baseUrl}}/stands?sectorId=central
 
 ###
 
-# Error 400: pabellonId negativo o cero (violación de .positive())
-GET {{baseUrl}}/stands?pabellonId=-5
-
-###
-
-# Error 400: sectorId con formato inválido
-GET {{baseUrl}}/stands?sectorId=sectorUno
+# Error 400: sectorId negativo o cero (violación de .positive())
+GET {{baseUrl}}/stands?sectorId=-5
 
 ###
 
 # Error 400: rubroId decimal (violación de .int())
 GET {{baseUrl}}/stands?rubroId=2.5
 
+###
+
+# Error 400: Página inválida (0 o negativa)
+GET {{baseUrl}}/stands?pagina=0
+
+###
+
+# Error 400: Límite mayor al permitido (máximo 50)
+GET {{baseUrl}}/stands?limite=100
+
+###
 
 ############################################################
 ### 3. OBTENER STAND POR ID (GET /stands/:id)
 ############################################################
 
 # Caso de Éxito: Obtener un stand existente por ID (HTTP 200)
+# (Incluye sector -> pabellon y artesano -> rubro)
 GET {{baseUrl}}/stands/1
 
 ###
@@ -214,7 +238,7 @@ GET {{baseUrl}}/stands/0
 ############################################################
 
 # Caso de Éxito 1: Cambiar estado a MANTENIMIENTO (HTTP 200)
-# (Desvincula al artesano automáticamente)
+# (Desvincula al artesano automáticamente si tenía uno)
 PATCH {{baseUrl}}/stands/1
 Content-Type: application/json
 
@@ -247,6 +271,24 @@ Content-Type: application/json
 
 ###
 
+# Caso de Éxito 4: Mover de sector a un sectorId válido (HTTP 200)
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "sectorId": 2
+}
+
+###
+
+# Error 400: Body vacío (debe enviar al menos un campo)
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{}
+
+###
+
 # Error 400: Estado no perteneciente al Enum
 PATCH {{baseUrl}}/stands/1
 Content-Type: application/json
@@ -257,12 +299,12 @@ Content-Type: application/json
 
 ###
 
-# Error 400: ID de la URL con formato inválido
-PATCH {{baseUrl}}/stands/invalido
+# Error 404: SectorId inexistente al intentar actualizar
+PATCH {{baseUrl}}/stands/1
 Content-Type: application/json
 
 {
-  "estado": "DISPONIBLE"
+  "sectorId": 9999
 }
 
 ###
@@ -290,16 +332,23 @@ Content-Type: application/json
 ############################################################
 ### 5. ELIMINAR STAND (DELETE /stands/:id)
 ############################################################
+
 # Caso de Éxito: Eliminar un stand existente (HTTP 204 No Content)
-# (Usamos el stand 2 que creamos con EXT-10, para no borrar el 1)
 DELETE {{baseUrl}}/stands/2
+
 ###
+
 # Verificación posterior: Comprobar que el stand ya no existe (HTTP 404)
 GET {{baseUrl}}/stands/2
+
 ###
+
 # Error 404: Intentar eliminar un stand que no existe en la BD
 DELETE {{baseUrl}}/stands/9999
+
 ###
+
 # Error 400: ID de la URL con formato inválido (letras)
 DELETE {{baseUrl}}/stands/invalido
+
 ###
