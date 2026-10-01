@@ -12,3 +12,5 @@ const validarId = elementoId => (req, res, next) => {
 };
 
 export const validarStandId = validarId("standId")
+export const validarSolicitudId = validarId("solicitudId")
+export const validarLocalidadId = validarId("localidadId")
