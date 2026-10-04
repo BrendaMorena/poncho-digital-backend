@@ -15,3 +15,5 @@ export const validarStandId = validarId("standId");
 export const validarPabellonId = validarId("pabellonId");
 export const validarSectorId = validarId("sectorId");
 export const validarRolId = validarId("rolId");
+export const validarSolicitudId = validarId("solicitudId")
+export const validarLocalidadId = validarId("localidadId")
