@@ -1,13 +1,6 @@
 import prisma from "../config/prisma.js";
 import { crearError } from "../utils/errores.js";
 
-// CONSIDERAR FUNCION ORDEN SUPERIOR
-// const verificarAtributoId = async (modelo, atributoId) => {
-//   const pabellon = await prisma[modelo].findUnique({
-//     where:{id_pabellon: pabellonId} aqui falta ver como pasar el nombre de la col, traerlo como parametro
-//   })
-// }
-
 const verificarSector = async (sectorId) => {
   const sector = await prisma.sector.findUnique({
     where: { id_sector: sectorId },
@@ -20,7 +13,7 @@ const verificarSector = async (sectorId) => {
   return sector
 };
 
-const verificarStand = async (idStand) =>{
+const verificarStand = async (idStand) => {
   const standActual = await prisma.stand.findUnique({
     where: { id_stand: idStand },
   });
@@ -32,11 +25,15 @@ const verificarStand = async (idStand) =>{
 }
 
 export const obtenerStands = async (criteriosConsulta) => {
-  const { estado, sectorId, rubroId, ordenarPor, direccion, pagina, limite } = criteriosConsulta
+  const { numero_stand, estado, sectorId, rubroId, ordenarPor, direccion, pagina, limite } = criteriosConsulta
   
   const where = {}
 
-  if(estado !== undefined){
+  if (numero_stand !== undefined) {
+    where.numero_stand = numero_stand;
+  }
+
+  if (estado !== undefined) {
     where.estado = estado;
   }
 
@@ -46,10 +43,9 @@ export const obtenerStands = async (criteriosConsulta) => {
 
   if(rubroId !== undefined){
     where.artesano = {
-      rubroId: rubroId
-    }
+      rubroId: rubroId,
+    };
   }
-
 
   const orderBy = ordenarPor === "rubro"
     ? [{ artesano: { rubro: { nombre: direccion } } }, { id_stand: "asc" }]
@@ -64,7 +60,7 @@ export const obtenerStands = async (criteriosConsulta) => {
     },
   };
 
-  if(pagina && limite ){
+  if (pagina && limite) {
     const desplazamiento = (pagina - 1) * limite;
     const [stands, total] = await prisma.$transaction([
       prisma.stand.findMany({
@@ -133,11 +129,9 @@ export const crearStand = async (crearStandDTO) => {
   });
 };
 
-export const actualizarStand = async (idStand, actualizarStandDTO) => {  
-  
-  await verificarStand(idStand)
+export const actualizarStand = async (idStand, actualizarStandDTO) => {
+  await verificarStand(idStand);
 
-  // Clonamos el DTO para manipularlo de forma segura
   const data = { ...actualizarStandDTO };
 
   if (data.sectorId) {

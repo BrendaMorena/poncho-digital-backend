@@ -29,6 +29,32 @@ model Stand {
   sector         Sector @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
 }
 
+model Sector {
+  id_sector       Int @id @default(autoincrement())
+  codigo_sector   String @unique
+  nombre_sector   String @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  stands          Stand[]
+
+  pabellonId     Int ?
+  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
+}
+
+model Pabellon {
+  id_pabellon             Int @id @default(autoincrement())
+  nombre_pabellon         String @unique
+  descripcion_pabellon    String
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  sectores                Sector[]
+  busquedas               Busqueda[]
+}
+
 model Artesano {
   id_artesano    Int @id @default(autoincrement())
   descripcion    String
@@ -159,30 +185,4 @@ model Localidad {
 
   usuarios          Usuario[]
   busquedas         Busqueda[]
-}
-
-model Pabellon {
-  id_pabellon             Int @id @default(autoincrement())
-  nombre_pabellon         String @unique
-  descripcion_pabellon    String
-
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-
-  sectores                Sector[]
-  busquedas               Busqueda[]
-}
-
-model Sector {
-  id_sector       Int @id @default(autoincrement())
-  codigo_sector   String @unique
-  nombre_sector   String @unique
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  stands          Stand[]
-
-  pabellonId     Int ?
-  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
 }

@@ -6,10 +6,6 @@ const standBaseSchema = z.object({
     .trim()
     .min(1, "El número de Stand no puede estar vacío"),
 
-  estado: z.enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
-    errorMap: () => ({ message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO" })
-  }).optional(),
-
   coordenada: z.object(
     {
       lat: z
@@ -35,26 +31,35 @@ const standBaseSchema = z.object({
     .number({ invalid_type_error: "El sectorId debe ser un número" })
     .int("El sectorId debe ser un número entero")
     .positive("El sectorId debe ser un número positivo"),
-})
 
-export const standSchema = standBaseSchema
-.omit({ estado: true })
+  estado: z.enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
+    message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO",
+  }).optional(),
+});
+
+export const standSchema = standBaseSchema.omit({ estado: true });
 
 // Esquema para ACTUALIZAR (PATCH)
 export const actualizarStandSchema = standBaseSchema
-.partial()
-.refine(
+  .partial()
+  .refine(
     (data) => Object.keys(data).length > 0,
     {
       message: "Debe enviar al menos un campo para actualizar",
     }
-  )
+  );
 
 // Esquema para FILTRAR STANDS (GET /stands)
 export const consultarStandsSchema = z.object({
+  numero_stand: z
+    .string()
+    .trim()
+    .min(1, "El número de stand no puede estar vacío")
+    .optional(),
+
   estado: z
     .enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
-      message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO"
+      message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO",
     })
     .optional(),
 
@@ -79,15 +84,15 @@ export const consultarStandsSchema = z.object({
     .default("asc"),
 
   pagina: z
-    .coerce.number()
-    .int()
-    .positive()
+    .coerce.number({ message: "La página debe ser un número" })
+    .int("La página debe ser un número entero")
+    .positive("La página debe ser mayor a 0")
     .optional(),
 
   limite: z
-    .coerce.number()
-    .int()
-    .min(1)
-    .max(50)
+    .coerce.number({ message: "El límite debe ser un número" })
+    .int("El límite debe ser un número entero")
+    .min(1, "El límite mínimo es 1")
+    .max(50, "El límite máximo es 50")
     .optional(),
 });
