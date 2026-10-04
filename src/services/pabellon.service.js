@@ -31,40 +31,27 @@ export const obtenerPabellones = async (criteriosConsulta) => {
     sectores: true,
   };
 
-  if (pagina && limite) {
-    const desplazamiento = (pagina - 1) * limite;
+  const desplazamiento = (pagina - 1) * limite;
 
-    const [pabellones, total] = await prisma.$transaction([
-      prisma.pabellon.findMany({
-        where,
-        include,
-        orderBy,
-        skip: desplazamiento,
-        take: limite,
-      }),
-      prisma.pabellon.count({ where }),
-    ]);
-
-    return {
-      pabellones,
-      paginacion: {
-        pagina,
-        limite,
-        total,
-        totalPaginas: Math.ceil(total / limite),
-      },
-    };
-  }
-
-  const pabellones = await prisma.pabellon.findMany({
-    where,
-    include,
-    orderBy,
-  });
+  const [pabellones, total] = await prisma.$transaction([
+    prisma.pabellon.findMany({
+      where,
+      include,
+      orderBy,
+      skip: desplazamiento,
+      take: limite,
+    }),
+    prisma.pabellon.count({ where }),
+  ]);
 
   return {
     pabellones,
-    paginacion: null,
+    paginacion: {
+      pagina,
+      limite,
+      total,
+      totalPaginas: Math.ceil(total / limite),
+    },
   };
 };
 

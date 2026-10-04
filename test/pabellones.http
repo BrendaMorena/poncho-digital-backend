@@ -1,27 +1,27 @@
-@baseUrl = http://localhost:5500
+@baseUrl = http://localhost:3000
 
 ############################################################
 ### 1. CREACIÓN DE PABELLONES (POST /pabellones)
 ############################################################
 
-# Caso de Éxito: Crear Pabellón (HTTP 201)
+# Caso de Éxito: Crear Pabellón Institucional (presente en el plano)
 POST {{baseUrl}}/pabellones/
 Content-Type: application/json
 
 {
-  "nombre_pabellon": "Pabellón Artesanías Tradicionales",
-  "descripcion_pabellon": "Espacio dedicado a artesanos tradicionales del Poncho"
+  "nombre_pabellon": "Pabellón Institucional",
+  "descripcion_pabellon": "Stands del Gobierno, ministerios, municipios e instituciones culturales"
 }
 
 ###
 
-# Error 409: Nombre duplicado
+# Error 409: Nombre duplicado (Pabellón de Artesanías 1 ya existe)
 POST {{baseUrl}}/pabellones/
 Content-Type: application/json
 
 {
-  "nombre_pabellon": "Pabellón Artesanías Tradicionales",
-  "descripcion_pabellon": "Intentando duplicar el nombre"
+  "nombre_pabellon": "Pabellón de Artesanías 1",
+  "descripcion_pabellon": "Intentando duplicar"
 }
 
 ###
@@ -41,18 +41,28 @@ Content-Type: application/json
 ### 2. OBTENER PABELLONES (GET /pabellones)
 ############################################################
 
-# Obtener todos (sin paginación)
+# 1. Obtener todos los pabellones
 GET {{baseUrl}}/pabellones/
 
 ###
 
-# Obtener con paginación
-GET {{baseUrl}}/pabellones?pagina=1&limite=5
+# 2. Paginación: Página 1, 3 pabellones por página
+GET {{baseUrl}}/pabellones?pagina=1&limite=3
 
 ###
 
-# Filtrar por nombre y ordenar
-GET {{baseUrl}}/pabellones?nombre_pabellon=Tradicionales&ordenarPor=nombre_pabellon&direccion=asc
+# 3. Paginación: Página 2, 3 pabellones por página
+GET {{baseUrl}}/pabellones?pagina=2&limite=3
+
+###
+
+# 4. Buscar pabellones por nombre (ej: 'Artesanías')
+GET {{baseUrl}}/pabellones?nombre_pabellon=Artesanías
+
+###
+
+# 5. Buscar y ordenar alfabéticamente
+GET {{baseUrl}}/pabellones?ordenarPor=nombre_pabellon&direccion=asc
 
 ###
 
@@ -60,18 +70,23 @@ GET {{baseUrl}}/pabellones?nombre_pabellon=Tradicionales&ordenarPor=nombre_pabel
 ### 3. OBTENER PABELLÓN POR ID (GET /pabellones/:id)
 ############################################################
 
-# Caso de Éxito
+# Caso de Éxito: Pabellón 1 (Pabellón de Artesanías 1, trae sus sectores anidados)
 GET {{baseUrl}}/pabellones/1
 
 ###
 
+# Caso de Éxito: Pabellón 3 (Pabellón Turismo)
+GET {{baseUrl}}/pabellones/3
+
+###
+
 # Error 404: ID inexistente
-GET {{baseUrl}}/pabellones/99999
+GET {{baseUrl}}/pabellones/9999
 
 ###
 
 # Error 400: ID inválido
-GET {{baseUrl}}/pabellones/abc
+GET {{baseUrl}}/pabellones/invalido
 
 ###
 
@@ -79,21 +94,31 @@ GET {{baseUrl}}/pabellones/abc
 ### 4. ACTUALIZAR PABELLÓN (PATCH /pabellones/:id)
 ############################################################
 
-# Caso de Éxito
-PATCH {{baseUrl}}/pabellones/1
+# Caso de Éxito: Actualizar descripción del Pabellón de Alfombras (ID 4)
+PATCH {{baseUrl}}/pabellones/4
 Content-Type: application/json
 
 {
-  "descripcion_pabellon": "Nueva descripción actualizada para el pabellón"
+  "descripcion_pabellon": "Muestra en vivo del proceso de hilado y tejido de alfombras catamarqueñas"
 }
 
 ###
 
 # Error 400: Body vacío
-PATCH {{baseUrl}}/pabellones/1
+PATCH {{baseUrl}}/pabellones/4
 Content-Type: application/json
 
 {}
+
+###
+
+# Error 409: Cambiar nombre por uno que ya existe
+PATCH {{baseUrl}}/pabellones/4
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "Pabellón Turismo"
+}
 
 ###
 
@@ -101,5 +126,12 @@ Content-Type: application/json
 ### 5. ELIMINAR PABELLÓN (DELETE /pabellones/:id)
 ############################################################
 
-# Eliminar pabellón (HTTP 204 o 400 si tiene sectores asociados)
+# Error 400: Intentar eliminar un pabellón que TIENE sectores asignados
+# (Pabellón 1 tiene SEC-ART1 asignado; el sistema protege la integridad)
 DELETE {{baseUrl}}/pabellones/1
+
+###
+
+# Caso de Éxito: Eliminar un pabellón recién creado sin sectores
+# (Usa el ID que devuelva el POST de Pabellón Institucional)
+DELETE {{baseUrl}}/pabellones/6

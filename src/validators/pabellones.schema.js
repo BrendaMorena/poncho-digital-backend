@@ -42,15 +42,15 @@ export const consultarPabellonesSchema = z.object({
     .default("asc"),
 
   pagina: z
-    .coerce.number()
-    .int()
-    .positive()
-    .optional(),
+    .coerce.number({ message: "La página debe ser un número" })
+    .int("La página debe ser un número entero")
+    .positive("La página debe ser mayor a 0")
+    .default(1),
 
   limite: z
-    .coerce.number()
-    .int()
-    .min(1)
-    .max(50)
-    .optional(),
+    .coerce.number({ message: "El límite debe ser un número" })
+    .int("El límite debe ser un número entero")
+    .min(1, "El límite mínimo es 1")
+    .max(50, "El límite máximo es 50")
+    .default(10),
 });
