@@ -41,6 +41,9 @@ model Sector {
 
   pabellonId     Int ?
   pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
+
+  rubroId       Int?
+  rubro         Rubro?    @relation(fields: [rubroId], references: [id_rubro], onDelete: SetNull)
 }
 
 model Pabellon {
@@ -148,9 +151,10 @@ model Rubro {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  artesanos   Artesano[]
-  busquedas   Busqueda[]
+  artesanos     Artesano[]
+  busquedas     Busqueda[]
   solicitudes   Solicitud[]
+  sectores      Sector[]
 }
 
 enum EstadoSolicitud {
