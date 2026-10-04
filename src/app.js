@@ -1,15 +1,15 @@
 import express from 'express';
-import standsRoutes from './routes/stands.routes.js'
+import standsRoutes from './routes/stands.routes.js';
+import solicitudesRoutes from './routes/solicitudes.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
-
 
 const app = express();
 app.use(logger); // Middleware de registro de solicitudes
 app.use(express.json());
 
-const PORT = 5500;
+const PORT = process.env.PORT || 5500;
 
 app.get('/', (req, res) => {
     res.send('Bienvenido a la API REST de Poncho Digital');
@@ -22,12 +22,10 @@ app.get('/info', (req, res) => {
         autor: 'Aguero-Velez Lucas-Gabriel, Barrionuevo Brenda Morena, Reyna Sebastian-Raul',
         estado: 'En desarrollo'
     });
-} );
+});
 
-// app.use('/artesanos', artesanosRoutes);
-app.use('/stands', standsRoutes)
-//app.use('/', Routes);
-
+app.use('/stands', standsRoutes);
+app.use('/solicitudes', solicitudesRoutes);
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
 app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo

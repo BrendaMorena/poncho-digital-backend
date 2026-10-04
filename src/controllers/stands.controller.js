@@ -34,8 +34,7 @@ export const crearStand = async (req, res, next) => {
     const standLibre = await prisma.stand.create({
       data: {
         numero_stand: numero_stand,
-        coordenada: coordenada,
-        pabellonId: 
+        coordenada: coordenada 
       },
     });
 

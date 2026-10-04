@@ -1,74 +1,88 @@
 import { z } from "zod";
 
-const estadosValidos = [
+export const estadosValidos = [
   "APROBADO",
   "RECHAZADO",
   "PENDIENTE",
   "MODIFICACION_SOLICITADA",
 ];
 
+// (Postulación del Artesano)
 export const crearSolicitudSchema = z.object({
   descripcion_emprendimiento: z
+    .string({ required_error: "La descripción del emprendimiento es obligatoria" })
+    .trim()
+    .min(10, "La descripción del emprendimiento debe tener al menos 10 caracteres"),
+  usuarioId: z
+    .number({ required_error: "El usuarioId es obligatorio" })
+    .int()
+    .positive("El usuarioId debe ser un entero positivo"),
+  rubroId: z
+    .number({ required_error: "El rubroId es obligatorio" })
+    .int()
+    .positive("El rubroId debe ser un entero positivo"),
+});
+
+// APROBAR solicitud (Organizador)
+// Las observaciones son opcionales y standId es opcional (para asignación manual)
+export const aprobarSolicitudSchema = z.object({
+  observaciones_admin: z
     .string()
     .trim()
-    .min(10, "La descripción del emprendimiento es obligatoria y un minimo de 10 caracteres"),
-  usuarioId: z.number().int().positive("El usuarioId debe ser un entero positivo"),
-  rubroId: z.number().int().positive("El rubroId debe ser un entero positivo"),
-})
+    .min(1, "Las observaciones no pueden estar vacías")
+    .optional(),
+  standId: z
+    .number()
+    .int()
+    .positive("El standId debe ser un entero positivo")
+    .optional(),
+});
 
-//Administrar solicitudes para que se contemplen los 3 estados de solicitud
+// RECHAZAR solicitud (Organizador)
+// Las observaciones son obligatorias para fundamentar el rechazo
+export const rechazarSolicitudSchema = z.object({
+  observaciones_admin: z
+    .string({ required_error: "Debes incluir el motivo del rechazo en observaciones_admin" })
+    .trim()
+    .min(5, "El motivo del rechazo debe tener al menos 5 caracteres"),
+});
 
-export const aprobarSolicitudSchema = z.object({
-  observaciones_admin: z.string().trim().min(1).optional().nullable(),
-})
-//Contemplar borrar aprobarSolicitud y usar actualizar solosolicitud esquema, si el estadoes aprobado hacer un create y si es rechado devolderun obersevaciones admin ysi el estado es pendienteamodificacion devolver observaciones admin
+// SOLICITAR MODIFICACIÓN (Organizador)
+export const solicitarModificacionSchema = z.object({
+  observaciones_admin: z
+    .string({ required_error: "Debes detallar las modificaciones solicitadas en observaciones_admin" })
+    .trim()
+    .min(5, "Debes detallar qué modificaciones requiere la solicitud (mínimo 5 caracteres)"),
+});
 
-// Separar actualizarSolicitudSchema, un organizador va a querer buscar cambiar el estado y la observacionAdmi------ o agregar otro schema por si un artenaso quiere actualizar rubro o descripcion.
-export const actualizarSolicitudSchema = z.object({
-  descripcion_emprendimiento: z.string().trim().min(1).optional(),
-  estado_solicitud: z.enum(estadosValidos).optional(),
-  observaciones_admin: z.string().trim().min(1).optional().nullable(),
-  rubroId: z.number().int().positive().optional(),
-})
-
-/* 2. Para el ADMIN/ORGANIZADOR: unifica aprobar, rechazar y pedir modificación (PATCH /solicitudes/:id/estado)
-export const evaluarSolicitudSchema = z
+// ACTUALIZAR solicitud (El artesano corrige y responde a observaciones)
+export const actualizarSolicitudSchema = z
   .object({
-    estado_solicitud: z.enum(estadosEvaluacion),
-    observaciones_admin: z.string().trim().min(1).optional().nullable(),
+    descripcion_emprendimiento: z
+      .string()
+      .trim()
+      .min(10, "La descripción debe tener al menos 10 caracteres")
+      .optional(),
+    rubroId: z
+      .number()
+      .int()
+      .positive("El rubroId debe ser un entero positivo")
+      .optional(),
   })
   .refine(
-    (data) => {
-      // Si rechaza o pide modificación, obligamos a que mande observaciones_admin
-      if (
-        (data.estado_solicitud === "RECHAZADO" ||
-          data.estado_solicitud === "MODIFICACION_SOLICITADA") &&
-        !data.observaciones_admin
-      ) {
-        return false;
-      }
-      return true;
-    },
+    (data) => data.descripcion_emprendimiento !== undefined || data.rubroId !== undefined,
     {
-      message:
-        "Debes incluir observaciones_admin al rechazar o solicitar modificaciones",
-      path: ["observaciones_admin"],
+      message: "Debes proveer al menos un campo a modificar (descripcion_emprendimiento o rubroId)",
     }
   );
-
-// 3. Para el POSTULANTE: solo puede editar su descripción o rubro (PUT /solicitudes/:id)
-export const actualizarSolicitudUsuarioSchema = z.object({
-  descripcion_emprendimiento: z.string().trim().min(1).optional(),
-  rubroId: z.number().int().positive().optional(),
-}); */
 
 
 export const consultarSolicitudesSchema = z.object({
   estado_solicitud: z.enum(estadosValidos).optional(),
-  usuarioId: z.coerce.number().int().positive().optional(),
-  rubroId: z.coerce.number().int().positive().optional(),
-  ordenPor: z.enum(["id_solicitud", "estado_solicitud"]).default("id_solicitud"),
+  usuarioId: z.coerce.number().int().positive("El usuarioId debe ser un entero positivo").optional(),
+  rubroId: z.coerce.number().int().positive("El rubroId debe ser un entero positivo").optional(),
+  ordenPor: z.enum(["id_solicitud", "estado_solicitud", "createdAt"]).default("id_solicitud"),
   direccion: z.enum(["asc", "desc"]).default("desc"),
-  pagina: z.coerce.number().int().positive().default(1),
-  limite: z.coerce.number().int().min(1).max(50).default(10),
-})
+  pagina: z.coerce.number().int().positive("La página debe ser un número positivo").default(1),
+  limite: z.coerce.number().int().min(1).max(50, "El límite máximo es 50").default(10),
+});
