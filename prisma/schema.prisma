@@ -186,3 +186,5 @@ model Localidad {
   usuarios          Usuario[]
   busquedas         Busqueda[]
 }
+
+

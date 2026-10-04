@@ -1,0 +1,142 @@
+@baseUrl = http://localhost:3000
+
+############################################################
+### 1. CREACIÓN DE ROLES (POST /roles)
+############################################################
+
+# Caso de Éxito: Crear nuevo Rol Coordinador
+POST {{baseUrl}}/roles/
+Content-Type: application/json
+
+{
+  "nombre": "COORDINADOR",
+  "descripcion": "Coordinador general de sectores y logística del evento"
+}
+
+###
+
+# Error 409: Nombre duplicado (ADMINISTRADOR ya existe)
+POST {{baseUrl}}/roles/
+Content-Type: application/json
+
+{
+  "nombre": "ADMINISTRADOR",
+  "descripcion": "Intentando duplicar rol"
+}
+
+###
+
+# Error 400: Campos vacíos o faltantes
+POST {{baseUrl}}/roles/
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "descripcion": ""
+}
+
+###
+
+############################################################
+### 2. OBTENER ROLES CON PAGINACIÓN (GET /roles)
+############################################################
+
+# 1. Obtener todos los roles (con valores por defecto: pagina=1, limite=10)
+GET {{baseUrl}}/roles/
+
+###
+
+# 2. Paginación: Página 1, 2 roles por página
+GET {{baseUrl}}/roles?pagina=1&limite=2
+
+###
+
+# 3. Paginación: Página 2, 2 roles por página
+GET {{baseUrl}}/roles?pagina=2&limite=2
+
+###
+
+# 4. Buscar rol por coincidencia de nombre (ej: 'ADMIN')
+GET {{baseUrl}}/roles?nombre=ADMIN
+
+###
+
+# 5. Ordenar alfabéticamente descendente por nombre
+GET {{baseUrl}}/roles?ordenarPor=nombre&direccion=desc
+
+###
+
+# 6. Ordenar por fecha de creación ascendente
+GET {{baseUrl}}/roles?ordenarPor=createdAt&direccion=asc
+
+###
+
+############################################################
+### 3. OBTENER ROL POR ID (GET /roles/:id)
+############################################################
+
+# Caso de Éxito: Rol 1 (ADMINISTRADOR)
+GET {{baseUrl}}/roles/1
+
+###
+
+# Caso de Éxito: Rol 2 (ARTESANO, incluye usuarios asignados y conteo)
+GET {{baseUrl}}/roles/2
+
+###
+
+# Error 404: ID inexistente
+GET {{baseUrl}}/roles/9999
+
+###
+
+# Error 400: ID inválido
+GET {{baseUrl}}/roles/invalido
+
+###
+
+############################################################
+### 4. ACTUALIZAR ROL (PATCH /roles/:id)
+############################################################
+
+# Caso de Éxito: Actualizar descripción del rol
+PATCH {{baseUrl}}/roles/1
+Content-Type: application/json
+
+{
+  "descripcion": "Personal organizador y administrativo del Ministerio de Cultura y Turismo"
+}
+
+###
+
+# Error 400: Body vacío (debe enviar al menos un campo)
+PATCH {{baseUrl}}/roles/1
+Content-Type: application/json
+
+{}
+
+###
+
+# Error 409: Cambiar nombre por uno que ya existe en otro rol
+PATCH {{baseUrl}}/roles/1
+Content-Type: application/json
+
+{
+  "nombre": "ARTESANO"
+}
+
+###
+
+############################################################
+### 5. ELIMINAR ROL (DELETE /roles/:id)
+############################################################
+
+# Error 400: Intentar eliminar un rol que TIENE usuarios asignados
+# (El rol 2 'ARTESANO' tiene usuarios vinculados; el sistema protege la integridad)
+DELETE {{baseUrl}}/roles/2
+
+###
+
+# Caso de Éxito: Eliminar un rol recién creado sin usuarios asignados
+# (Reemplazar con el ID devuelto por el POST de COORDINADOR)
+DELETE {{baseUrl}}/roles/4

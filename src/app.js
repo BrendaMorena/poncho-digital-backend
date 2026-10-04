@@ -2,6 +2,7 @@ import express from 'express';
 import standsRoutes from './routes/stands.routes.js';
 import pabellonesRoutes from './routes/pabellones.routes.js';
 import sectoresRoutes from './routes/sectores.routes.js';
+import rolesRoutes from './routes/roles.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
@@ -31,6 +32,8 @@ app.get('/info', (req, res) => {
 app.use('/stands', standsRoutes);
 app.use('/pabellones', pabellonesRoutes);
 app.use('/sectores', sectoresRoutes);
+app.use('/roles', rolesRoutes);
+
 
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
