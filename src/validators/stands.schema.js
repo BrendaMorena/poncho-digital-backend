@@ -27,92 +27,72 @@ const standBaseSchema = z.object({
     { required_error: "El objeto coordenada es obligatorio" }
   ),
 
-  pabellonId: z
-    .number({ invalid_type_error: "El pabellonId debe ser un número" })
-    .int("El pabellonId debe ser un número entero")
-    .positive("El pabellonId debe ser un número positivo")
-    .nullable()
-    .optional(),
-
   sectorId: z
     .number({ invalid_type_error: "El sectorId debe ser un número" })
     .int("El sectorId debe ser un número entero")
-    .positive("El sectorId debe ser un número positivo")
-    .nullable()
-    .optional(),
+    .positive("El sectorId debe ser un número positivo"),
 
   estado: z.enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
-    errorMap: () => ({ message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO" })
+    message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO",
   }).optional(),
 });
 
-export const standSchema = standBaseSchema
-.omit({ estado: true })
-.refine(
-  (data) => Boolean(data.pabellonId) !== Boolean(data.sectorId),
-  {
-    message: "El stand debe pertenecer a un Pabellón O a un Sector, pero no a ambos ni a ninguno",
-    path: ["pabellonId"]
-  }  
-);
+export const standSchema = standBaseSchema.omit({ estado: true });
 
 // Esquema para ACTUALIZAR (PATCH)
 export const actualizarStandSchema = standBaseSchema
-.partial()
-.refine(
+  .partial()
+  .refine(
     (data) => Object.keys(data).length > 0,
     {
       message: "Debe enviar al menos un campo para actualizar",
     }
-  )
-.refine(
-  (data) => {
-    // Solo validamos la regla si el cliente envió AMBOS campos en la petición
-    if (data.pabellonId !== undefined && data.sectorId !== undefined) {
-      const tienePabellon = data.pabellonId !== null;
-      const tieneSector = data.sectorId !== null;
-      // No puede tener ambos asignados, ni tampoco quedar ambos en null
-      return Boolean(tienePabellon) !== Boolean(tieneSector);
-    }
-    return true; // Si mandó solo uno o ninguno, pasa la validación del schema
-  },
-  {
-    message: "El stand no puede pertenecer a un Pabellón y a un Sector al mismo tiempo, ni quedar sin ninguno",
-    path: ["pabellonId"],
-  }
-);
+  );
 
 // Esquema para FILTRAR STANDS (GET /stands)
 export const consultarStandsSchema = z.object({
+  numero_stand: z
+    .string()
+    .trim()
+    .min(1, "El número de stand no puede estar vacío")
+    .optional(),
+
   estado: z
     .enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
-      errorMap: () => ({ message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO" }),
+      message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO",
     })
     .optional(),
 
-  pabellonId: z.coerce
-    .number({ invalid_type_error: "El pabellonId debe ser un número" })
-    .int("El pabellonId debe ser un número entero")
-    .positive("El pabellonId debe ser positivo")
-    .optional(),
-
   sectorId: z.coerce
-    .number({ invalid_type_error: "El sectorId debe ser un número" })
+    .number({ message: "El sectorId debe ser un número" })
     .int("El sectorId debe ser un número entero")
     .positive("El sectorId debe ser positivo")
     .optional(),
 
   rubroId: z.coerce
-    .number({ invalid_type_error: "El rubroId debe ser un número" })
+    .number({ message: "El rubroId debe ser un número" })
     .int("El rubroId debe ser un número entero")
     .positive("El rubroId debe ser positivo")
     .optional(),
 
-  // ordenarPor: z
-  //   .enum(["numero_stand", "createdAt", "rubro"])
-  //   .default("numero_stand"),
+  ordenarPor: z
+    .enum(["numero_stand", "rubro"])
+    .default("numero_stand"),
 
   direccion: z
     .enum(["asc", "desc"])
     .default("asc"),
+
+  pagina: z
+    .coerce.number({ message: "La página debe ser un número" })
+    .int("La página debe ser un número entero")
+    .positive("La página debe ser mayor a 0")
+    .optional(),
+
+  limite: z
+    .coerce.number({ message: "El límite debe ser un número" })
+    .int("El límite debe ser un número entero")
+    .min(1, "El límite mínimo es 1")
+    .max(50, "El límite máximo es 50")
+    .optional(),
 });
