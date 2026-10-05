@@ -7,6 +7,7 @@ import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
 import {z} from 'zod';
+import { capturarBusqueda } from './middlewares/busquedas.middleware.js';
 
 z.config(z.locales.es())
 const app = express();
@@ -28,12 +29,14 @@ app.get('/info', (req, res) => {
     });
 } );
 
+app.use(capturarBusqueda)
+
 // app.use('/artesanos', artesanosRoutes);
 app.use('/stands', standsRoutes);
 app.use('/pabellones', pabellonesRoutes);
 app.use('/sectores', sectoresRoutes);
 app.use('/roles', rolesRoutes);
-
+app.use('/busquedas', busquedasRoutes);
 
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
