@@ -1,6 +1,7 @@
 import express from 'express';
 import standsRoutes from './routes/stands.routes.js';
 import solicitudesRoutes from './routes/solicitudes.routes.js';
+import localidadesRoutes from './routes/localidades.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
@@ -26,6 +27,7 @@ app.get('/info', (req, res) => {
 
 app.use('/stands', standsRoutes);
 app.use('/solicitudes', solicitudesRoutes);
+app.use('/localidades', localidadesRoutes);
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
 app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo

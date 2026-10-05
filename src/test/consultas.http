@@ -91,3 +91,39 @@ Content-Type: application/json
 
 ### 9. ELIMINAR SOLICITUD (Solo si aún no fue aprobada)
 DELETE {{baseUrl}}/solicitudes/1
+
+### ----------------------------------------------------
+### LOCALIDADES (CRUD Y PAGINACIÓN)
+### ----------------------------------------------------
+
+### 1. Crear una nueva localidad
+POST {{baseUrl}}/localidades
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Ancasti"
+}
+
+### 2. Listar todas las localidades con paginación por defecto
+GET {{baseUrl}}/localidades
+
+### 3. Listar localidades con paginación personalizada y ordenamiento
+GET {{baseUrl}}/localidades?pagina=1&limite=5&ordenPor=nombre_locacion&direccion=asc
+
+### 4. Buscar localidades por término (filtro insensible a mayúsculas/minúsculas)
+GET {{baseUrl}}/localidades?buscar=Valle&pagina=1&limite=10
+
+### 5. Obtener una localidad por su ID
+GET {{baseUrl}}/localidades/1
+
+### 6. Actualizar una localidad existente por su ID
+PUT {{baseUrl}}/localidades/1
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Valle Viejo"
+}
+
+### 7. Eliminar una localidad por su ID (solo si no tiene usuarios asociados)
+DELETE {{baseUrl}}/localidades/6
+
