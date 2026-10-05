@@ -13,6 +13,6 @@ router.get("/:id", organizadoresAdmins, validarUsuarioId, obtenerUsuarioPorId);
 router.post("/", soloAdmin, validarUsuarios(crearUsuarioSchema), crearUsuario);
 router.patch("/:id", validarUsuarioId, validarUsuarios(actualizarUsuarioSchema), actualizarUsuario); //para el futuro cuando ya tengamos login permitir que el uduairo pueda modificar su pass
 router.delete("/:id", soloAdmin, validarUsuarioId, eliminarUsuario)
-router.post("/artesanos", validarUsuarios(registroArtesanoSchema), registrarArtesano);
+router.post("/registro", validarUsuarios(registroArtesanoSchema), registrarArtesano);
 
 export default router;

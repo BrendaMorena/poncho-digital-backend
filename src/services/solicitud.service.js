@@ -2,8 +2,8 @@ import prisma from "../config/prisma.js";
 import { crearError } from "../utils/errores.js";
 
 
-const verificarUsuarioArtesano = async (usuarioId) => {
-  const usuario = await prisma.usuario.findUnique({
+const verificarUsuarioArtesano = async (usuarioId, tx = prisma) => {
+  const usuario = await tx.usuario.findUnique({
     where: { id_usuario: usuarioId },
     include: {
       rol: true,
@@ -39,8 +39,8 @@ const verificarUsuarioArtesano = async (usuarioId) => {
   }
 };
 
-const verificarRubro = async (rubroId) => {
-  const rubro = await prisma.rubro.findUnique({
+const verificarRubro = async (rubroId, tx = prisma) => {
+  const rubro = await tx.rubro.findUnique({
     where: { id_rubro: rubroId },
   });
 
@@ -49,13 +49,13 @@ const verificarRubro = async (rubroId) => {
   }
 };
 
-export const crearSolicitud = async (crearSolicitudDTO) => {
+export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
   const { descripcion_emprendimiento, usuarioId, rubroId } = crearSolicitudDTO;
 
-  await verificarUsuarioArtesano(usuarioId);
-  await verificarRubro(rubroId);
+  await verificarUsuarioArtesano(usuarioId, tx);
+  await verificarRubro(rubroId, tx);
 
-  return prisma.solicitud.create({
+  return tx.solicitud.create({
     data: {
       descripcion_emprendimiento,
       usuarioId,

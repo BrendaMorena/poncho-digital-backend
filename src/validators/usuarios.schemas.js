@@ -62,7 +62,7 @@ export const registroArtesanoSchema = crearUsuarioSchema.extend({
     required_error: "El rubro es obligatorio",
     invalid_type_error: "El rubro debe ser un número"
   }).int().positive(),
-  descripcion: z.string({
+  descripcion_emprendimiento: z.string({
     required_error: "La descripción del emprendimiento es obligatoria",
     invalid_type_error: "La descripción debe ser texto"
   }).min(10, "Por favor, cuéntanos un poco más de tu emprendimiento (mínimo 10 letras)"),
