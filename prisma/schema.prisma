@@ -58,9 +58,16 @@ model Pabellon {
   busquedas Busqueda[]
 }
 
+enum EstadoArtesano {
+  ACTIVO
+  INACTIVO
+  SUSPENDIDO
+}
+
 model Artesano {
   id_artesano Int    @id @default(autoincrement())
   descripcion String
+  estado      EstadoArtesano @default(ACTIVO)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -64,9 +64,11 @@ export const eliminarArtesano = async (req, res, next) => {
   try {
     const idArtesano = req.artesanoId; 
     
-    await artesanoService.eliminarArtesano(idArtesano);
-    
-    return res.status(200).json({ mensaje: "Artesano eliminado exitosamente" });
+    await prisma.artesano.update({
+      where: { id_artesano: idArtesano },
+      data: { estado: 'INACTIVO' } 
+    });
+    return res.status(200).json({ mensaje: "Artesano dado de baja exitosamente" });
   } catch (error) {
     return next(error);
   }

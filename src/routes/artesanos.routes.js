@@ -3,7 +3,7 @@ import { obtenerArtesanos, obtenerArtesanoPorId, crearArtesano, actualizarArtesa
 import { crearArtesanoSchema, actualizarArtesanoSchema } from "../validators/artesanos.schemas.js";
 import { validarArtesanos, validarConsultaArtesanos } from "../middlewares/artesanos.middleware.js";
 import { validarArtesanoId } from "../middlewares/validarId.js";
-
+import { verificarEstadoAprobado } from "../middlewares/verificarEstado.js";
 
 const router = express.Router();
 

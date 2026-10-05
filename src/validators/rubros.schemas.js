@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const crearRubrosSchema = z.object({
+export const crearRubroSchema = z.object({
   nombre: z.string().min(3).max(100),
   descripcion: z.string().max(255).optional()
 })
 
-export const actualizarRubrosSchema = z.object({
+export const actualizarRubroSchema = z.object({
   nombre: z.string().min(3).max(100).optional(),
   descripcion: z.string().max(255).optional()
 }).refine((datos) => Object.keys(datos).length > 0, {

@@ -44,14 +44,26 @@ export const actualizarUsuarioSchema = z.object({
   email: z.string().email().optional(),
   telefono: z.string().regex(/^[0-9]+$/, "El teléfono solo debe contener números").min(10, "El teléfono debe tener al menos 10 dígitos").optional(),
   localidadId: z.number().int().positive().optional()
-});refine((datos) => Object.keys(datos).length > 0, {
+}).refine((datos) => Object.keys(datos).length > 0, {
   // Este mensaje saldrá si envían un JSON vacío {}
   message: "Debe enviar por lo menos un dato válido para actualizar." 
 });
 
-export const consultaUsuariosSchema = z.object({
+export const consultarUsuarioSchema = z.object({
   page: z.number().int().positive().optional(),
   limit: z.number().int().positive().optional(),
   sortBy: z.enum(['createdAt', 'id_usuario', 'nombre', 'apellido']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional()
+});
+
+
+export const registroArtesanoSchema = crearUsuarioSchema.extend({
+  rubroId: z.number({
+    required_error: "El rubro es obligatorio",
+    invalid_type_error: "El rubro debe ser un número"
+  }).int().positive(),
+  descripcion: z.string({
+    required_error: "La descripción del emprendimiento es obligatoria",
+    invalid_type_error: "La descripción debe ser texto"
+  }).min(10, "Por favor, cuéntanos un poco más de tu emprendimiento (mínimo 10 letras)"),
 });

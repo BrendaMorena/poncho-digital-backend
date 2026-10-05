@@ -16,6 +16,7 @@ export const obtenerArtesanos = async (page, limit, sortBy, sortOrder) => {
     skip: skip,
     take: limit,
     orderBy: opcionesDeOrden[sortBy], 
+    where: { estado: 'ACTIVO' }, 
     include: {
       usuario: { 
         select: { 
@@ -30,7 +31,7 @@ export const obtenerArtesanos = async (page, limit, sortBy, sortOrder) => {
     }
   });
   
-  const totalArtesanos = await prisma.artesano.count();
+  const totalArtesanos = await prisma.artesano.count({ where: { estado: 'ACTIVO' }});
   
   return {
     paginacion: {
@@ -123,7 +124,9 @@ export const eliminarArtesano = async (id) => {
   });
   if (!artesano) throw crearError("El artesano no existe.", 404);
 
-  await prisma.usuario.delete({ 
-    where: { id_usuario: artesano.usuarioId } 
+  // BORRADO LÓGICO: Solo cambiamos el estado, no destruimos la cuenta ni sus productos
+  await prisma.artesano.update({ 
+    where: { id_artesano: id },
+    data: { estado: 'INACTIVO' }
   });
 };
