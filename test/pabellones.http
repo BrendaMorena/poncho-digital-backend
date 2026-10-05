@@ -1,0 +1,137 @@
+@baseUrl = http://localhost:3000
+
+############################################################
+### 1. CREACIÓN DE PABELLONES (POST /pabellones)
+############################################################
+
+# Caso de Éxito: Crear Pabellón Institucional (presente en el plano)
+POST {{baseUrl}}/pabellones/
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "Pabellón Institucional",
+  "descripcion_pabellon": "Stands del Gobierno, ministerios, municipios e instituciones culturales"
+}
+
+###
+
+# Error 409: Nombre duplicado (Pabellón de Artesanías 1 ya existe)
+POST {{baseUrl}}/pabellones/
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "Pabellón de Artesanías 1",
+  "descripcion_pabellon": "Intentando duplicar"
+}
+
+###
+
+# Error 400: Campos vacíos
+POST {{baseUrl}}/pabellones/
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "",
+  "descripcion_pabellon": ""
+}
+
+###
+
+############################################################
+### 2. OBTENER PABELLONES (GET /pabellones)
+############################################################
+
+# 1. Obtener todos los pabellones
+GET {{baseUrl}}/pabellones/
+
+###
+
+# 2. Paginación: Página 1, 3 pabellones por página
+GET {{baseUrl}}/pabellones?pagina=1&limite=3
+
+###
+
+# 3. Paginación: Página 2, 3 pabellones por página
+GET {{baseUrl}}/pabellones?pagina=2&limite=3
+
+###
+
+# 4. Buscar pabellones por nombre (ej: 'Artesanías')
+GET {{baseUrl}}/pabellones?nombre_pabellon=Artesanías
+
+###
+
+# 5. Buscar y ordenar alfabéticamente
+GET {{baseUrl}}/pabellones?ordenarPor=nombre_pabellon&direccion=asc
+
+###
+
+############################################################
+### 3. OBTENER PABELLÓN POR ID (GET /pabellones/:id)
+############################################################
+
+# Caso de Éxito: Pabellón 1 (Pabellón de Artesanías 1, trae sus sectores anidados)
+GET {{baseUrl}}/pabellones/1
+
+###
+
+# Caso de Éxito: Pabellón 3 (Pabellón Turismo)
+GET {{baseUrl}}/pabellones/3
+
+###
+
+# Error 404: ID inexistente
+GET {{baseUrl}}/pabellones/9999
+
+###
+
+# Error 400: ID inválido
+GET {{baseUrl}}/pabellones/invalido
+
+###
+
+############################################################
+### 4. ACTUALIZAR PABELLÓN (PATCH /pabellones/:id)
+############################################################
+
+# Caso de Éxito: Actualizar descripción del Pabellón de Alfombras (ID 4)
+PATCH {{baseUrl}}/pabellones/4
+Content-Type: application/json
+
+{
+  "descripcion_pabellon": "Muestra en vivo del proceso de hilado y tejido de alfombras catamarqueñas"
+}
+
+###
+
+# Error 400: Body vacío
+PATCH {{baseUrl}}/pabellones/4
+Content-Type: application/json
+
+{}
+
+###
+
+# Error 409: Cambiar nombre por uno que ya existe
+PATCH {{baseUrl}}/pabellones/4
+Content-Type: application/json
+
+{
+  "nombre_pabellon": "Pabellón Turismo"
+}
+
+###
+
+############################################################
+### 5. ELIMINAR PABELLÓN (DELETE /pabellones/:id)
+############################################################
+
+# Error 400: Intentar eliminar un pabellón que TIENE sectores asignados
+# (Pabellón 1 tiene SEC-ART1 asignado; el sistema protege la integridad)
+DELETE {{baseUrl}}/pabellones/1
+
+###
+
+# Caso de Éxito: Eliminar un pabellón recién creado sin sectores
+# (Usa el ID que devuelva el POST de Pabellón Institucional)
+DELETE {{baseUrl}}/pabellones/6

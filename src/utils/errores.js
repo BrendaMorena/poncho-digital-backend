@@ -1,7 +1,9 @@
-export const crearError = (mensaje, status, detalles = null) => { 
+export const crearError = (mensaje, status, detalles) => {
     const error = new Error(mensaje);
     error.status = status;
-    if (detalles) error.detalles = detalles;
+    if (detalles) {
+        error.detalles = detalles;
+    }
     return error;
 }
 

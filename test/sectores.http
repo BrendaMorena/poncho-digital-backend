@@ -1,0 +1,178 @@
+@baseUrl = http://localhost:3000
+
+############################################################
+### 1. CREACIÓN DE SECTORES (POST /sectores)
+############################################################
+
+# Caso de Éxito 1: Crear Sector adentro de un Pabellón (ej. Pabellón 3)
+POST {{baseUrl}}/sectores/
+Content-Type: application/json
+
+{
+  "codigo_sector": "SEC-NEW",
+  "nombre_sector": "Sector Nuevos Emprendedores",
+  "pabellonId": 3
+}
+
+###
+
+# Caso de Éxito 2: Crear Sector al aire libre (sin pabellón)
+POST {{baseUrl}}/sectores/
+Content-Type: application/json
+
+{
+  "codigo_sector": "SEC-LIBRE",
+  "nombre_sector": "Sector Escenario Libre",
+  "pabellonId": null
+}
+
+###
+
+# Error 409: Código o nombre duplicado (SEC-ART1 ya existe)
+POST {{baseUrl}}/sectores/
+Content-Type: application/json
+
+{
+  "codigo_sector": "ART1",
+  "nombre_sector": "Sector Repetido"
+}
+
+###
+
+# Error 404: PabellonId que no existe en la base de datos
+POST {{baseUrl}}/sectores/
+Content-Type: application/json
+
+{
+  "codigo_sector": "SEC-FAIL",
+  "nombre_sector": "Sector Con Pabellon Fantasma",
+  "pabellonId": 9999
+}
+
+###
+
+# Error 400: Campos vacíos
+POST {{baseUrl}}/sectores/
+Content-Type: application/json
+
+{
+  "codigo_sector": "",
+  "nombre_sector": ""
+}
+
+###
+
+############################################################
+### 2. OBTENER SECTORES (GET /sectores)
+############################################################
+
+# 1. Obtener todos los sectores (con paginación por defecto: página 1, límite 10)
+# Incluye el pabellón al que pertenece y sus stands
+GET {{baseUrl}}/sectores/
+
+###
+
+# 2. Paginación: Página 1, 4 sectores por página
+GET {{baseUrl}}/sectores?pagina=1&limite=4
+
+###
+
+# 3. Paginación: Página 2, 4 sectores por página
+GET {{baseUrl}}/sectores?pagina=2&limite=4
+
+###
+
+# 4. Filtrar por Pabellón 1 (Pabellón de Artesanías 1)
+GET {{baseUrl}}/sectores?pabellonId=1
+
+###
+
+# 5. Buscar sector por nombre (ej. 'Textil')
+GET {{baseUrl}}/sectores?nombre_sector=Textil
+
+###
+
+# 6. Buscar sector por código (ej. 'FOOD')
+GET {{baseUrl}}/sectores?codigo_sector=FOOD
+
+###
+
+# 7. Ordenar por código ascendente
+GET {{baseUrl}}/sectores?ordenarPor=codigo_sector&direccion=asc
+
+###
+
+############################################################
+### 3. OBTENER SECTOR POR ID (GET /sectores/:id)
+############################################################
+
+# Caso de Éxito: Sector 1 (Trae su pabellón y todos los stands anidados)
+GET {{baseUrl}}/sectores/1
+
+###
+
+# Error 404: ID inexistente
+GET {{baseUrl}}/sectores/9999
+
+###
+
+# Error 400: ID inválido
+GET {{baseUrl}}/sectores/abc
+
+###
+
+############################################################
+### 4. ACTUALIZAR SECTOR (PATCH /sectores/:id)
+############################################################
+
+# Caso de Éxito: Actualizar nombre y vincular a otro pabellón
+PATCH {{baseUrl}}/sectores/1
+Content-Type: application/json
+
+{
+  "nombre_sector": "Sector Tradicional, Hilados y Textiles"
+}
+
+###
+
+# Error 400: Body vacío
+PATCH {{baseUrl}}/sectores/1
+Content-Type: application/json
+
+{}
+
+###
+
+# Error 404: Sector inexistente
+PATCH {{baseUrl}}/sectores/9999
+Content-Type: application/json
+
+{
+  "nombre_sector": "Sector No Existe"
+}
+
+###
+
+# Error 404: Mover a un PabellonId que no existe
+PATCH {{baseUrl}}/sectores/1
+Content-Type: application/json
+
+{
+  "pabellonId": 9999
+}
+
+###
+
+############################################################
+### 5. ELIMINAR SECTOR (DELETE /sectores/:id)
+############################################################
+
+# Error 400: Intentar eliminar un sector que TIENE stands asociados
+# (Sector 1 tiene stands como ART1-1, ART1-2, etc. La API protege la integridad)
+DELETE {{baseUrl}}/sectores/1
+
+###
+
+# Caso de Éxito: Eliminar un sector recién creado sin stands
+# (Usa el ID que devuelva el POST de SEC-LIBRE o similar)
+DELETE {{baseUrl}}/sectores/10

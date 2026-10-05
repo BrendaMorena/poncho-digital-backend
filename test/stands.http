@@ -1,0 +1,346 @@
+@baseUrl = http://localhost:3000
+
+############################################################
+### 0. VERIFICAR SERVIDOR ACTIVO
+############################################################
+
+GET {{baseUrl}}/info
+
+###
+
+############################################################
+### 1. CREACIÓN DE STANDS (POST /stands)
+############################################################
+
+# Caso de Éxito 1: Crear nuevo Stand correlativo "50" en Sector 1 (ART1)
+# Visualmente en el frontend se mostrará como: ART1-50
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "50",
+  "coordenada": {
+    "lat": -28.4683,
+    "lng": -65.7792
+  },
+  "sectorId": 1
+}
+
+###
+
+# Caso de Éxito 2: Crear Stand correlativo "51" en Sector 9 (FOOD - Foodtrucks)
+# Visualmente en el frontend se mostrará como: FOOD-51
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "51",
+  "coordenada": {
+    "lat": -28.4719,
+    "lng": -65.7829
+  },
+  "sectorId": 9
+}
+
+###
+
+# Error 400: Falta el campo sectorId obligatorio
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "99",
+  "coordenada": {
+    "lat": -28.4682,
+    "lng": -65.7791
+  }
+}
+
+###
+
+# Error 400: Coordenada latitud fuera de rango permitido (-90 a 90)
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "101",
+  "coordenada": {
+    "lat": 150.0,
+    "lng": -65.7791
+  },
+  "sectorId": 1
+}
+
+###
+
+# Error 404: SectorId inexistente en la BD
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "102",
+  "coordenada": {
+    "lat": -28.4682,
+    "lng": -65.7791
+  },
+  "sectorId": 9999
+}
+
+###
+
+# Error 409: Duplicado (el stand '1' ya existe globalmente en la feria)
+POST {{baseUrl}}/stands/
+Content-Type: application/json
+
+{
+  "numero_stand": "1",
+  "coordenada": {
+    "lat": -28.4682,
+    "lng": -65.7791
+  },
+  "sectorId": 1
+}
+
+###
+
+############################################################
+### 2. CONSULTA, FILTRADO Y PAGINACIÓN (GET /stands)
+############################################################
+
+# ==========================================================
+# A. CONSULTAS BÁSICAS Y FILTROS
+# ==========================================================
+
+# 1. Obtener todos los stands del predio ferial (sin paginación)
+GET {{baseUrl}}/stands/
+
+###
+
+# 2. Filtrar stands del Sector 1 (ART1 - Pabellón de Artesanías 1)
+GET {{baseUrl}}/stands?sectorId=1
+
+###
+
+# 3. Filtrar stands del Sector 9 (FOOD - Zona Foodtrucks)
+GET {{baseUrl}}/stands?sectorId=9
+
+###
+
+# 4. Filtrar stands con estado 'DISPONIBLE'
+GET {{baseUrl}}/stands?estado=DISPONIBLE
+
+###
+
+# 5. Filtrar stands con estado 'OCUPADO'
+GET {{baseUrl}}/stands?estado=OCUPADO
+
+###
+
+# 6. Filtrar stands con estado 'MANTENIMIENTO'
+GET {{baseUrl}}/stands?estado=MANTENIMIENTO
+
+###
+
+# 7. Filtro relacional por Rubro del Artesano (ej: rubroId 1)
+GET {{baseUrl}}/stands?rubroId=1
+
+###
+
+# 8. Filtro combinado (Sector 1 + Estado DISPONIBLE)
+GET {{baseUrl}}/stands?sectorId=1&estado=DISPONIBLE
+
+###
+
+# ==========================================================
+# B. PAGINACIÓN Y ORDENAMIENTO
+# ==========================================================
+
+# 9. Paginación: Página 1, 5 stands por página
+GET {{baseUrl}}/stands?pagina=1&limite=5
+
+###
+
+# 10. Paginación: Página 2, 5 stands por página
+GET {{baseUrl}}/stands?pagina=2&limite=5
+
+###
+
+# 11. Ordenar por número de stand ascendente
+GET {{baseUrl}}/stands?ordenarPor=numero_stand&direccion=asc
+
+###
+
+# 12. Ordenar por número de stand descendente
+GET {{baseUrl}}/stands?ordenarPor=numero_stand&direccion=desc
+
+###
+
+# 13. Combinación completa: Filtro + Orden + Paginación
+GET {{baseUrl}}/stands?estado=DISPONIBLE&ordenarPor=numero_stand&direccion=asc&pagina=1&limite=5
+
+###
+
+# ==========================================================
+# C. VALIDACIONES DE ERROR (HTTP 400 Bad Request)
+# ==========================================================
+
+# Error 400: Estado no perteneciente al Enum
+GET {{baseUrl}}/stands?estado=RESERVADO
+
+###
+
+# Error 400: sectorId no numérico
+GET {{baseUrl}}/stands?sectorId=sectorUno
+
+###
+
+# Error 400: sectorId negativo
+GET {{baseUrl}}/stands?sectorId=-1
+
+###
+
+# Error 400: Pagina menor a 1
+GET {{baseUrl}}/stands?pagina=0
+
+###
+
+# Error 400: Limite superior a 50
+GET {{baseUrl}}/stands?limite=100
+
+###
+
+############################################################
+### 3. OBTENER STAND POR ID (GET /stands/:id)
+############################################################
+
+# Caso de Éxito: Stand 1 (Trae el Sector ART1 y su Pabellón 1)
+# En el frontend combinas: `${stand.sector.codigo_sector}-${stand.numero_stand}` -> ART1-1
+GET {{baseUrl}}/stands/1
+
+###
+
+# Error 404: Stand con ID inexistente
+GET {{baseUrl}}/stands/9999
+
+###
+
+# Error 400: ID con formato inválido (letras)
+GET {{baseUrl}}/stands/abc
+
+###
+
+# Error 400: ID negativo o cero
+GET {{baseUrl}}/stands/0
+
+###
+
+############################################################
+### 4. ACTUALIZAR STAND (PATCH /stands/:id)
+############################################################
+
+# Caso de Éxito 1: Poner stand 1 en MANTENIMIENTO
+# (Si tenía artesano, lo desvincula automáticamente)
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "estado": "MANTENIMIENTO"
+}
+
+###
+
+# Caso de Éxito 2: Volver a poner el stand 1 en DISPONIBLE
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "estado": "DISPONIBLE"
+}
+
+###
+
+# Caso de Éxito 3: Mover el stand 1 al Sector 3 (MAN - Manualidades)
+# Ahora pasará a mostrarse como: MAN-1
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "sectorId": 3
+}
+
+###
+
+# Caso de Éxito 4: Actualizar coordenadas GPS
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "coordenada": {
+    "lat": -28.4695,
+    "lng": -65.7805
+  }
+}
+
+###
+
+# Error 400: Body vacío (debe enviar al menos un campo)
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{}
+
+###
+
+# Error 404: Stand inexistente en la BD
+PATCH {{baseUrl}}/stands/9999
+Content-Type: application/json
+
+{
+  "estado": "DISPONIBLE"
+}
+
+###
+
+# Error 404: Mover a un SectorId que no existe
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "sectorId": 9999
+}
+
+###
+
+# Error 409: Cambiar el numero_stand por uno que ya está ocupado ('2')
+PATCH {{baseUrl}}/stands/1
+Content-Type: application/json
+
+{
+  "numero_stand": "2"
+}
+
+###
+
+############################################################
+### 5. ELIMINAR STAND (DELETE /stands/:id)
+############################################################
+
+# Caso de Éxito: Eliminar stand 3 ('3' en ART1, disponible y sin artesano)
+DELETE {{baseUrl}}/stands/3
+
+###
+
+# Verificación posterior: Comprobar que el stand 3 ya no existe (HTTP 404)
+GET {{baseUrl}}/stands/3
+
+###
+
+# Error 404: Intentar eliminar un stand inexistente
+DELETE {{baseUrl}}/stands/9999
+
+###
+
+# Error 400: ID inválido en la URL
+DELETE {{baseUrl}}/stands/invalido
+
+###
