@@ -1,5 +1,5 @@
 import { crearError, detallarErroresZod } from "../utils/errores.js";
-import { consultarArtesanosSchema } from "../validators/artesanos.schemas.js";
+import { consultarUsuariosSchema } from "../validators/usuarios.schemas.js";
 
 export const validarUsuarios = (schema) => (req, res, next) =>{
   const resultado = schema.safeParse(req.body);
@@ -18,7 +18,7 @@ export const validarUsuarios = (schema) => (req, res, next) =>{
 }
 
 export const validarConsultaUsuarios = (req, res, next) => {
-  const resultado = consultarArtesanosSchema.safeParse(req.query);  
+  const resultado = consultarUsuariosSchema.safeParse(req.query);  
   if (!resultado.success) {
     const detalles = detallarErroresZod(resultado.error);
     return next(

@@ -3,16 +3,16 @@ import { obtenerUsuarios, obtenerUsuarioPorId, crearArtesano, actualizarArtesano
 import { crearUsuarioSchema, actualizarUsuarioSchema } from "../validators/usuarios.schemas.js";
 import { validarUsuarios, validarConsultaUsuarios } from "../middlewares/usuarios.middleware.js";
 import { validarUsuarioId } from "../middlewares/validarId.js";
-
+import { soloAdmin, organizadoresAdmins } from "../middlewares/roles.middleware.js";
 
 const router = express.Router();
 
 
-router.get("/", validarConsultaUsuarios, obtenerUsuarios);
-router.get("/:id", validarUsuarioId, obtenerUsuarioPorId);
+router.get("/", organizadoresAdmins,validarConsultaUsuarios, obtenerUsuarios);
+router.get("/:id", organizadoresAdmins, validarUsuarioId, obtenerUsuarioPorId);
 router.post("/", validarUsuarios(crearUsuarioSchema), crearArtesano);
 router.patch("/:id", validarUsuarioId, validarUsuarios(actualizarUsuarioSchema), actualizarArtesano);
-router.delete("/:id", validarUsuarioId, eliminarArtesano)
+router.delete("/:id", soloAdmin, validarUsuarioId, eliminarArtesano)
 
 
 

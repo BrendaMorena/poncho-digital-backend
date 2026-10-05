@@ -1,4 +1,4 @@
-import {crearError} from "../utils/error.js";
+import {crearError} from "../utils/errores.js";
 import * as usuarioService from "../services/usuario.service.js";
 
 export const obtenerUsuarios = async (req, res, next) => {
@@ -24,6 +24,7 @@ export const obtenerUsuarioPorId = async (req, res, next) => {
   }
 };
 
+//crear admin
 export const crearUsuario = async (req, res, next) => {
   try{
     const crearUsuarioDTO = req.body;
