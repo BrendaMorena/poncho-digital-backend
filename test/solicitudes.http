@@ -1,0 +1,128 @@
+### Base URL
+@baseUrl = http://localhost:3000
+
+### 1. Info general del sistema
+GET {{baseUrl}}/info
+
+### ----------------------------------------------------
+### STANDS
+### ----------------------------------------------------
+
+### Listar todos los stands
+GET {{baseUrl}}/stands
+
+### Obtener stand por ID
+GET {{baseUrl}}/stands/1
+
+
+### ----------------------------------------------------
+### FLUJO DE SOLICITUDES (PONCHO DIGITAL)
+### ----------------------------------------------------
+
+### 1. El artesano crea su postulación (Estado inicial: PENDIENTE)
+POST {{baseUrl}}/solicitudes
+Content-Type: application/json
+
+{
+  "descripcion_emprendimiento": "Elaboración de ponchos catamarqueños artesanales tejidos en telar criollo",
+  "usuarioId": 1,
+  "rubroId": 1
+}
+
+### 2. El organizador consulta las solicitudes en estado PENDIENTE
+GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE
+
+### 3. El organizador consulta todas las solicitudes paginadas
+GET {{baseUrl}}/solicitudes?pagina=1&limite=10&ordenPor=id_solicitud&direccion=desc
+
+### 4. Consultar una solicitud específica por su ID
+GET {{baseUrl}}/solicitudes/1
+
+### 5. ACCIÓN DEL ORGANIZADOR: APROBAR
+###    - Requiere que la solicitud esté en estado PENDIENTE.
+###    - Pasa la solicitud a APROBADO.
+###    - Da de alta al artesano en la base de datos.
+###    - Asigna AUTOMÁTICAMENTE el primer stand disponible (estado OCUPADO).
+PATCH {{baseUrl}}/solicitudes/1/aprobar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Solicitud aprobada tras verificar documentación y calidad de productos"
+}
+
+### 5.b (Alternativa) APROBAR con asignación manual de stand (Override)
+PATCH {{baseUrl}}/solicitudes/1/aprobar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Asignado manualmente al sector principal",
+  "standId": 2
+}
+
+### 6. ACCIÓN DEL ORGANIZADOR: RECHAZAR
+###    - Requiere que la solicitud esté en PENDIENTE.
+###    - observaciones_admin es obligatorio para justificar el rechazo.
+PATCH {{baseUrl}}/solicitudes/1/rechazar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "No cumple con los requisitos mínimos de producción propia y artesanal"
+}
+
+### 7. ACCIÓN DEL ORGANIZADOR: SOLICITAR MODIFICACIÓN
+###    - Requiere que la solicitud esté en PENDIENTE.
+###    - observaciones_admin es obligatorio para detallar lo que debe corregir.
+PATCH {{baseUrl}}/solicitudes/1/solicitar-modificacion
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Por favor detallar con mayor precisión el origen de la materia prima y el tipo de telar utilizado"
+}
+
+### 8. ACCIÓN DEL ARTESANO: ACTUALIZAR SOLICITUD
+###    - Corrige su postulación.
+###    - Vuelve automáticamente a estado PENDIENTE para que el organizador la vuelva a evaluar.
+PUT {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{
+  "descripcion_emprendimiento": "Elaboración de ponchos catamarqueños de vicuña y oveja hilados a mano en telar criollo de cuatro cuadros"
+}
+
+### 9. ELIMINAR SOLICITUD (Solo si aún no fue aprobada)
+DELETE {{baseUrl}}/solicitudes/1
+
+### ----------------------------------------------------
+### LOCALIDADES (CRUD Y PAGINACIÓN)
+### ----------------------------------------------------
+
+### 1. Crear una nueva localidad
+POST {{baseUrl}}/localidades
+Content-Type: application/json
+
+{
+  "nombre_locacion": "San Fernando del Valle de Catamarca"
+}
+
+### 2. Listar todas las localidades con paginación por defecto
+GET {{baseUrl}}/localidades
+
+### 3. Listar localidades con paginación personalizada y ordenamiento
+GET {{baseUrl}}/localidades?pagina=1&limite=5&ordenPor=nombre_locacion&direccion=asc
+
+### 4. Buscar localidades por término (filtro insensible a mayúsculas/minúsculas)
+GET {{baseUrl}}/localidades?buscar=Valle&pagina=1&limite=10
+
+### 5. Obtener una localidad por su ID
+GET {{baseUrl}}/localidades/1
+
+### 6. Actualizar una localidad existente por su ID
+PUT {{baseUrl}}/localidades/1
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Valle Viejo"
+}
+
+### 7. Eliminar una localidad por su ID (solo si no tiene usuarios asociados)
+DELETE {{baseUrl}}/localidades/1

@@ -73,8 +73,6 @@ model Artesano {
 
   rubroId        Int 
   rubro          Rubro @relation(fields:[rubroId], references: [id_rubro])
-
-
 }
 
 model Busqueda {
@@ -127,7 +125,7 @@ model Usuario {
   apellido    String
   password    String
   email       String @unique 
-  telefono    String
+  telefono    String      
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

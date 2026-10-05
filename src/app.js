@@ -3,6 +3,7 @@ import standsRoutes from './routes/stands.routes.js';
 import pabellonesRoutes from './routes/pabellones.routes.js';
 import sectoresRoutes from './routes/sectores.routes.js';
 import rolesRoutes from './routes/roles.routes.js';
+import solicitudesRoutes from './routes/solicitudes.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
@@ -13,7 +14,7 @@ const app = express();
 app.use(logger); // Middleware de registro de solicitudes
 app.use(express.json());
 
-const PORT = process.env.PORT || 5500;
+const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
     res.send('Bienvenido a la API REST de Poncho Digital');
@@ -33,6 +34,7 @@ app.use('/stands', standsRoutes);
 app.use('/pabellones', pabellonesRoutes);
 app.use('/sectores', sectoresRoutes);
 app.use('/roles', rolesRoutes);
+app.use('/solicitudes', solicitudesRoutes);
 
 
 
