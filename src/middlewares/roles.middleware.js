@@ -1,10 +1,9 @@
-import { crearError } from "../utils/errores.js";
+import { crearError, detallarErroresZod } from "../utils/errores.js";
 import {
   rolSchema,
   actualizarRolSchema,
   consultarRolesSchema,
 } from "../validators/roles.schema.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
 
 export const soloAdmin = (req, res, next) => {
   // Asumimos que el sistema de login ya metió los datos en req.usuario

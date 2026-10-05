@@ -4,11 +4,6 @@ import express from 'express';
 import artesanosRoutes from './routes/artesanos.routes.js';
 import rubrosRoutes from './routes/rubros.routes.js';
 import usuariosRoutes from './routes/usuarios.routes.js';
-import { logger } from './middlewares/logger.js';
-import { manejadorErrores } from './middlewares/manejadorErrores.js';
-import { noEncontrado } from './middlewares/noEncontrado.js';
-import { z } from 'zod';
-
 import standsRoutes from './routes/stands.routes.js';
 import pabellonesRoutes from './routes/pabellones.routes.js';
 import sectoresRoutes from './routes/sectores.routes.js';
@@ -17,7 +12,7 @@ import solicitudesRoutes from './routes/solicitudes.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
-import {z} from 'zod';
+import { z } from 'zod';
 
 
 z.config(z.locales.es())
