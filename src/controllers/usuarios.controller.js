@@ -70,8 +70,8 @@ export const eliminarUsuario = async (req, res, next) => {
   try {
     const idUsuario = req.usuarioId;
     await usuarioService.eliminarUsuario(idUsuario);
-    return res.status(204).send(); 
-  } catch (error) {
+    return res.status(200).json({ mensaje: "Usuario eliminado exitosamente" });
+    } catch (error) {
     return next(error);
   }
 }

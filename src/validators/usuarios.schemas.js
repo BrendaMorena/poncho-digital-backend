@@ -20,6 +20,13 @@ export const crearUsuarioSchema = z.object({
   .regex(/[0-9]/, "La contraseña debe contener al menos un número")
   .regex(/[^a-zA-Z0-9]/, "La contraseña debe contener al menos un símbolo (ej: !@#$%&*)"),
 
+  dni: z.string({
+    required_error: "El DNI es obligatorio",
+    invalid_type_error: "El DNI debe ser un texto"
+  }).regex(/^[0-9]+$/, "El DNI solo debe contener números")
+  .min(7, "El DNI debe tener al menos 7 dígitos")
+  .max(8, "El DNI no debe superar los 8 dígitos"),
+
   email: z.string({
     required_error: "El email es obligatorio",
     invalid_type_error: "El email debe ser un texto"
@@ -41,6 +48,7 @@ export const crearUsuarioSchema = z.object({
 export const actualizarUsuarioSchema = z.object({
   nombre: z.string().min(3).optional(),
   apellido: z.string().min(3).optional(), 
+  dni: z.string().regex(/^[0-9]+$/, "El DNI solo debe contener números").min(7, "El DNI debe tener al menos 7 dígitos").max(8, "El DNI no debe superar los 8 dígitos").optional(),
   email: z.string().email().optional(),
   telefono: z.string().regex(/^[0-9]+$/, "El teléfono solo debe contener números").min(10, "El teléfono debe tener al menos 10 dígitos").optional(),
   localidadId: z.number().int().positive().optional()
@@ -50,10 +58,10 @@ export const actualizarUsuarioSchema = z.object({
 });
 
 export const consultarUsuarioSchema = z.object({
-  page: z.number().int().positive().optional(),
-  limit: z.number().int().positive().optional(),
-  sortBy: z.enum(['createdAt', 'id_usuario', 'nombre', 'apellido']).optional(),
-  sortOrder: z.enum(['asc', 'desc']).optional()
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(10),
+  sortBy: z.enum(['createdAt', 'id_usuario', 'nombre', 'apellido']).optional().default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc')
 });
 
 
@@ -62,6 +70,9 @@ export const registroArtesanoSchema = crearUsuarioSchema.extend({
     required_error: "El rubro es obligatorio",
     invalid_type_error: "El rubro debe ser un número"
   }).int().positive(),
+  nombre_emprendimiento: z.string({
+    invalid_type_error: "El nombre del emprendimiento debe ser texto"
+  }).min(3, "El nombre del emprendimiento debe tener al menos 3 caracteres").optional(),
   descripcion_emprendimiento: z.string({
     required_error: "La descripción del emprendimiento es obligatoria",
     invalid_type_error: "La descripción debe ser texto"

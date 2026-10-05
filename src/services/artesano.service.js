@@ -91,12 +91,13 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
     where: { id_artesano: id }
   });
   if (!artesano) throw crearError("El artesano no existe.", 404);
-  //Extraemos los datos del DTO
-  const { descripcion, rubroId, nombre, apellido, localidadId } = actualizarArtesanoDTO;
-  // Hacemos el update y lo retornamos
+  
+  const { nombre_emprendimiento, descripcion, rubroId, nombre, apellido, localidadId } = actualizarArtesanoDTO;
+  
   return await prisma.artesano.update({
     where: { id_artesano: id },
     data: {
+      ...(nombre_emprendimiento && { nombre_emprendimiento: nombre_emprendimiento.trim() }),
       ...(descripcion && { descripcion: descripcion.trim() }),
       ...(rubroId && { rubroId: rubroId }),
       ...((nombre || apellido || localidadId) && {

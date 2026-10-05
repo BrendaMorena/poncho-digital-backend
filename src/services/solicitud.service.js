@@ -50,13 +50,14 @@ const verificarRubro = async (rubroId, tx = prisma) => {
 };
 
 export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
-  const { descripcion_emprendimiento, usuarioId, rubroId } = crearSolicitudDTO;
+  const { nombre_emprendimiento, descripcion_emprendimiento, usuarioId, rubroId } = crearSolicitudDTO;
 
   await verificarUsuarioArtesano(usuarioId, tx);
   await verificarRubro(rubroId, tx);
 
   return tx.solicitud.create({
     data: {
+      nombre_emprendimiento,
       descripcion_emprendimiento,
       usuarioId,
       rubroId,
@@ -268,6 +269,7 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
 
     const nuevoArtesano = await tx.artesano.create({
       data: {
+        nombre_emprendimiento: solicitud.nombre_emprendimiento,
         descripcion: solicitud.descripcion_emprendimiento,
         usuarioId: solicitud.usuarioId,
         rubroId: solicitud.rubroId,
