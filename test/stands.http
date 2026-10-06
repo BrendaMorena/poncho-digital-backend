@@ -151,6 +151,22 @@ GET {{baseUrl}}/stands?sectorId=1&estado=DISPONIBLE
 
 ###
 
+# 8.1 Búsqueda libre por Nombre del Emprendimiento (ej: 'Belén')
+GET {{baseUrl}}/stands?termino_busqueda=Belén
+
+###
+
+# 8.2 Búsqueda libre por Nombre del Artesano (ej: 'Lucía')
+GET {{baseUrl}}/stands?termino_busqueda=Lucía
+
+###
+
+# 8.3 Búsqueda libre por Descripción de artesanía (ej: 'lana')
+GET {{baseUrl}}/stands?termino_busqueda=lana
+
+
+###
+
 # ==========================================================
 # B. PAGINACIÓN Y ORDENAMIENTO
 # ==========================================================

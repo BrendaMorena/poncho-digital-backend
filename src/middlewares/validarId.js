@@ -23,4 +23,4 @@ export const validarRolId = validarId("rolId");
 export const validarSolicitudId = validarId("solicitudId")
 export const validarLocalidadId = validarId("localidadId")
 export const validarUsuarioId = validarId("usuarioId");
-
+export const validarBusquedaId = validarId("busquedaId");

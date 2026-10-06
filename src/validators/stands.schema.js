@@ -51,6 +51,12 @@ export const actualizarStandSchema = standBaseSchema
 
 // Esquema para FILTRAR STANDS (GET /stands)
 export const consultarStandsSchema = z.object({
+  termino_busqueda: z
+    .string()
+    .trim()
+    .min(1, "El término de búsqueda no puede estar vacío")
+    .optional(),
+
   numero_stand: z
     .string()
     .trim()

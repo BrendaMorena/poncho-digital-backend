@@ -25,7 +25,7 @@ const verificarStand = async (idStand) => {
 }
 
 export const obtenerStands = async (criteriosConsulta) => {
-  const { numero_stand, estado, sectorId, rubroId, ordenarPor, direccion, pagina, limite } = criteriosConsulta
+  const { numero_stand, estado, sectorId, rubroId, termino_busqueda, ordenarPor, direccion, pagina, limite } = criteriosConsulta
   
   const where = {}
 
@@ -43,8 +43,34 @@ export const obtenerStands = async (criteriosConsulta) => {
 
   if(rubroId !== undefined){
     where.artesano = {
+      ...where.artesano,
       rubroId: rubroId,
     };
+  }
+
+  if (termino_busqueda) {
+    where.OR = [
+      { numero_stand: { contains: termino_busqueda, mode: "insensitive" } },
+      {
+        artesano: {
+          nombre_emprendimiento: { contains: termino_busqueda, mode: "insensitive" },
+        },
+      },
+      {
+        artesano: {
+          usuario: {
+            nombre: { contains: termino_busqueda, mode: "insensitive" },
+          },
+        },
+      },
+      {
+        artesano: {
+          usuario: {
+            apellido: { contains: termino_busqueda, mode: "insensitive" },
+          },
+        },
+      },
+    ];
   }
 
   const orderBy = ordenarPor === "rubro"
@@ -56,7 +82,16 @@ export const obtenerStands = async (criteriosConsulta) => {
       include: { pabellon: true },
     },
     artesano: {
-      include: { rubro: true },
+      select: {
+        id_artesano: true,
+        nombre_emprendimiento: true,
+        usuario: {
+          select: {
+            nombre: true,
+            apellido: true,
+          },
+        },
+      },
     },
   };
 
@@ -145,7 +180,7 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
 
   return prisma.stand.update({
     where: { id_stand: idStand },
-    data: data,
+    data,
     include: {
       sector: { include: { pabellon: true } },
       artesano: true,
