@@ -3,8 +3,8 @@ import * as usuarioService from "../services/usuario.service.js";
 
 export const obtenerUsuarios = async (req, res, next) => {
   try{
-    const { page, limit, sortBy, sortOrder } = req.consultaUsuarios;
-    const usuarios = await usuarioService.obtenerUsuarios(page, limit, sortBy, sortOrder);
+    const { pagina, limite, ordenarPor, direccion } = req.consultaUsuarios;
+    const usuarios = await usuarioService.obtenerUsuarios(pagina, limite, ordenarPor, direccion);
     return res.status(200).json(usuarios);
   }catch (error) {
     next(error);

@@ -5,7 +5,7 @@ import {
   crearStand,
   actualizarStand,
   eliminarStand
-} from "../controllers/stands.controller.js";
+} from "../controllers/stand.controller.js";
 import { validarStand, validarActualizarStand, validarConsultaStands } from "../middlewares/stands.middleware.js";
 import { validarStandId } from "../middlewares/validarId.js";
 import { capturarBusqueda } from "../middlewares/busquedas.middleware.js";

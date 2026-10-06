@@ -6,14 +6,16 @@
 GET http://localhost:5500/artesanos
 
 ### 1.1 Obtener todos (ÉXITO - Usando paginación y ordenamiento)
-GET http://localhost:5500/artesanos?page=1&limit=2&sortBy=nombre&sortOrder=desc
+GET http://localhost:5500/artesanos?pagina=1&limite=2&ordenarPor=nombre&direccion=desc
+###
+GET http://localhost:5500/artesanos?limite=2
 
 ###
 ### Obtener 3 artesanos ordenados por nombre (A - Z)
-GET http://localhost:5500/artesanos?limit=3&sortBy=nombre&sortOrder=asc
+GET http://localhost:5500/artesanos?limite=3&ordenarPor=nombre&direccion=asc
 
 ### 1.2 Obtener todos (ERROR ZOD - Página no es un número)
-GET http://localhost:5500/artesanos?page=hola&limit=5
+GET http://localhost:5500/artesanos?pagina=hola&limite=5
 
 ###
 GET http://localhost:5500/artesanos?page=pepito
@@ -108,18 +110,18 @@ POST http://localhost:5500/usuarios/registro
 Content-Type: application/json
 
 {
-  "nombre": "Luna",
-  "apellido": "Barrionuevo",
-  "email": "luna@example.com",
+  "nombre": "Maria",
+  "apellido": "Barrios",
+  "email": "mari@example.com",
   "password": "Password123!",
-  "telefono": "3834123456",
+  "telefono": "3834123457",
   "localidadId": 1,
-  "rubroId": 1,
+  "rubroId": 2,
   "descripcion_emprendimiento": "Taller de alfarería y cerámica tradicional"
 }
 
 ### 1. Obtener todos los usuarios (Con paginación opcional)
-GET http://localhost:5500/usuarios?page=1&limit=5
+GET http://localhost:5500/usuarios?pagina=1&limite=5
 
 
 ### 2. Obtener un usuario por su ID (Prueba con el ID que se acaba de crear, ej: 11)
@@ -150,3 +152,28 @@ Content-Type: application/json
 ### 5. Eliminar un usuario (DELETE)
 DELETE http://localhost:5500/usuarios/13
 Content-Type: application/json
+
+### 1. Registrar un nuevo Artesano (Mega-Formulario con DNI y Emprendimiento)
+POST http://localhost:5500/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Facundo",
+  "apellido": "Quiroga",
+  "dni": "39123456",
+  "email": "facundo.quiroga@example.com",
+  "password": "Password123!",
+  "telefono": "3834112233",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Tejidos del Norte",
+  "descripcion_emprendimiento": "Elaboración artesanal de ponchos catamarqueños y ruanas en telar criollo"
+}
+###
+PATCH http://localhost:5500/solicitudes/1/aprobar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Documentación en regla, productos de excelente calidad.",
+  "standId": 1
+}
