@@ -22,11 +22,14 @@ export const obtenerArtesanos = async (criterios = {}) => {
     createdAt:   { createdAt: direccion },
     id_artesano: { id_artesano: direccion }
   };
+
   const orderBy = [opcionesDeOrden[ordenarPor] || { id_artesano: "asc" }];
   if (ordenarPor !== "id_artesano") {
     orderBy.push({ id_artesano: "asc" }); 
   }
+
   const desplazamiento = (pagina - 1) * limite;
+
   const [artesanos, total] = await prisma.$transaction([
     prisma.artesano.findMany({
       where,
@@ -44,7 +47,6 @@ export const obtenerArtesanos = async (criterios = {}) => {
           } 
         },
         rubro: true,
-        
         stand: {
           select: {
             id_stand: true,
@@ -61,6 +63,7 @@ export const obtenerArtesanos = async (criterios = {}) => {
     }),
     prisma.artesano.count({ where }),
   ]);
+
   return {
     artesanos,
     paginacion: {
@@ -73,25 +76,36 @@ export const obtenerArtesanos = async (criterios = {}) => {
 };
 
 export const obtenerArtesanoPorId = async (id) => {
-return await prisma.artesano.findUnique({
+  return await prisma.artesano.findUnique({
     where: { id_artesano: id },
     include: {
       usuario: { 
         select: { 
           nombre: true,
-            apellido: true,
-            email: true,
-            localidad: true,
-            telefono: true
+          apellido: true,
+          email: true,
+          localidad: true,
+          telefono: true
+        }
+      },
+      rubro: true,
+      stand: {
+        select: {
+          id_stand: true,
+          numero_stand: true,
+          sector: {
+            select: {
+              nombre_sector: true,
+              pabellon: { select: { nombre_pabellon: true } }
+            }
           }
-        },
-        rubro: true 
+        }
       }
-    });
-}
+    }
+  });
+};
 
 export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
-  
   const artesano = await prisma.artesano.findUnique({
     where: { id_artesano: id }
   });
@@ -99,7 +113,6 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
   
   const { nombre_emprendimiento, descripcion, rubroId } = actualizarArtesanoDTO;
 
-  // Si se envió rubroId, validamos que exista
   if (rubroId) {
     const rubro = await prisma.rubro.findUnique({
       where: { id_rubro: rubroId }
@@ -121,17 +134,29 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
   });
 };
 
-
 export const eliminarArtesano = async (id) => {
- 
   const artesano = await prisma.artesano.findUnique({
-    where: { id_artesano: id }
+    where: { id_artesano: id },
+    include: { stand: true },
   });
   if (!artesano) throw crearError("El artesano no existe.", 404);
 
-  // Solo cambiamos el estado, no destruimos la cuenta ni sus productos
-  await prisma.artesano.update({ 
-    where: { id_artesano: id },
-    data: { estado: 'INACTIVO' }
+  return prisma.$transaction(async (tx) => {
+    // Si tenía stand asignado, lo liberamos para que vuelva a estar DISPONIBLE
+    if (artesano.stand) {
+      await tx.stand.update({
+        where: { id_stand: artesano.stand.id_stand },
+        data: {
+          artesanoId: null,
+          estado: "DISPONIBLE",
+        },
+      });
+    }
+
+    // BORRADO LÓGICO: Solo cambiamos el estado, no destruimos la cuenta ni sus productos
+    return await tx.artesano.update({ 
+      where: { id_artesano: id },
+      data: { estado: 'INACTIVO' }
+    });
   });
 };

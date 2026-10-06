@@ -102,3 +102,20 @@ export const consultarStandsSchema = z.object({
     .max(50, "El límite máximo es 50")
     .optional(),
 });
+
+// Esquema para ASIGNAR STAND (POST /stands/asignar)
+export const asignarStandSchema = z.object({
+  artesanoId: z.coerce
+    .number({
+      required_error: "El artesanoId es obligatorio",
+      invalid_type_error: "El artesanoId debe ser un número",
+    })
+    .int("El artesanoId debe ser un número entero")
+    .positive("El artesanoId debe ser un número positivo"),
+
+  standId: z.coerce
+    .number({ invalid_type_error: "El standId debe ser un número" })
+    .int("El standId debe ser un número entero")
+    .positive("El standId debe ser un número positivo")
+    .optional(),
+});
