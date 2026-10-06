@@ -56,11 +56,12 @@ model Pabellon {
 }
 
 model Artesano {
-  id_artesano    Int @id @default(autoincrement())
-  descripcion    String
+  id_artesano           Int      @id @default(autoincrement())
+  nombre_emprendimiento String?
+  descripcion           String
   
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   stand          Stand?
   productos      Producto[]

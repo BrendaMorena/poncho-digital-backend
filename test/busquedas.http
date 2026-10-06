@@ -1,0 +1,151 @@
+@baseUrl = http://localhost:3000
+
+############################################################
+### 1. CREACIÓN MANUAL DE BÚSQUEDAS (POST /busquedas)
+############################################################
+
+# Caso de Éxito 1: Búsqueda con término libre y rubro
+POST {{baseUrl}}/busquedas
+Content-Type: application/json
+
+{
+  "termino_busqueda": "Poncho de Vicuña",
+  "rubroId": 2
+}
+
+###
+
+# Caso de Éxito 2: Búsqueda filtrada por pabellón y localidad
+POST {{baseUrl}}/busquedas
+Content-Type: application/json
+
+{
+  "pabellonId": 1,
+  "localidadId": 1
+}
+
+###
+
+# Caso de Éxito 3: Búsqueda solo por término
+POST {{baseUrl}}/busquedas
+Content-Type: application/json
+
+{
+  "termino_busqueda": "Cerámica negra"
+}
+
+###
+
+# Error 400: Body vacío (el refine exige al menos un criterio)
+POST {{baseUrl}}/busquedas
+Content-Type: application/json
+
+{}
+
+###
+
+# Error 400: ID inválido (negativo o no entero)
+POST {{baseUrl}}/busquedas
+Content-Type: application/json
+
+{
+  "rubroId": -5
+}
+
+###
+
+############################################################
+### 2. CONSULTAR BÚSQUEDAS CON PAGINACIÓN (GET /busquedas)
+############################################################
+
+# 1. Obtener historial (con valores por defecto: pagina=1, limite=10, direccion=desc)
+GET {{baseUrl}}/busquedas
+
+###
+
+# 2. Paginación: Página 1, 2 registros por página
+GET {{baseUrl}}/busquedas?pagina=1&limite=2
+
+###
+
+# 3. Paginación: Página 2, 2 registros por página
+GET {{baseUrl}}/busquedas?pagina=2&limite=2
+
+###
+
+# 4. Filtrar por coincidencia de término (ej: 'poncho')
+GET {{baseUrl}}/busquedas?termino_busqueda=poncho
+
+###
+
+# 5. Filtrar por rubro específico
+GET {{baseUrl}}/busquedas?rubroId=2
+
+###
+
+# 6. Filtrar por rango de fechas (desde / hasta en formato ISO YYYY-MM-DD)
+GET {{baseUrl}}/busquedas?fechaDesde=2026-01-01&fechaHasta=2026-12-31
+
+###
+
+# 7. Ordenar alfabéticamente ascendente por término de búsqueda
+GET {{baseUrl}}/busquedas?ordenarPor=termino_busqueda&direccion=asc
+
+###
+
+# Error 400: Parámetros inválidos (límite mayor a 50 o página inválida)
+GET {{baseUrl}}/busquedas?pagina=-1&limite=999
+
+###
+
+############################################################
+### 3. OBTENER BÚSQUEDA POR ID (GET /busquedas/:id)
+############################################################
+
+# Caso de Éxito: Obtener búsqueda ID 1
+GET {{baseUrl}}/busquedas/1
+
+###
+
+# Error 404: Búsqueda inexistente
+GET {{baseUrl}}/busquedas/99999
+
+###
+
+# Error 400: ID inválido (no es entero positivo)
+GET {{baseUrl}}/busquedas/invalido
+
+###
+
+############################################################
+### 4. ELIMINAR BÚSQUEDA (DELETE /busquedas/:id)
+############################################################
+
+# Error 404: Intentar eliminar búsqueda inexistente
+DELETE {{baseUrl}}/busquedas/99999
+
+###
+
+# Error 400: ID inválido
+DELETE {{baseUrl}}/busquedas/abc
+
+###
+
+# Caso de Éxito: Eliminar búsqueda existente
+# (Reemplazar con el ID creado en el POST anterior)
+DELETE {{baseUrl}}/busquedas/1
+
+###
+
+############################################################
+### 5. PROBAR LA TELEMETRÍA AUTOMÁTICA (capturarBusqueda)
+############################################################
+
+# Al consultar stands con un término o filtro, el middleware
+# 'capturarBusqueda' debe registrar silenciosamente en /busquedas
+GET {{baseUrl}}/stands?termino_busqueda=poncho
+
+###
+
+# Verificar que la búsqueda anterior se registró en el historial:
+GET {{baseUrl}}/busquedas?limite=1

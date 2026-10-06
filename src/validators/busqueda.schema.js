@@ -2,12 +2,15 @@ import { z } from "zod";
 
 const busquedaBaseSchema = z.object({
   termino_busqueda: z
-  .string()
-  .trim()
-  .min(1)
-  .transform((val) => val.toLowerCase())
-  .optional()
-  .nullable(),
+    .string()
+    .trim()
+    .min(1)
+    .transform((val) => {
+      const texto = val.toLowerCase();
+      return texto === "null" || texto === "undefined" ? null : texto;
+    })
+    .optional()
+    .nullable(),
 
   rubroId: z
   .coerce.number()

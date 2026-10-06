@@ -35,7 +35,7 @@ export const validarConsultaBusqueda = (req, res, next) => {
 };
 
 
-export const capturarBusqueda = async (req, res, next) => {
+export const capturarBusqueda = (req, res, next) => {
   if(req.method !== "GET") return next()
   res.on('finish', async ()=>{
     try {

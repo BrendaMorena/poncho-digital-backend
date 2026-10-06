@@ -3,11 +3,11 @@ import standsRoutes from './routes/stands.routes.js';
 import pabellonesRoutes from './routes/pabellones.routes.js';
 import sectoresRoutes from './routes/sectores.routes.js';
 import rolesRoutes from './routes/roles.routes.js';
+import busquedasRoutes from './routes/busquedas.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
 import {z} from 'zod';
-import { capturarBusqueda } from './middlewares/busquedas.middleware.js';
 
 z.config(z.locales.es())
 const app = express();
@@ -28,8 +28,6 @@ app.get('/info', (req, res) => {
         estado: 'En desarrollo'
     });
 } );
-
-app.use(capturarBusqueda)
 
 // app.use('/artesanos', artesanosRoutes);
 app.use('/stands', standsRoutes);
