@@ -41,8 +41,7 @@ GET {{baseUrl}}/solicitudes/1
 ### 5. ACCIÓN DEL ORGANIZADOR: APROBAR
 ###    - Requiere que la solicitud esté en estado PENDIENTE.
 ###    - Pasa la solicitud a APROBADO.
-###    - Da de alta al artesano en la base de datos.
-###    - Asigna AUTOMÁTICAMENTE el primer stand disponible (estado OCUPADO).
+###    - Da de alta al artesano en la base de datos como ACTIVO (sin requerir stand).
 PATCH {{baseUrl}}/solicitudes/1/aprobar
 Content-Type: application/json
 
@@ -50,14 +49,8 @@ Content-Type: application/json
   "observaciones_admin": "Solicitud aprobada tras verificar documentación y calidad de productos"
 }
 
-### 5.b (Alternativa) APROBAR con asignación manual de stand (Override)
-PATCH {{baseUrl}}/solicitudes/1/aprobar
-Content-Type: application/json
+### (Paso 2 posterior: Para asignarle un stand al nuevo artesano aprobado, usar POST /stands/asignar)
 
-{
-  "observaciones_admin": "Asignado manualmente al sector principal",
-  "standId": 2
-}
 
 ### 6. ACCIÓN DEL ORGANIZADOR: RECHAZAR
 ###    - Requiere que la solicitud esté en PENDIENTE.

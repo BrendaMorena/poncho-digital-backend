@@ -71,3 +71,28 @@ export const eliminarStand = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const asignarStand = async (req, res, next) => {
+  try {
+    const resultado = await standService.asignarArtesanoAStand(req.body);
+    return res.status(200).json(resultado);
+  } catch (error) {
+    if (error.code === "P2002") {
+      return next(
+        crearError("Conflicto de asignación: el stand o el artesano ya fueron ocupados", 409)
+      );
+    }
+    return next(error);
+  }
+};
+
+export const liberarStand = async (req, res, next) => {
+  try {
+    const idStand = req.standId;
+    const resultado = await standService.liberarStand(idStand);
+    return res.status(200).json(resultado);
+  } catch (error) {
+    return next(error);
+  }
+};
+

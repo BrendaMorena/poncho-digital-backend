@@ -60,7 +60,7 @@ export const obtenerSectores = async (criteriosConsulta) => {
 
   const include = {
     pabellon: true,
-    stands: true,
+    rubro: true,
   };
 
   const desplazamiento = (pagina - 1) * limite;
@@ -94,6 +94,7 @@ export const obtenerSectorPorId = async (sectorId) => {
     },
     include: {
       pabellon: true,
+      rubro: true,
       stands: true,
     },
   });
@@ -114,6 +115,7 @@ export const crearSector = async (crearSectorDTO) => {
     },
     include: {
       pabellon: true,
+      rubro: true,
     },
   });
 };
@@ -132,10 +134,11 @@ export const actualizarSector = async (sectorId, actualizarSectorDTO) => {
     data,
     include: {
       pabellon: true,
-      stands: true,
+      rubro: true,
     },
   });
 };
+
 
 export const eliminarSector = async (sectorId) => {
   await verificarSector(sectorId);

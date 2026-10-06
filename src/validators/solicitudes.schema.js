@@ -24,19 +24,15 @@ export const crearSolicitudSchema = z.object({
 });
 
 // APROBAR solicitud (Organizador)
-// Las observaciones son opcionales y standId es opcional (para asignación manual)
+// Las observaciones son opcionales
 export const aprobarSolicitudSchema = z.object({
   observaciones_admin: z
     .string()
     .trim()
     .min(1, "Las observaciones no pueden estar vacías")
     .optional(),
-  standId: z
-    .number()
-    .int()
-    .positive("El standId debe ser un entero positivo")
-    .optional(),
 });
+
 
 // RECHAZAR solicitud (Organizador)
 // Las observaciones son obligatorias para fundamentar el rechazo

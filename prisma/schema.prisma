@@ -41,7 +41,11 @@ model Sector {
 
   pabellonId     Int ?
   pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
+
+  rubroId        Int?
+  rubro          Rubro?    @relation(fields: [rubroId], references: [id_rubro], onDelete: SetNull)
 }
+
 
 model Pabellon {
   id_pabellon             Int @id @default(autoincrement())
@@ -158,7 +162,9 @@ model Rubro {
   artesanos   Artesano[]
   busquedas   Busqueda[]
   solicitudes   Solicitud[]
+  sectores    Sector[]
 }
+
 
 enum EstadoSolicitud {
   APROBADO
