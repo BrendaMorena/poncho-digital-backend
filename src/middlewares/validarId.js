@@ -13,9 +13,6 @@ const validarId = elementoId => (req, res, next) => {
 export const validarArtesanoId = validarId("artesanoId");
 //export const validarStandId = validarId("standId")
 export const validarRubroId = validarId("rubroId");
-
- 
-
 export const validarStandId = validarId("standId");
 export const validarPabellonId = validarId("pabellonId");
 export const validarSectorId = validarId("sectorId");
@@ -24,3 +21,4 @@ export const validarSolicitudId = validarId("solicitudId")
 export const validarLocalidadId = validarId("localidadId")
 export const validarUsuarioId = validarId("usuarioId");
 export const validarBusquedaId = validarId("busquedaId");
+export const validarProductoId = validarId("productoId");

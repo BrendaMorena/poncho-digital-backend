@@ -27,7 +27,7 @@ router.post("/", validarCreacionSolicitud, crearSolicitud);
 router.patch("/:id/aprobar", validarSolicitudId, validarAprobacionSolicitud, aprobarSolicitud);
 router.patch("/:id/rechazar", validarSolicitudId, validarRechazoSolicitud, rechazarSolicitud);
 router.patch("/:id/solicitar-modificacion",validarSolicitudId,validarSolicitudModificacion,solicitarModificacion);
-router.put("/:id", validarSolicitudId, validarActualizacionSolicitud, actualizarSolicitud);
+router.patch("/:id", validarSolicitudId, validarActualizacionSolicitud, actualizarSolicitud);
 router.delete("/:id", validarSolicitudId, eliminarSolicitud);
 
 export default router;
