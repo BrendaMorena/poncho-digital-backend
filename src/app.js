@@ -11,13 +11,13 @@ import rolesRoutes from './routes/roles.routes.js';
 import solicitudesRoutes from './routes/solicitudes.routes.js';
 import busquedasRoutes from './routes/busquedas.routes.js';
 import localidadesRoutes from './routes/localidades.routes.js';
-import { logger } from './middlewares/logger.js';
+import productosRoutes from "./routes/productos.routes.js";
+import { logger } from './middlewares/logger.js'
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
 import { z } from 'zod';
 
-
-z.config(z.locales.es())
+z.config(z.locales.es());
 const app = express();
 app.use(logger); // Middleware de registro de solicitudes
 app.use(express.json());
@@ -42,6 +42,9 @@ app.get('/info', (req, res) => {
 } );
 
 
+app.use('/productos', productosRoutes)
+//app.use('/', Routes);
+
 app.use('/artesanos', artesanosRoutes);
 app.use('/rubros', rubrosRoutes);
 app.use('/usuarios', usuariosRoutes);
@@ -55,9 +58,9 @@ app.use('/busquedas', busquedasRoutes);
 app.use('/solicitudes', solicitudesRoutes);
 app.use('/localidades', localidadesRoutes);
 
-app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
-app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo
+app.use(noEncontrado) // Middleware de manejo de rutas no encontradas
+app.use(manejadorErrores) // Middleware de manejo de errores, siempre va al ultimo
 
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
-});
+})

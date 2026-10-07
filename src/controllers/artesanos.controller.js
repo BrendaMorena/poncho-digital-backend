@@ -8,7 +8,7 @@ export const obtenerArtesanos = async (req, res, next) => {
     const { page, limit, sortBy, sortOrder } = req.consultaArtesanos;
     const artesanos = await artesanoService.obtenerArtesanos(page, limit, sortBy, sortOrder);
     return res.status(200).json(artesanos);
-   
+  
   } catch (error) {
     next(error); 
   }
