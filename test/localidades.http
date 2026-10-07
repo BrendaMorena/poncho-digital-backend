@@ -1,0 +1,196 @@
+@baseUrl = http://localhost:3000
+
+############################################################
+### 1. CREACIÓN DE LOCALIDADES (POST /localidades)
+############################################################
+
+# Caso de Éxito: Crear nueva localidad
+POST {{baseUrl}}/localidades
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Ancasti"
+}
+
+###
+
+# Caso de Éxito 2: Crear otra localidad
+POST {{baseUrl}}/localidades
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Antofagasta de la Sierra"
+}
+
+###
+
+# Error 409: Nombre duplicado (ya existe en la base de datos)
+POST {{baseUrl}}/localidades
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Ancasti"
+}
+
+###
+
+# Error 400: Campo faltante o vacío
+POST {{baseUrl}}/localidades
+Content-Type: application/json
+
+{
+  "nombre_locacion": ""
+}
+
+###
+
+# Error 400: Nombre demasiado corto (mínimo 3 caracteres según schema)
+POST {{baseUrl}}/localidades
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Ab"
+}
+
+###
+
+############################################################
+### 2. OBTENER LOCALIDADES CON PAGINACIÓN (GET /localidades)
+############################################################
+
+# 1. Obtener todas las localidades (valores por defecto: pagina=1, limite=10, orden=id_localidad asc)
+GET {{baseUrl}}/localidades
+
+###
+
+# 2. Paginación: Página 1, 3 localidades por página
+GET {{baseUrl}}/localidades?pagina=1&limite=3
+
+###
+
+# 3. Paginación: Página 2, 3 localidades por página
+GET {{baseUrl}}/localidades?pagina=2&limite=3
+
+###
+
+# 4. Buscar localidades por término (filtro insensible a mayúsculas/minúsculas)
+GET {{baseUrl}}/localidades?buscar=Ancasti
+
+###
+
+# 5. Ordenar alfabéticamente ascendente por nombre_locacion
+GET {{baseUrl}}/localidades?ordenPor=nombre_locacion&direccion=asc
+
+###
+
+# 6. Ordenar alfabéticamente descendente por nombre_locacion
+GET {{baseUrl}}/localidades?ordenPor=nombre_locacion&direccion=desc
+
+###
+
+# 7. Ordenar por fecha de creación descendente
+GET {{baseUrl}}/localidades?ordenPor=createdAt&direccion=desc
+
+###
+
+# 8. Combinar búsqueda con paginación y ordenamiento
+GET {{baseUrl}}/localidades?buscar=An&pagina=1&limite=5&ordenPor=nombre_locacion&direccion=asc
+
+###
+
+############################################################
+### 3. OBTENER LOCALIDAD POR ID (GET /localidades/:id)
+############################################################
+
+# Caso de Éxito: Obtener localidad por ID
+GET {{baseUrl}}/localidades/1
+
+###
+
+# Error 404: Localidad no encontrada
+GET {{baseUrl}}/localidades/9999
+
+###
+
+# Error 400: ID inválido (debe ser un entero positivo)
+GET {{baseUrl}}/localidades/invalido
+
+###
+
+############################################################
+### 4. ACTUALIZAR LOCALIDAD (PUT y PATCH /localidades/:id)
+############################################################
+
+# Caso de Éxito: Actualizar nombre mediante PUT
+PUT {{baseUrl}}/localidades/1
+Content-Type: application/json
+
+{
+  "nombre_locacion": "San Fernando del Valle de Catamarca"
+}
+
+###
+
+# Caso de Éxito: Actualizar nombre mediante PATCH
+PATCH {{baseUrl}}/localidades/1
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Capital"
+}
+
+###
+
+# Error 400: Nombre inválido o demasiado corto
+PATCH {{baseUrl}}/localidades/1
+Content-Type: application/json
+
+{
+  "nombre_locacion": "X"
+}
+
+###
+
+# Error 409: Nombre ya en uso por otra localidad
+PATCH {{baseUrl}}/localidades/1
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Ancasti"
+}
+
+###
+
+# Error 404: ID inexistente
+PATCH {{baseUrl}}/localidades/9999
+Content-Type: application/json
+
+{
+  "nombre_locacion": "Localidad Inexistente"
+}
+
+###
+
+############################################################
+### 5. ELIMINAR LOCALIDAD (DELETE /localidades/:id)
+############################################################
+
+# Error 400: Intentar eliminar una localidad que TIENE usuarios asociados
+# (La API protege la integridad referencial y rechaza la eliminación)
+DELETE {{baseUrl}}/localidades/1
+
+###
+
+# Error 404: Intentar eliminar un ID inexistente
+DELETE {{baseUrl}}/localidades/9999
+
+###
+
+# Error 400: ID inválido
+DELETE {{baseUrl}}/localidades/abc
+
+###
+
+# Caso de Éxito: Eliminar una localidad recién creada sin usuarios asociados
+# (Reemplazar con el ID devuelto por el POST de prueba)
+DELETE {{baseUrl}}/localidades/2

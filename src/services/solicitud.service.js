@@ -16,14 +16,6 @@ const verificarUsuarioArtesano = async (usuarioId, tx = prisma) => {
     throw crearError(`No existe un usuario con id ${usuarioId}`, 404);
   }
 
-  const nombreRol = usuario.rol?.nombre?.toLowerCase() ?? "";
-  if (nombreRol && !nombreRol.includes("artesano")) {
-    throw crearError(
-      `El usuario con id ${usuarioId} no posee el rol de artesano (rol actual: ${usuario.rol?.nombre})`,
-      403
-    );
-  }
-
   if (usuario.solicitud) {
     throw crearError(
       `El usuario ya cuenta con una solicitud registrada (Estado: ${usuario.solicitud.estado_solicitud})`,

@@ -37,6 +37,11 @@ npm run dev
 | GET     | /productos | Lista todos los productos artesanales publicados | 
 | POST    | /productos | Agrega un nuevo producto al catálogo |
 | GET     | /stands    | Muestra la ubicación de los stands en el predio |
+| GET     | /localidades | Lista las localidades con paginación, filtros y ordenamiento |
+| GET     | /localidades/:id | Obtiene los detalles de una localidad por ID |
+| POST    | /localidades | Registra una nueva localidad |
+| PUT     | /localidades/:id | Actualiza los datos de una localidad |
+| DELETE  | /localidades/:id | Elimina una localidad (si no tiene usuarios asociados) |
 
 ---
 

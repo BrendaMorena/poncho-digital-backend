@@ -49,4 +49,4 @@ export const verificarArtesanoAprobado = async (req, res, next) => {
   }
 };
 
-export const verificarEstadoAprobado = verificarArtesanoAprobado;
+export const verificarEstadoAprobado = verificarArtesanoAprobado;

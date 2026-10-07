@@ -10,6 +10,7 @@ import sectoresRoutes from './routes/sectores.routes.js';
 import rolesRoutes from './routes/roles.routes.js';
 import solicitudesRoutes from './routes/solicitudes.routes.js';
 import busquedasRoutes from './routes/busquedas.routes.js';
+import localidadesRoutes from './routes/localidades.routes.js';
 import { logger } from './middlewares/logger.js';
 import { manejadorErrores } from './middlewares/manejadorErrores.js';
 import { noEncontrado } from './middlewares/noEncontrado.js';
@@ -50,9 +51,9 @@ app.use('/stands', standsRoutes);
 app.use('/pabellones', pabellonesRoutes);
 app.use('/sectores', sectoresRoutes);
 app.use('/roles', rolesRoutes);
-app.use('/solicitudes', solicitudesRoutes);
 app.use('/busquedas', busquedasRoutes);
-
+app.use('/solicitudes', solicitudesRoutes);
+app.use('/localidades', localidadesRoutes);
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
 app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo

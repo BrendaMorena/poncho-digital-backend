@@ -11,7 +11,7 @@ export const manejadorErrores = (err, req, res, next) => {
         return res.status(status).json({ error: err.message, detalles: err.detalles });
     }
     // si no trae detalles, 
-     return res.status(status).json({ error: err.message });
+    return res.status(status).json({ error: err.message });
 
 
 }
