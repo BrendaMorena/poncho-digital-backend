@@ -95,13 +95,13 @@ export const obtenerSectorPorId = async (sectorId) => {
     include: {
       pabellon: true,
       rubro: true,
-      stands: true,
+      _count: { select: { stands: true } }
     },
   });
 };
 
 export const crearSector = async (crearSectorDTO) => {
-  const { codigo_sector, nombre_sector, pabellonId } = crearSectorDTO;
+  const { codigo_sector, nombre_sector, pabellonId, rubroId } = crearSectorDTO;
 
   if (pabellonId) {
     await verificarPabellon(pabellonId);
@@ -112,6 +112,7 @@ export const crearSector = async (crearSectorDTO) => {
       codigo_sector,
       nombre_sector,
       pabellonId: pabellonId ?? null,
+      rubroId: rubroId ?? null,
     },
     include: {
       pabellon: true,
@@ -142,7 +143,7 @@ export const actualizarSector = async (sectorId, actualizarSectorDTO) => {
 
 export const eliminarSector = async (sectorId) => {
   await verificarSector(sectorId);
-
+  // considerar quitar porque p2025
   const standsAsociados = await prisma.stand.count({
     where: { sectorId },
   });

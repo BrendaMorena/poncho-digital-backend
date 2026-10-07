@@ -16,7 +16,7 @@ export const obtenerSectorPorId = async (req, res, next) => {
     const sector = await sectorService.obtenerSectorPorId(req.sectorId);
     if (!sector) {
       return next(
-        crearError(`No existe el Sector con id ${req.sectorId}`, 404)
+        crearError(`No existe el Sector con id ${req.sectorId}`, 404),
       );
     }
     return res.status(200).json(sector);
@@ -34,7 +34,7 @@ export const crearSector = async (req, res, next) => {
   } catch (error) {
     if (error.code === "P2002") {
       return next(
-        crearError(`El sector con ese ${campo} ya existe en el sistema`, 409)
+        crearError("El código o nombre del sector ya está en uso", 409),
       );
     }
     return next(error);
@@ -47,14 +47,14 @@ export const actualizarSector = async (req, res, next) => {
     const actualizarSectorDTO = req.body;
     const sectorActualizado = await sectorService.actualizarSector(
       sectorId,
-      actualizarSectorDTO
+      actualizarSectorDTO,
     );
 
     return res.json(sectorActualizado);
   } catch (error) {
     if (error.code === "P2002") {
       return next(
-        crearError(`El ${campo} del sector ya está en uso`, 409)
+        crearError("El código o nombre del sector ya está en uso", 409),
       );
     }
     return next(error);

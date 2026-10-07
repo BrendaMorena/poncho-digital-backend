@@ -371,7 +371,7 @@ POST {{baseUrl}}/stands/asignar
 Content-Type: application/json
 
 {
-  "artesanoId": 1
+  "artesanoId": 2
 }
 
 ###
@@ -410,8 +410,8 @@ POST {{baseUrl}}/stands/asignar
 Content-Type: application/json
 
 {
-  "artesanoId": 1,
-  "standId": 2
+  "artesanoId": 2,
+  "standId": 4
 }
 
 ###
@@ -432,12 +432,12 @@ Content-Type: application/json
 ############################################################
 
 # Caso de Éxito: Liberar stand 1 (vuelve a estado DISPONIBLE y desvincula el artesano)
-PATCH {{baseUrl}}/stands/1/liberar
+PATCH {{baseUrl}}/stands/4/liberar
 
 ###
 
 # Error 400: El stand ya está disponible y sin artesano
-PATCH {{baseUrl}}/stands/1/liberar
+PATCH {{baseUrl}}/stands/4/liberar
 
 ###
 

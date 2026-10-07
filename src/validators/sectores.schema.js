@@ -17,6 +17,13 @@ const sectorBaseSchema = z.object({
     .positive("El pabellonId debe ser positivo")
     .nullable()
     .optional(),
+
+    rubroId: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional(),
 });
 
 // Esquema para CREAR (POST)
@@ -25,12 +32,9 @@ export const sectorSchema = sectorBaseSchema;
 // Esquema para ACTUALIZAR (PATCH)
 export const actualizarSectorSchema = sectorBaseSchema
   .partial()
-  .refine(
-    (data) => Object.keys(data).length > 0,
-    {
-      message: "Debe enviar al menos un campo para actualizar",
-    }
-  );
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Debe enviar al menos un campo para actualizar",
+  });
 
 // Esquema para FILTRAR / CONSULTAR (GET)
 export const consultarSectoresSchema = z.object({
@@ -52,22 +56,27 @@ export const consultarSectoresSchema = z.object({
     .positive("El pabellonId debe ser positivo")
     .optional(),
 
+  rubroId: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional(),
+
   ordenarPor: z
     .enum(["nombre_sector", "codigo_sector", "createdAt"])
     .default("nombre_sector"),
 
-  direccion: z
-    .enum(["asc", "desc"])
-    .default("asc"),
+  direccion: z.enum(["asc", "desc"]).default("asc"),
 
-  pagina: z
-    .coerce.number({ message: "La página debe ser un número" })
+  pagina: z.coerce
+    .number({ message: "La página debe ser un número" })
     .int("La página debe ser un número entero")
     .positive("La página debe ser mayor a 0")
     .default(1),
 
-  limite: z
-    .coerce.number({ message: "El límite debe ser un número" })
+  limite: z.coerce
+    .number({ message: "El límite debe ser un número" })
     .int("El límite debe ser un número entero")
     .min(1, "El límite mínimo es 1")
     .max(50, "El límite máximo es 50")

@@ -30,7 +30,7 @@ export const consultarPabellonesSchema = z.object({
   nombre_pabellon: z
     .string()
     .trim()
-    .min(1, "El término de búsqueda no puede estar vacío")
+    .min(1, "El nombre del pabellón no puede estar vacío")
     .optional(),
 
   ordenarPor: z
