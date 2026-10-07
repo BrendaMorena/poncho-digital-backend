@@ -1,6 +1,6 @@
 import express from "express";
-import { obtenerUsuarios, obtenerUsuarioPorId, crearUsuario, actualizarUsuario, eliminarUsuario, registrarArtesano } from "../controllers/usuarios.controller.js";
-import { crearUsuarioSchema, actualizarUsuarioSchema, registroArtesanoSchema } from "../validators/usuarios.schemas.js";
+import { obtenerUsuarios, obtenerUsuarioPorId, crearUsuario, actualizarUsuario, eliminarUsuario, registrarArtesano } from "../controllers/usuario.controller.js";
+import { crearUsuarioSchema, actualizarUsuarioSchema, registroArtesanoSchema } from "../validators/usuarios.schema.js";
 import { validarUsuarios, validarConsultaUsuarios } from "../middlewares/usuarios.middleware.js";
 import { validarUsuarioId } from "../middlewares/validarId.js";
 import { soloAdmin, organizadoresAdmins } from "../middlewares/roles.middleware.js";

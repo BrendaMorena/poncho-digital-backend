@@ -360,3 +360,86 @@ DELETE {{baseUrl}}/stands/9999
 DELETE {{baseUrl}}/stands/invalido
 
 ###
+
+############################################################
+### 6. ASIGNACIÓN ARTESANO-STAND (POST /stands/asignar)
+############################################################
+
+# Caso de Éxito 1: Asignación AUTOMÁTICA por rubro (solo enviando artesanoId)
+# El sistema busca el primer stand disponible en el sector del rubro del artesano
+POST {{baseUrl}}/stands/asignar
+Content-Type: application/json
+
+{
+  "artesanoId": 1
+}
+
+###
+
+# Caso de Éxito 2: Asignación MANUAL específica indicando standId
+POST {{baseUrl}}/stands/asignar
+Content-Type: application/json
+
+{
+  "artesanoId": 2,
+  "standId": 1
+}
+
+###
+
+# Error 400: Body vacío o sin artesanoId
+POST {{baseUrl}}/stands/asignar
+Content-Type: application/json
+
+{}
+
+###
+
+# Error 404: Artesano inexistente
+POST {{baseUrl}}/stands/asignar
+Content-Type: application/json
+
+{
+  "artesanoId": 9999
+}
+
+###
+
+# Error 409: El artesano ya tiene un stand asignado
+POST {{baseUrl}}/stands/asignar
+Content-Type: application/json
+
+{
+  "artesanoId": 1,
+  "standId": 2
+}
+
+###
+
+# Error 409: El stand ya está ocupado o en mantenimiento
+POST {{baseUrl}}/stands/asignar
+Content-Type: application/json
+
+{
+  "artesanoId": 3,
+  "standId": 1
+}
+
+###
+
+############################################################
+### 7. LIBERACIÓN DE STAND (PATCH /stands/:id/liberar)
+############################################################
+
+# Caso de Éxito: Liberar stand 1 (vuelve a estado DISPONIBLE y desvincula el artesano)
+PATCH {{baseUrl}}/stands/1/liberar
+
+###
+
+# Error 400: El stand ya está disponible y sin artesano
+PATCH {{baseUrl}}/stands/1/liberar
+
+###
+
+# Error 404: Stand inexistente
+PATCH {{baseUrl}}/stands/9999/liberar

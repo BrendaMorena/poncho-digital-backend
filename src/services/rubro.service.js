@@ -18,27 +18,37 @@ export const obtenerRubroPorId = async (id) => {
 }
 
 export const crearRubro = async (crearRubroDTO) => {
-  const { nombre, descripcion } = crearRubroDTO
+  const { nombre } = crearRubroDTO;
   return await prisma.rubro.create({
     data: {
-      nombre: nombre.trim(),
-      descripcion: descripcion.trim()
+      nombre
     }
-  })
+  });
 };
 
 export const actualizarRubro = async (id, actualizarRubroDTO) => {
-  const rubro =await prisma.rubro.findUnique({
-    where: { id_rubro:id }
-    })
-    if (!rubro) throw crearError("Rubro no encontrado", 404);
-    const { nombre, descripcion } = actualizarRubroDTO;
-    return await prisma.rubro.update({
-      where: { id_rubro: id },
-      data: {
-        nombre: nombre.trim(),
-        descripcion: descripcion.trim()
-      }
-    })
+  const rubro = await prisma.rubro.findUnique({
+    where: { id_rubro: id }
+  });
+  if (!rubro) throw crearError("Rubro no encontrado", 404);
+
+  const { nombre } = actualizarRubroDTO;
+  return await prisma.rubro.update({
+    where: { id_rubro: id },
+    data: {
+      ...(nombre && { nombre })
+    }
+  });
+};
+
+export const eliminarRubro = async (id) => {
+  const rubro = await prisma.rubro.findUnique({
+    where: { id_rubro: id }
+  });
+  if (!rubro) throw crearError("Rubro no encontrado", 404);
+
+  return await prisma.rubro.delete({
+    where: { id_rubro: id }
+  });
 };
 

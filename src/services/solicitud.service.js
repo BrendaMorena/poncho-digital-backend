@@ -170,7 +170,7 @@ export const obtenerSolicitudPorId = async (id) => {
 };
 
 export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
-  const { observaciones_admin, standId } = datosAprobacion;
+  const { observaciones_admin } = datosAprobacion;
 
   const solicitud = await prisma.solicitud.findUnique({
     where: { id_solicitud: id },
@@ -199,55 +199,6 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
   }
 
   return prisma.$transaction(async (tx) => {
-    let standElegido;
-
-    if (standId) {
-      standElegido = await tx.stand.findFirst({
-        where: {
-          id_stand: standId,
-          estado: "DISPONIBLE",
-          artesanoId: null,
-        },
-        include: {
-          sector: {
-            include: { pabellon: true },
-          },
-        }
-      });
-
-      if (!standElegido) {
-        throw crearError(
-          `El stand con id ${standId} no existe o no se encuentra disponible`,
-          409
-        );
-      }
-    } else {
-      standElegido = await tx.stand.findFirst({
-        where: {
-          estado: "DISPONIBLE",
-          artesanoId: null,
-          sector: {
-            rubroId: solicitud.rubroId,
-        },
-        },
-        orderBy: {
-          id_stand: "asc",
-        },
-        include: {
-          sector: {
-            include: { pabellon: true },
-          },
-        }
-      });
-
-      if (!standElegido) {
-        throw crearError(
-          "No hay stands disponibles en el predio para asignar automáticamente. El organizador debe indicar manualmente un 'standId' alternativo o liberar cupos.",
-          409
-        );
-      }
-    }
-
     const solicitudActualizada = await tx.solicitud.update({
       where: { id_solicitud: id },
       data: {
@@ -265,6 +216,7 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
         descripcion: solicitud.descripcion_emprendimiento,
         usuarioId: solicitud.usuarioId,
         rubroId: solicitud.rubroId,
+        estado: "ACTIVO",
       },
       include: {
         usuario: {
@@ -280,29 +232,15 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
       },
     });
 
-    const standAsignado = await tx.stand.update({
-      where: { id_stand: standElegido.id_stand },
-      data: {
-        artesanoId: nuevoArtesano.id_artesano,
-        estado: "OCUPADO",
-      },
-      include: {
-        sector: {
-          include: { pabellon: true },
-        },
-      }
-    });
-
     return {
-      mensaje: standId
-        ? "Solicitud aprobada con asignación manual de stand"
-        : "Solicitud aprobada con asignación automática de stand",
+      mensaje: "Solicitud aprobada con éxito. El artesano ha sido registrado como ACTIVO y queda disponible para asignación de stand.",
       solicitud: solicitudActualizada,
       artesano: nuevoArtesano,
-      standAsignado,
     };
   });
 };
+
+
 
 export const rechazarSolicitud = async (id, { observaciones_admin }) => {
   const solicitud = await prisma.solicitud.findUnique({
@@ -325,17 +263,6 @@ export const rechazarSolicitud = async (id, { observaciones_admin }) => {
     data: {
       estado_solicitud: "RECHAZADO",
       observaciones_admin,
-    },
-    include: {
-      usuario: {
-        select: {
-          id_usuario: true,
-          nombre: true,
-          apellido: true,
-          email: true,
-        },
-      },
-      rubro: true,
     },
   });
 
@@ -366,17 +293,6 @@ export const solicitarModificacion = async (id, { observaciones_admin }) => {
     data: {
       estado_solicitud: "MODIFICACION_SOLICITADA",
       observaciones_admin,
-    },
-    include: {
-      usuario: {
-        select: {
-          id_usuario: true,
-          nombre: true,
-          apellido: true,
-          email: true,
-        },
-      },
-      rubro: true,
     },
   });
 
@@ -411,18 +327,6 @@ export const actualizarSolicitud = async (id, actualizarSolicitudDTO) => {
   const solicitudActualizada = await prisma.solicitud.update({
     where: { id_solicitud: id },
     data: dataAActualizar,
-    include: {
-      usuario: {
-        select: {
-          id_usuario: true,
-          nombre: true,
-          apellido: true,
-          email: true,
-          telefono: true,
-        },
-      },
-      rubro: true,
-    },
   });
 
   return {
@@ -430,6 +334,7 @@ export const actualizarSolicitud = async (id, actualizarSolicitudDTO) => {
     solicitud: solicitudActualizada,
   };
 };
+
 
 export const eliminarSolicitud = async (id) => {
   const solicitud = await prisma.solicitud.findUnique({

@@ -58,10 +58,10 @@ export const actualizarUsuarioSchema = z.object({
 });
 
 export const consultarUsuarioSchema = z.object({
-  page: z.coerce.number().int().positive().optional().default(1),
-  limit: z.coerce.number().int().positive().max(100).optional().default(10),
-  sortBy: z.enum(['createdAt', 'id_usuario', 'nombre', 'apellido']).optional().default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('desc')
+  pagina: z.coerce.number().int().positive().optional().default(1),
+  limite: z.coerce.number().int().positive().max(100).optional().default(10),
+  ordenarPor: z.enum(['createdAt', 'id_usuario', 'nombre', 'apellido']).optional().default('createdAt'),
+  direccion: z.enum(['asc', 'desc']).optional().default('desc')
 });
 
 

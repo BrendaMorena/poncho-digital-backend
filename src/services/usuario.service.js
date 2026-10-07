@@ -3,32 +3,34 @@ import { crearError } from "../utils/errores.js";
 import bcrypt from 'bcrypt'; 
 import * as solicitudService from "./solicitud.service.js";
 
-export const obtenerUsuarios = async (page, limit, sortBy, sortOrder) => {
-  const skip = (page - 1) * limit;
+export const obtenerUsuarios = async (pagina, limite, ordenarPor, direccion) => {
+  const skip = (pagina - 1) * limite;
   // Creamos un "diccionario" con todas las opciones posibles de ordenamiento
   const opcionesOrden = {
-    nombre: { nombre: sortOrder },
-    apellido: { apellido: sortOrder },
-    email: { email: sortOrder }
+    nombre: { nombre: direccion },
+    apellido: { apellido: direccion },
+    email: { email: direccion },
+    createdAt: { createdAt: direccion },
+    id_usuario: { id_usuario: direccion }
   };
   const usuarios = await prisma.usuario.findMany({
     skip: skip,
-    take: limit,
-    orderBy: opcionesOrden[sortBy],
+    take: limite,
+    orderBy: opcionesOrden[ordenarPor] || { id_usuario: "asc" },
     include: {
       localidad: true
     }
  });
-  const totalUsuarios= await prisma.usuario.count();
+  const total = await prisma.usuario.count();
 
   return {
+    usuarios,
     paginacion: {
-      totalResultados: totalUsuarios,
-      paginasTotales: Math.ceil(totalUsuarios / limit),
-      paginaActual: page,
-      limitePorPagina: limit
-    },
-    datos: usuarios
+      pagina,
+      limite,
+      total,
+      totalPaginas: Math.ceil(total / limite)
+    }
   };
 };
 

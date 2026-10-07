@@ -1,5 +1,5 @@
 import { crearError, detallarErroresZod } from "../utils/errores.js";
-import { consultarUsuarioSchema } from "../validators/usuarios.schemas.js";
+import { consultarUsuarioSchema } from "../validators/usuarios.schema.js";
 
 export const validarUsuarios = (schema) => (req, res, next) =>{
   const resultado = schema.safeParse(req.body);
