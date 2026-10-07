@@ -42,7 +42,10 @@ export const crearUsuarioSchema = z.object({
     required_error: "La localidad es obligatoria"
   }).int().positive(),
 
-
+  rolId: z.number({
+    required_error: "El rolId es obligatorio",
+    invalid_type_error: "El rolId debe ser un número"
+  }).int("El rolId debe ser un número entero").positive("El rolId debe ser un número entero positivo")
 });
 
 export const actualizarUsuarioSchema = z.object({

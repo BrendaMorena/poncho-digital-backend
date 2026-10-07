@@ -101,7 +101,7 @@ export const registrarArtesano = async (datosRegistro) => {
 };
 
 export const crearUsuario = async (crearUsuarioDto) => {
-  const { nombre, apellido, dni, password, telefono, email, localidadId } = crearUsuarioDto;
+  const { nombre, apellido, dni, password, telefono, email, localidadId, rolId } = crearUsuarioDto;
   
   // Validamos email y DNI
   const emailExiste = await prisma.usuario.findUnique({ where: { email } });
@@ -112,21 +112,36 @@ export const crearUsuario = async (crearUsuarioDto) => {
     if (dniExiste) throw crearError(`El DNI ${dni} ya está registrado`, 409);
   }
 
+  // Validamos que el rol exista
+  const rolExiste = await prisma.rol.findUnique({ where: { id_rol: rolId } });
+  if (!rolExiste) throw crearError(`No existe un rol con id ${rolId}`, 404);
+
+  // Validamos que la localidad exista
+  const localidadExiste = await prisma.localidad.findUnique({ where: { id_localidad: localidadId } });
+  if (!localidadExiste) throw crearError(`No existe una localidad con id ${localidadId}`, 404);
+
   // Encriptamos la clave
   const passwordHash = await bcrypt.hash(password, 10);
 
-  return await prisma.usuario.create({
-    data:{
-      nombre: nombre,
-      apellido: apellido,
-      dni: dni,
+  const nuevoUsuario = await prisma.usuario.create({
+    data: {
+      nombre,
+      apellido,
+      dni,
       password: passwordHash, // hash
-      telefono: telefono,
-      email: email,
-      localidadId: localidadId,
-      rolId: 3
-    }
+      telefono,
+      email,
+      localidadId,
+      rolId,
+    },
+    include: {
+      rol: true,
+      localidad: true,
+    },
   });
+
+  const { password: _, ...usuarioSinPassword } = nuevoUsuario;
+  return usuarioSinPassword;
 };
 
 export const actualizarUsuario = async (id, actualizarUsuarioDto) => {
