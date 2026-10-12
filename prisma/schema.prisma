@@ -77,7 +77,7 @@ model Artesano {
   stand     Stand?
   productos Producto[]
 
-  usuarioId String     @unique
+  usuarioId String @unique @db.Uuid
   usuario   Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade)
 
   rubroId Int
@@ -91,7 +91,7 @@ model Busqueda {
   createdAt            DateTime @default(now()) 
   updatedAt            DateTime @updatedAt
 
-  usuarioId            String?
+  usuarioId            String? @db.Uuid
   usuario              Usuario? @relation(fields:[usuarioId], references:[id_usuario], onDelete: SetNull)
 
   rubroId              Int?
@@ -183,7 +183,7 @@ model Solicitud {
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime @updatedAt
 
-  usuarioId                     String @unique
+  usuarioId                     String @unique @db.Uuid
   usuario                       Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
 
   rubroId                       Int

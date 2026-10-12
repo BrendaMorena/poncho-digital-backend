@@ -3,29 +3,54 @@ import { crearError } from "../utils/errores.js";
 import bcrypt from 'bcrypt'; 
 import * as solicitudService from "./solicitud.service.js";
 
-export const obtenerUsuarios = async (pagina, limite, ordenarPor, direccion) => {
-  const skip = (pagina - 1) * limite;
-  // no lo aplicamos con el profe, directamente manejamos where
-  const opcionesOrden = {
-    nombre: { nombre: direccion },
-    apellido: { apellido: direccion },
-    email: { email: direccion },
-    createdAt: { createdAt: direccion },
-    id_usuario: { id_usuario: direccion }
-  };
 
-  // considerar transacción para evitar concurrencia
-  // pensar que atributos deberiamos mostrar (son muchos artesanos, mostrar información mínima)
-  const usuarios = await prisma.usuario.findMany({
-    skip: skip,
-    take: limite,
-    orderBy: opcionesOrden[ordenarPor] || { id_usuario: "asc" },
-    include: {
-      localidad: true
-    }
- });
-  const total = await prisma.usuario.count();
 
+
+
+
+
+export const obtenerUsuarios = async (criteriosConsulta) => {
+  const { nombre, apellido, id_usuario, dni, email,ordenarPor, direccion, pagina, limite } = criteriosConsulta;
+  const where = {};
+  
+  if (nombre !== undefined) {
+    where.nombre = {
+      contains: nombre,
+      mode: "insensitive",
+    };
+  }
+  if (apellido !== undefined) {
+    where.apellido = {
+      contains: apellido,
+      mode: "insensitive",
+    };
+  }
+  if (email !== undefined) {
+    where.email = {
+      contains: email,
+      mode: "insensitive",
+    };
+  }
+  if (dni !== undefined) {
+    where.dni = {
+      contains: dni, 
+    };
+  }
+  
+  const orderBy = [{ [ordenarPor]: direccion }, { id_usuario: "asc" }];
+  
+  const desplazamiento = (pagina - 1) * limite;
+
+   const [usuarios, total] = await prisma.$transaction([
+    prisma.usuario.findMany({
+      where,
+      orderBy,
+      skip: desplazamiento,
+      take: limite,
+    }),
+    prisma.usuario.count({ where }),
+  ]);
+ 
   return {
     usuarios,
     paginacion: {
