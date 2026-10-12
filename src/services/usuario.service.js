@@ -275,3 +275,30 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
   })
 }
 
+
+const inciarSesion = async (inciarSesionDTO) => {
+  const { email, password } = inciarSesionDTO 
+
+  const usuarioEncontrado = await prisma.usuario.findUnique({
+    where: {email: email}
+  })
+
+  if(!usuarioEncontrado){
+    throw crearError("Las credenciales son inválidas.", 401)
+  }
+
+  const passwordValida = await bcrypt.compare(
+    password,
+    usuario.passwordHash
+  )
+
+  if(!passwordValida){
+    throw crearError ("Las credenciales son inválidas.", 401)
+  }
+
+  return {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    email: usuario.email
+  }
+}
