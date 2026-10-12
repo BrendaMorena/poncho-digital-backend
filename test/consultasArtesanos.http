@@ -153,7 +153,12 @@ Content-Type: application/json
 DELETE http://localhost:5500/usuarios/13
 Content-Type: application/json
 
-### 1. Registrar un nuevo Artesano (Mega-Formulario con DNI y Emprendimiento)
+
+###----------------------------------
+###(ultimas pruebas con solicitud)
+###----------------------------------
+
+### 1. Registrar un nuevo Artesano 
 POST http://localhost:5500/usuarios/registro
 Content-Type: application/json
 
@@ -169,7 +174,7 @@ Content-Type: application/json
   "nombre_emprendimiento": "Tejidos del Norte",
   "descripcion_emprendimiento": "Elaboración artesanal de ponchos catamarqueños y ruanas en telar criollo"
 }
-###
+### aprobar con stand manual
 PATCH http://localhost:5500/solicitudes/1/aprobar
 Content-Type: application/json
 
@@ -196,7 +201,7 @@ Content-Type: application/json
   "descripcion_emprendimiento": "Elaboración de canastos y artesanías tradicionales en fibra vegetal y junco"
 }
 
-###
+###aprobar con stand automatico
 PATCH http://localhost:5500/solicitudes/2/aprobar
 Content-Type: application/json
 

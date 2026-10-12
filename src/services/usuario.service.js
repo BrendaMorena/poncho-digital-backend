@@ -5,7 +5,7 @@ import * as solicitudService from "./solicitud.service.js";
 
 export const obtenerUsuarios = async (pagina, limite, ordenarPor, direccion) => {
   const skip = (pagina - 1) * limite;
-  // Creamos un "diccionario" con todas las opciones posibles de ordenamiento
+ 
   const opcionesOrden = {
     nombre: { nombre: direccion },
     apellido: { apellido: direccion },
@@ -46,13 +46,13 @@ export const obtenerUsuarioPorId = async (id) =>{
 export const registrarArtesano = async (datosRegistro) => {
   const { nombre, apellido, dni, email, password, telefono, localidadId, rubroId, nombre_emprendimiento, descripcion_emprendimiento, } = datosRegistro;
   
-  // Validamos que el email no exista
+  
   const emailExiste = await prisma.usuario.findUnique({ where: { email } });
   if (emailExiste) {
     throw crearError(`El correo ${email} ya está registrado`, 409);
   }
 
-  // Validamos que el DNI no exista si se proporciona
+  
   if (dni) {
     const dniExiste = await prisma.usuario.findUnique({ where: { dni } });
     if (dniExiste) {
@@ -60,7 +60,7 @@ export const registrarArtesano = async (datosRegistro) => {
     }
   }
 
-  // Buscamos el ID del rol de artesano dinámicamente
+  
   const rolArtesano = await prisma.rol.findFirst({
     where: { nombre: { contains: "artesano", mode: "insensitive" } },
   });
@@ -69,7 +69,7 @@ export const registrarArtesano = async (datosRegistro) => {
   }
   
   const passwordHash = await bcrypt.hash(password, 10);
-  // Orquestamos la creación en una sola transacción atómica
+  
   return prisma.$transaction(async (tx) => {
     
     // A) Se crea la cuenta
@@ -112,11 +112,10 @@ export const crearUsuario = async (crearUsuarioDto) => {
     if (dniExiste) throw crearError(`El DNI ${dni} ya está registrado`, 409);
   }
 
-  // Validamos que el rol exista
   const rolExiste = await prisma.rol.findUnique({ where: { id_rol: rolId } });
   if (!rolExiste) throw crearError(`No existe un rol con id ${rolId}`, 404);
 
-  // Validamos que la localidad exista
+ 
   const localidadExiste = await prisma.localidad.findUnique({ where: { id_localidad: localidadId } });
   if (!localidadExiste) throw crearError(`No existe una localidad con id ${localidadId}`, 404);
 
@@ -128,20 +127,15 @@ export const crearUsuario = async (crearUsuarioDto) => {
       nombre,
       apellido,
       dni,
-      password: passwordHash, // hash
+      //password: passwordHash, // hash
       telefono,
       email,
       localidadId,
       rolId,
     },
-    include: {
-      rol: true,
-      localidad: true,
-    },
   });
 
-  const { password: _, ...usuarioSinPassword } = nuevoUsuario;
-  return usuarioSinPassword;
+  return nuevoUsuario;
 };
 
 export const actualizarUsuario = async (id, actualizarUsuarioDto) => {
@@ -165,13 +159,13 @@ export const actualizarUsuario = async (id, actualizarUsuarioDto) => {
   return await prisma.usuario.update({
     where: { id_usuario: id },
     data: {
-      ...(nombre && { nombre }),
-      ...(apellido && { apellido }),
-      ...(dni && { dni }),
-      ...(passwordHash && { password: passwordHash }),
-      ...(telefono && { telefono }),
-      ...(email && { email }),
-      ...(localidadId && { localidadId })
+      nombre,
+      apellido,
+      dni,
+      password: passwordHash,
+      telefono,
+      email,
+      localidadId
     }
   });
 };

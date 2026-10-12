@@ -123,9 +123,9 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
   return await prisma.artesano.update({
     where: { id_artesano: id },
     data: {
-      ...(nombre_emprendimiento && { nombre_emprendimiento }),
-      ...(descripcion && { descripcion }),
-      ...(rubroId && { rubroId }),
+      nombre_emprendimiento,
+      descripcion,
+      rubroId,
     },
     include: {
       usuario: { select: { nombre: true, apellido: true, email: true, localidad: true } },
@@ -133,6 +133,8 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
     }
   });
 };
+
+//agregar crear y hacer que solicitud lo use 
 
 export const eliminarArtesano = async (id) => {
   const artesano = await prisma.artesano.findUnique({

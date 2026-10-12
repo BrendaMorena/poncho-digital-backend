@@ -36,7 +36,7 @@ export const actualizarRubro = async (id, actualizarRubroDTO) => {
   return await prisma.rubro.update({
     where: { id_rubro: id },
     data: {
-      ...(nombre && { nombre })
+      nombre
     }
   });
 };
