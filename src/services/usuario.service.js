@@ -4,13 +4,17 @@ import bcrypt from 'bcrypt';
 import * as solicitudService from "./solicitud.service.js";
 
 
-
-
-
-
-
 export const obtenerUsuarios = async (criteriosConsulta) => {
-  const { nombre, apellido, id_usuario, dni, email,ordenarPor, direccion, pagina, limite } = criteriosConsulta;
+  const { 
+    nombre, 
+    apellido, 
+    dni, 
+    email,
+    ordenarPor, 
+    direccion, 
+    pagina, 
+    limite } = criteriosConsulta;
+
   const where = {};
   
   if (nombre !== undefined) {
@@ -64,14 +68,22 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
 
 
 export const obtenerUsuarioPorId = async (id) =>{
-  // pensar que atributos mostrar (un solo usuario deberia mostrar a detalle los datos)
   return await prisma.usuario.findUnique({
     where: { id_usuario: id },
     include: {
-      localidad: true 
+      id_usuario: true, 
+      nombre: true,
+      apellido: true,
+      email: true,
+      rol: {
+        select: {
+          nombre: true, 
+        }
+      }
     }
   });
-}
+};
+
 
 export const registrarArtesano = async (datosRegistro) => {
   const { nombre, apellido, dni, email, password, telefono, localidadId, rubroId, nombre_emprendimiento, descripcion_emprendimiento, } = datosRegistro;

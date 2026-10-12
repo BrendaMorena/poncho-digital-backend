@@ -2,11 +2,11 @@ import {crearError} from "../utils/errores.js";
 import * as usuarioService from "../services/usuario.service.js";
 
 export const obtenerUsuarios = async (req, res, next) => {
-  try{
-    const { pagina, limite, ordenarPor, direccion } = req.consultaUsuarios;
-    const usuarios = await usuarioService.obtenerUsuarios(pagina, limite, ordenarPor, direccion);
-    return res.status(200).json(usuarios);
-  }catch (error) {
+  try {
+    const criteriosConsulta = req.consultaUsuarios; // 👈 Tu DTO con los filtros y paginación
+    const usuarios = await usuarioService.obtenerUsuarios(criteriosConsulta);
+    return res.json(usuarios);
+  } catch (error) {
     next(error);
   }
 };

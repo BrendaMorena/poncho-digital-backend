@@ -40,7 +40,14 @@ export const actualizarUsuarioSchema = z.object({
 
 // AGREGAR TERMINO DE BUSQUEDA Y FILTROS
 export const consultarUsuarioSchema = z.object({
-
+  nombre: z.string().trim().optional(),
+  
+  apellido: z.string().trim().optional(),
+  
+  dni: z.string().trim().optional(),
+  
+  email: z.string().trim().optional(),
+  
   pagina: z.coerce.number().int().positive().optional().default(1),
 
   limite: z.coerce.number().int().positive().max(100).optional().default(10),
@@ -112,4 +119,16 @@ export const registroUsuarioSchema = usuarioBaseSchema.extend({
   descripcion_emprendimiento: z
     .string({ error: "La descripción del emprendimiento es obligatoria" })
     .min(10, "Cuéntanos más sobre tu emprendimiento (mínimo 10 caracteres).")
+});
+
+// 4. SCHEMA PARA LOGIN: Solo email y password
+export const loginSchema = z.object({
+  email: z
+    .string({ error: "El email es obligatorio" })
+    .trim()
+    .toLowerCase()
+    .email("El formato del correo electrónico no es válido"),
+  password: z
+    .string({ error: "La contraseña es obligatoria" })
+    .min(1, "La contraseña no puede estar vacía"),
 });
