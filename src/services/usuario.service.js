@@ -5,7 +5,7 @@ import * as solicitudService from "./solicitud.service.js";
 
 export const obtenerUsuarios = async (pagina, limite, ordenarPor, direccion) => {
   const skip = (pagina - 1) * limite;
- 
+  // no lo aplicamos con el profe, directamente manejamos where
   const opcionesOrden = {
     nombre: { nombre: direccion },
     apellido: { apellido: direccion },
@@ -13,6 +13,9 @@ export const obtenerUsuarios = async (pagina, limite, ordenarPor, direccion) => 
     createdAt: { createdAt: direccion },
     id_usuario: { id_usuario: direccion }
   };
+
+  // considerar transacción para evitar concurrencia
+  // pensar que atributos deberiamos mostrar (son muchos artesanos, mostrar información mínima)
   const usuarios = await prisma.usuario.findMany({
     skip: skip,
     take: limite,
@@ -34,7 +37,9 @@ export const obtenerUsuarios = async (pagina, limite, ordenarPor, direccion) => 
   };
 };
 
+
 export const obtenerUsuarioPorId = async (id) =>{
+  // pensar que atributos mostrar (un solo usuario deberia mostrar a detalle los datos)
   return await prisma.usuario.findUnique({
     where: { id_usuario: id },
     include: {
@@ -115,7 +120,6 @@ export const crearUsuario = async (crearUsuarioDto) => {
   const rolExiste = await prisma.rol.findUnique({ where: { id_rol: rolId } });
   if (!rolExiste) throw crearError(`No existe un rol con id ${rolId}`, 404);
 
- 
   const localidadExiste = await prisma.localidad.findUnique({ where: { id_localidad: localidadId } });
   if (!localidadExiste) throw crearError(`No existe una localidad con id ${localidadId}`, 404);
 
@@ -180,3 +184,57 @@ export const eliminarUsuario = async (id) => {
     where: { id_usuario: id }
   });
 }
+
+const existeAtributo = (modelo, atributo) => async (valor) =>{
+  if(!valor) return
+  const resultado = await prisma[modelo].findUnique({where: {[atributo]: valor}})
+  if(resultado) throw crearError(`El ${atributo} '${valor}' ya existe en el sistema`, 409)
+}
+
+const existeEmailUsuario = existeAtributo("usuario", "email")
+const existeDniUsuario = existeAtributo("usuario", "dni")
+
+const FACTOR_COSTO = 10
+const ROL_USUARIO_POR_DEFECTO = 3;
+
+export const registrarUsuario = async (registrarUsuarioDTO) => {
+  const {nombre, apellido, dni, email, telefono, password, localidadId} = registrarUsuarioDTO
+  await existeEmailUsuario(email)
+  await existeDniUsuario(dni)
+
+  const passwordHash = await bcrypt.hash(password, FACTOR_COSTO)
+
+  return prisma.$transaction(async (tx) => {
+
+    const nuevoUsuario = await tx.usuario.create({
+      data: {
+        nombre,
+        apellido,
+        dni,
+        email,
+        telefono,
+        passwordHash,
+        rolId: ROL_USUARIO_POR_DEFECTO,
+        localidadId,
+      },
+      select: {
+        id_usuario: true,
+        nombre: true,
+        apellido: true,
+        createdAt: true
+      }
+    })
+    
+    const nuevoSolicitudDTO = {
+      usuarioId: nuevoUsuario.id_usuario,
+      rubroId: registrarUsuarioDTO.rubroId,
+      nombre_emprendimiento: registrarUsuarioDTO.nombre_emprendimiento,
+      descripcion_emprendimiento: registrarUsuarioDTO.descripcion_emprendimiento,
+    };
+
+    const nuevaSolicitud = await solicitudService.crearSolicitud(nuevoSolicitudDTO, tx)
+
+    return {...nuevoUsuario, solicitud: nuevaSolicitud}
+  })
+}
+

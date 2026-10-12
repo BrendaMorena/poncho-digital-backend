@@ -18,7 +18,7 @@ const sectorBaseSchema = z.object({
     .nullable()
     .optional(),
 
-    rubroId: z
+  rubroId: z
     .number()
     .int()
     .positive()
@@ -56,7 +56,7 @@ export const consultarSectoresSchema = z.object({
     .positive("El pabellonId debe ser positivo")
     .optional(),
 
-  rubroId: z
+  rubroId: z.coerce
     .number()
     .int()
     .positive()

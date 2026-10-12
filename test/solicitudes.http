@@ -144,3 +144,39 @@ Content-Type: application/json
   "observaciones_admin": "Documentación en regla, productos de excelente calidad.",
   "standId": 10
 }
+
+###
+POST http://localhost:3000/usuarios/registro
+Content-Type: application/json
+
+{
+    "nombre": "juan",
+    "apellido": "juanes",
+    "dni": "132312312",
+    "email": "lucas@gmail.com",
+    "telefono": "3834123456",
+    "password": ".",
+    "rolId": 1,
+    "localidadId": 1,
+    "rubroId": 1,
+    "nombre_emprendimiento": "Pinturas Locas",
+    "descripcion_emprendimiento": "hola 123 vendemos tomates"
+}
+
+###
+POST http://localhost:3000/usuarios/registro
+Content-Type: application/json
+
+{
+    "nombre": "Leonel",
+    "apellido": "Flores",
+    "dni": "260620011",
+    "email": "leoflores12@gmail.com",
+    "telefono": "3833991122",
+    "password": "contraseña123",
+    "rolId": 3,
+    "localidadId": 1,
+    "rubroId": 2,
+    "nombre_emprendimiento": "Ceramicas reynoso",
+    "descripcion_emprendimiento": "Piezas artesanales de cerámica moldeadas a mano"
+}

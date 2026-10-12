@@ -74,9 +74,6 @@ export const crearPabellon = async (crearPabellonDTO) => {
       nombre_pabellon,
       descripcion_pabellon,
     },
-    include: {
-      sectores: true,
-    },
   });
 };
 
@@ -88,9 +85,6 @@ export const actualizarPabellon = async (pabellonId, actualizarPabellonDTO) => {
   return await prisma.pabellon.update({
     where: { id_pabellon: pabellonId },
     data,
-    include: {
-      sectores: true,
-    },
   });
 };
 

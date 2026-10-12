@@ -25,12 +25,12 @@ const verificarStand = async (idStand) => {
 }
 
 export const obtenerStands = async (criteriosConsulta) => {
-  const { numero_stand, estado, sectorId, rubroId, termino_busqueda, ordenarPor, direccion, pagina, limite } = criteriosConsulta
+  const { numero_stand, estado, sectorId, rubroId, ordenarPor, direccion, pagina, limite } = criteriosConsulta
   
   const where = {}
 
   if (numero_stand !== undefined) {
-    where.numero_stand = numero_stand;
+    where.numero_stand = { contains: numero_stand, mode: "insensitive" };
   }
 
   if (estado !== undefined) {
@@ -48,31 +48,6 @@ export const obtenerStands = async (criteriosConsulta) => {
     };
   }
 
-  if (termino_busqueda) {
-    where.OR = [
-      { numero_stand: { contains: termino_busqueda, mode: "insensitive" } },
-      {
-        artesano: {
-          nombre_emprendimiento: { contains: termino_busqueda, mode: "insensitive" },
-        },
-      },
-      {
-        artesano: {
-          usuario: {
-            nombre: { contains: termino_busqueda, mode: "insensitive" },
-          },
-        },
-      },
-      {
-        artesano: {
-          usuario: {
-            apellido: { contains: termino_busqueda, mode: "insensitive" },
-          },
-        },
-      },
-    ];
-  }
-
   const orderBy = ordenarPor === "rubro"
     ? [{ artesano: { rubro: { nombre: direccion } } }, { id_stand: "asc" }]
     : [{ [ordenarPor]: direccion }, { id_stand: "asc" }];
@@ -85,6 +60,12 @@ export const obtenerStands = async (criteriosConsulta) => {
       select: {
         id_artesano: true,
         nombre_emprendimiento: true,
+        rubro: {
+          select: {
+            id_rubro: true,
+            nombre: true,
+          },
+        },
         usuario: {
           select: {
             nombre: true,
@@ -127,7 +108,7 @@ export const obtenerStands = async (criteriosConsulta) => {
 
   return {
     stands,
-    paginacion: null, //{ stands, total: stands.length }
+    paginacion: null,
   };
 
 };
@@ -139,8 +120,21 @@ export const obtenerStandPorId = async (standId) => {
     },
     include: {
       sector: { include: { pabellon: true } },
-      artesano: { include: { rubro: true } },
-    }
+      artesano: {
+        include: {
+          rubro: true,
+          usuario: {
+            select: {
+              id_usuario: true,
+              nombre: true,
+              apellido: true,
+              email: true,
+              telefono: true,
+            },
+          },
+        },
+      },
+    },
   });
 };
 
@@ -282,11 +276,7 @@ export const asignarArtesanoAStand = async ({ artesanoId, standId }) => {
 };
 
 export const liberarStand = async (idStand) => {
-  await verificarStand(idStand);
-
-  const stand = await prisma.stand.findUnique({
-    where: { id_stand: idStand },
-  });
+  const stand = await verificarStand(idStand);
 
   if (!stand.artesanoId && stand.estado === "DISPONIBLE") {
     throw crearError(

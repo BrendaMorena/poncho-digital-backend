@@ -32,6 +32,7 @@ export const obtenerSectores = async (criteriosConsulta) => {
     pabellonId,
     ordenarPor,
     direccion,
+    rubroId,
     pagina,
     limite,
   } = criteriosConsulta;
@@ -54,6 +55,10 @@ export const obtenerSectores = async (criteriosConsulta) => {
 
   if (pabellonId !== undefined) {
     where.pabellonId = pabellonId;
+  }
+
+  if (rubroId !== undefined) {
+    where.rubroId = rubroId;
   }
 
   const orderBy = [{ [ordenarPor]: direccion }, { id_sector: "asc" }];
@@ -143,7 +148,6 @@ export const actualizarSector = async (sectorId, actualizarSectorDTO) => {
 
 export const eliminarSector = async (sectorId) => {
   await verificarSector(sectorId);
-  // considerar quitar porque p2025
   const standsAsociados = await prisma.stand.count({
     where: { sectorId },
   });

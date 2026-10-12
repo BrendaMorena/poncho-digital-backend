@@ -32,8 +32,8 @@ const standBaseSchema = z.object({
     .int("El sectorId debe ser un número entero")
     .positive("El sectorId debe ser un número positivo"),
 
-  estado: z.enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
-    message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO",
+  estado: z.enum(["DISPONIBLE", "MANTENIMIENTO"], {
+    message: "El estado debe ser DISPONIBLE o MANTENIMIENTO",
   }).optional(),
 });
 
@@ -51,12 +51,6 @@ export const actualizarStandSchema = standBaseSchema
 
 // Esquema para FILTRAR STANDS (GET /stands)
 export const consultarStandsSchema = z.object({
-  termino_busqueda: z
-    .string()
-    .trim()
-    .min(1, "El término de búsqueda no puede estar vacío")
-    .optional(),
-
   numero_stand: z
     .string()
     .trim()
@@ -93,6 +87,7 @@ export const consultarStandsSchema = z.object({
     .coerce.number({ message: "La página debe ser un número" })
     .int("La página debe ser un número entero")
     .positive("La página debe ser mayor a 0")
+    .default(1)
     .optional(),
 
   limite: z
@@ -100,6 +95,7 @@ export const consultarStandsSchema = z.object({
     .int("El límite debe ser un número entero")
     .min(1, "El límite mínimo es 1")
     .max(50, "El límite máximo es 50")
+    .default(10)
     .optional(),
 });
 
@@ -118,4 +114,4 @@ export const asignarStandSchema = z.object({
     .int("El standId debe ser un número entero")
     .positive("El standId debe ser un número positivo")
     .optional(),
-});
+});

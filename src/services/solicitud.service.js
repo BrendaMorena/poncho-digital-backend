@@ -41,6 +41,7 @@ const verificarRubro = async (rubroId, tx = prisma) => {
   }
 };
 
+
 export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
   const { nombre_emprendimiento, descripcion_emprendimiento, usuarioId, rubroId } = crearSolicitudDTO;
 
@@ -55,24 +56,9 @@ export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
       rubroId,
       estado_solicitud: "PENDIENTE",
     },
-    include: {
-      usuario: {
-        select: {
-          id_usuario: true,
-          nombre: true,
-          apellido: true,
-          email: true,
-          telefono: true,
-          rol: {
-            select: {
-              id_rol: true,
-              nombre: true,
-            },
-          },
-        },
-      },
-      rubro: true,
-    },
+    select: {
+      id_solicitud: true
+    }
   });
 };
 

@@ -9,6 +9,10 @@ export const estadosValidos = [
 
 // (Postulación del Artesano)
 export const crearSolicitudSchema = z.object({
+  nombre_emprendimiento: z
+    .string({error: "El nombre es obligatorio y tiene que ser texto"})
+    .trim()
+    .min(3, "El nombre del emprendimiento debe tener mínimo 3 carácteres"),
   descripcion_emprendimiento: z
     .string({ required_error: "La descripción del emprendimiento es obligatoria" })
     .trim()

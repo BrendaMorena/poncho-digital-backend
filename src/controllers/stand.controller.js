@@ -44,22 +44,17 @@ export const actualizarStand = async (req, res, next) => {
     const idStand = req.standId
     const actualizarStandDTO = req.body
     const standActualizado = await standService.actualizarStand(idStand, actualizarStandDTO)
-
     return res.json(standActualizado)
   } catch (error) {
+    if (error.code === "P2025") {
+      return next(crearError(`No existe un Stand con id ${req.standId}`, 404));
+    }
+    if (error.code === "P2002") {
+      return next(crearError(`El número de stand ya está en uso`, 409));
+    }
     return next(error)
   }
 };
-
-// CONSULTAR
-    // if (error.code === "P2025") {
-    //   return next(crearError(`No existe un Stand con id ${req.standId}`, 404));
-    // }
-    // if (error.code === "P2002") {
-    //   return next(crearError(`El número de stand ya está en uso`, 409));
-    // }
-
-
 
 export const eliminarStand = async (req, res, next) => {
   try {

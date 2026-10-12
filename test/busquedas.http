@@ -143,7 +143,7 @@ DELETE {{baseUrl}}/busquedas/1
 
 # Al consultar stands con un término o filtro, el middleware
 # 'capturarBusqueda' debe registrar silenciosamente en /busquedas
-GET {{baseUrl}}/stands?termino_busqueda=poncho
+GET {{baseUrl}}/stands?termino_busqueda=cestos
 
 ###
 
