@@ -124,9 +124,6 @@ export const registroUsuarioSchema = usuarioBaseSchema.extend({
 // 4. SCHEMA PARA LOGIN: Solo email y password
 export const loginSchema = z.object({
   email: z
-    .string({ error: "El email es obligatorio" })
-    .trim()
-    .toLowerCase()
     .email("El formato del correo electrónico no es válido"),
   password: z
     .string({ error: "La contraseña es obligatoria" })
