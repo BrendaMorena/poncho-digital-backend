@@ -10,8 +10,8 @@ import {
   validarRol,
   validarActualizarRol,
   validarConsultaRoles,
-} from "../middlewares/roles.middleware.js";
-import { validarRolId } from "../middlewares/validarId.js";
+} from "../middlewares/validation/roles.middleware.js";
+import { validarRolId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 

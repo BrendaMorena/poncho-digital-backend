@@ -8,8 +8,8 @@ import {
 import {
   validarBusqueda,
   validarConsultaBusqueda,
-} from "../middlewares/busquedas.middleware.js";
-import { validarBusquedaId } from "../middlewares/validarId.js";
+} from "../middlewares/validation/busquedas.middleware.js";
+import { validarBusquedaId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 

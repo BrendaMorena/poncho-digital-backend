@@ -10,8 +10,8 @@ import {
   validarSector,
   validarActualizarSector,
   validarConsultaSectores,
-} from "../middlewares/sectores.middleware.js";
-import { validarSectorId } from "../middlewares/validarId.js";
+} from "../middlewares/validation/sectores.middleware.js";
+import { validarSectorId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 

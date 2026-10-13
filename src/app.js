@@ -12,9 +12,9 @@ import solicitudesRoutes from './routes/solicitudes.routes.js';
 import busquedasRoutes from './routes/busquedas.routes.js';
 import localidadesRoutes from './routes/localidades.routes.js';
 import productosRoutes from "./routes/productos.routes.js";
-import { logger } from './middlewares/logger.js'
-import { manejadorErrores } from './middlewares/manejadorErrores.js';
-import { noEncontrado } from './middlewares/noEncontrado.js';
+import { logger } from './middlewares/global/logger.js';
+import { manejadorErrores } from './middlewares/global/manejadorErrores.js';
+import { noEncontrado } from './middlewares/global/noEncontrado.js';
 import { z } from 'zod';
 
 z.config(z.locales.es());

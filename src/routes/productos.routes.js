@@ -6,8 +6,8 @@ import {
   actualizarProducto,
   eliminarProducto
 } from "../controllers/productos.controller.js"
-import { validarCreacionProducto,validarActualizarProducto,validarConsultaProducto } from "../middlewares/producto.middleware.js"
-import { validarProductoId } from "../middlewares/validarId.js";
+import { validarCreacionProducto, validarActualizarProducto, validarConsultaProducto } from "../middlewares/validation/producto.middleware.js";
+import { validarProductoId } from "../middlewares/base/validarId.js";
 
 const router = express.Router()
 

@@ -1,9 +1,9 @@
 import express from "express";
 import { obtenerUsuarios, obtenerUsuarioPorId, crearUsuario, actualizarUsuario, eliminarUsuario, registrarArtesano, registrarUsuario, iniciarSesion } from "../controllers/usuario.controller.js";
 import { crearUsuarioAdminSchema, actualizarUsuarioSchema } from "../validators/usuarios.schema.js";
-import { validarUsuarios, validarConsultaUsuarios, validarCrearUsuario, validarInicioSesion } from "../middlewares/usuarios.middleware.js";
-import { validarUsuarioId } from "../middlewares/validarId.js";
-// import { soloAdmin, organizadoresAdmins } from "../middlewares/roles.middleware.js";
+import { validarUsuarios, validarConsultaUsuarios, validarCrearUsuario, validarInicioSesion } from "../middlewares/validation/usuarios.middleware.js";
+import { validarUsuarioId } from "../middlewares/base/validarId.js";
+// import { soloAdmin, organizadoresAdmins } from "../middlewares/validation/roles.middleware.js";
 
 const router = express.Router();
 

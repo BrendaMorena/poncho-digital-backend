@@ -10,8 +10,8 @@ import {
   validarPabellon,
   validarActualizarPabellon,
   validarConsultaPabellones,
-} from "../middlewares/pabellones.middleware.js";
-import { validarPabellonId } from "../middlewares/validarId.js";
+} from "../middlewares/validation/pabellones.middleware.js";
+import { validarPabellonId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 
