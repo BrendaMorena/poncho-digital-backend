@@ -1,4 +1,4 @@
-import { crearError, detallarErroresZod } from "../utils/errores.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
 
 
 export const validarRubro = (schema) => (req, res, next) => {

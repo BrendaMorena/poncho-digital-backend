@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --experimental-strip-types src/app.js",
     "dev": "node --experimental-strip-types --watch src/app.js",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "test:flujo": "node test/flujoUsuario.js"
   },
   "repository": {
     "type": "git",

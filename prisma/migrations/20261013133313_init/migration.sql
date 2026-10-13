@@ -1,43 +1,59 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "EstadoStand" AS ENUM ('DISPONIBLE', 'OCUPADO', 'MANTENIMIENTO');
 
-  - The primary key for the `Stand` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `Stand` table. All the data in the column will be lost.
-  - You are about to drop the column `pabellon` on the `Stand` table. All the data in the column will be lost.
-  - You are about to drop the column `sector` on the `Stand` table. All the data in the column will be lost.
-  - A unique constraint covering the columns `[numero_stand]` on the table `Stand` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[artesanoId]` on the table `Stand` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `numero_stand` to the `Stand` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `pabellonId` to the `Stand` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `sectorId` to the `Stand` table without a default value. This is not possible if the table is not empty.
+-- CreateEnum
+CREATE TYPE "EstadoArtesano" AS ENUM ('ACTIVO', 'INACTIVO', 'SUSPENDIDO');
 
-*/
 -- CreateEnum
 CREATE TYPE "EstadoSolicitud" AS ENUM ('APROBADO', 'RECHAZADO', 'PENDIENTE', 'MODIFICACION_SOLICITADA');
 
--- DropIndex
-DROP INDEX "Stand_sector_key";
+-- CreateTable
+CREATE TABLE "Stand" (
+    "id_stand" SERIAL NOT NULL,
+    "numero_stand" INTEGER NOT NULL,
+    "estado" "EstadoStand" NOT NULL DEFAULT 'DISPONIBLE',
+    "coordenada" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "artesanoId" INTEGER,
+    "sectorId" INTEGER NOT NULL,
 
--- AlterTable
-ALTER TABLE "Stand" DROP CONSTRAINT "Stand_pkey",
-DROP COLUMN "id",
-DROP COLUMN "pabellon",
-DROP COLUMN "sector",
-ADD COLUMN     "artesanoId" INTEGER,
-ADD COLUMN     "id_stand" SERIAL NOT NULL,
-ADD COLUMN     "numero_stand" TEXT NOT NULL,
-ADD COLUMN     "pabellonId" INTEGER NOT NULL,
-ADD COLUMN     "sectorId" INTEGER NOT NULL,
-ADD CONSTRAINT "Stand_pkey" PRIMARY KEY ("id_stand");
+    CONSTRAINT "Stand_pkey" PRIMARY KEY ("id_stand")
+);
+
+-- CreateTable
+CREATE TABLE "Sector" (
+    "id_sector" SERIAL NOT NULL,
+    "codigo_sector" TEXT NOT NULL,
+    "nombre_sector" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "pabellonId" INTEGER,
+    "rubroId" INTEGER,
+
+    CONSTRAINT "Sector_pkey" PRIMARY KEY ("id_sector")
+);
+
+-- CreateTable
+CREATE TABLE "Pabellon" (
+    "id_pabellon" SERIAL NOT NULL,
+    "nombre_pabellon" TEXT NOT NULL,
+    "descripcion_pabellon" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Pabellon_pkey" PRIMARY KEY ("id_pabellon")
+);
 
 -- CreateTable
 CREATE TABLE "Artesano" (
     "id_artesano" SERIAL NOT NULL,
+    "nombre_emprendimiento" TEXT,
     "descripcion" TEXT NOT NULL,
-    "id_solicitudP" TEXT NOT NULL,
+    "estado" "EstadoArtesano" NOT NULL DEFAULT 'ACTIVO',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "usuarioId" INTEGER NOT NULL,
+    "usuarioId" UUID NOT NULL,
     "rubroId" INTEGER NOT NULL,
 
     CONSTRAINT "Artesano_pkey" PRIMARY KEY ("id_artesano")
@@ -49,7 +65,7 @@ CREATE TABLE "Busqueda" (
     "termino_busqueda" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "usuarioId" INTEGER,
+    "usuarioId" UUID,
     "rubroId" INTEGER,
     "localidadId" INTEGER,
     "pabellonId" INTEGER,
@@ -82,10 +98,11 @@ CREATE TABLE "Rol" (
 
 -- CreateTable
 CREATE TABLE "Usuario" (
-    "id_usuario" SERIAL NOT NULL,
+    "id_usuario" UUID NOT NULL,
     "nombre" TEXT NOT NULL,
     "apellido" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
+    "dni" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "telefono" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -109,13 +126,14 @@ CREATE TABLE "Rubro" (
 -- CreateTable
 CREATE TABLE "Solicitud" (
     "id_solicitud" SERIAL NOT NULL,
-    "descripcion" TEXT NOT NULL,
     "estado_solicitud" "EstadoSolicitud" NOT NULL DEFAULT 'PENDIENTE',
     "observaciones_admin" TEXT,
+    "nombre_emprendimiento" TEXT,
     "descripcion_emprendimiento" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "usuarioId" INTEGER NOT NULL,
+    "usuarioId" UUID NOT NULL,
+    "rubroId" INTEGER NOT NULL,
 
     CONSTRAINT "Solicitud_pkey" PRIMARY KEY ("id_solicitud")
 );
@@ -130,33 +148,29 @@ CREATE TABLE "Localidad" (
     CONSTRAINT "Localidad_pkey" PRIMARY KEY ("id_localidad")
 );
 
--- CreateTable
-CREATE TABLE "Pabellon" (
-    "id_pabellon" SERIAL NOT NULL,
-    "nombre_pabellon" TEXT NOT NULL,
-    "descripcion_pabellon" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+-- CreateIndex
+CREATE UNIQUE INDEX "Stand_numero_stand_key" ON "Stand"("numero_stand");
 
-    CONSTRAINT "Pabellon_pkey" PRIMARY KEY ("id_pabellon")
-);
+-- CreateIndex
+CREATE UNIQUE INDEX "Stand_artesanoId_key" ON "Stand"("artesanoId");
 
--- CreateTable
-CREATE TABLE "Sector" (
-    "id_sector" SERIAL NOT NULL,
-    "codigo_sector" TEXT NOT NULL,
-    "nombre_sector" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+-- CreateIndex
+CREATE UNIQUE INDEX "Sector_codigo_sector_key" ON "Sector"("codigo_sector");
 
-    CONSTRAINT "Sector_pkey" PRIMARY KEY ("id_sector")
-);
+-- CreateIndex
+CREATE UNIQUE INDEX "Sector_nombre_sector_key" ON "Sector"("nombre_sector");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Pabellon_nombre_pabellon_key" ON "Pabellon"("nombre_pabellon");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Artesano_usuarioId_key" ON "Artesano"("usuarioId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Rol_nombre_key" ON "Rol"("nombre");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Usuario_dni_key" ON "Usuario"("dni");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Usuario_email_key" ON "Usuario"("email");
@@ -170,21 +184,6 @@ CREATE UNIQUE INDEX "Solicitud_usuarioId_key" ON "Solicitud"("usuarioId");
 -- CreateIndex
 CREATE UNIQUE INDEX "Localidad_nombre_locacion_key" ON "Localidad"("nombre_locacion");
 
--- CreateIndex
-CREATE UNIQUE INDEX "Pabellon_nombre_pabellon_key" ON "Pabellon"("nombre_pabellon");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Sector_codigo_sector_key" ON "Sector"("codigo_sector");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Sector_nombre_sector_key" ON "Sector"("nombre_sector");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Stand_numero_stand_key" ON "Stand"("numero_stand");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Stand_artesanoId_key" ON "Stand"("artesanoId");
-
 -- AddForeignKey
 ALTER TABLE "Stand" ADD CONSTRAINT "Stand_artesanoId_fkey" FOREIGN KEY ("artesanoId") REFERENCES "Artesano"("id_artesano") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -192,7 +191,10 @@ ALTER TABLE "Stand" ADD CONSTRAINT "Stand_artesanoId_fkey" FOREIGN KEY ("artesan
 ALTER TABLE "Stand" ADD CONSTRAINT "Stand_sectorId_fkey" FOREIGN KEY ("sectorId") REFERENCES "Sector"("id_sector") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Stand" ADD CONSTRAINT "Stand_pabellonId_fkey" FOREIGN KEY ("pabellonId") REFERENCES "Pabellon"("id_pabellon") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Sector" ADD CONSTRAINT "Sector_pabellonId_fkey" FOREIGN KEY ("pabellonId") REFERENCES "Pabellon"("id_pabellon") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sector" ADD CONSTRAINT "Sector_rubroId_fkey" FOREIGN KEY ("rubroId") REFERENCES "Rubro"("id_rubro") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Artesano" ADD CONSTRAINT "Artesano_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id_usuario") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -223,3 +225,6 @@ ALTER TABLE "Usuario" ADD CONSTRAINT "Usuario_localidadId_fkey" FOREIGN KEY ("lo
 
 -- AddForeignKey
 ALTER TABLE "Solicitud" ADD CONSTRAINT "Solicitud_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id_usuario") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Solicitud" ADD CONSTRAINT "Solicitud_rubroId_fkey" FOREIGN KEY ("rubroId") REFERENCES "Rubro"("id_rubro") ON DELETE RESTRICT ON UPDATE CASCADE;

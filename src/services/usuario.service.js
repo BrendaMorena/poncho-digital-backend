@@ -45,7 +45,7 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
   
   const desplazamiento = (pagina - 1) * limite;
 
-   const [usuarios, total] = await prisma.$transaction([
+  const [usuarios, total] = await prisma.$transaction([
     prisma.usuario.findMany({
       where,
       orderBy,
@@ -54,7 +54,7 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
     }),
     prisma.usuario.count({ where }),
   ]);
- 
+
   return {
     usuarios,
     paginacion: {

@@ -63,9 +63,25 @@ export const obtenerSectores = async (criteriosConsulta) => {
 
   const orderBy = [{ [ordenarPor]: direccion }, { id_sector: "asc" }];
 
-  const include = {
-    pabellon: true,
-    rubro: true,
+  const selectLista = {
+    id_sector: true,
+    codigo_sector: true,
+    nombre_sector: true,
+    pabellon: {
+      select: {
+        id_pabellon: true,
+        nombre_pabellon: true,
+      },
+    },
+    rubro: {
+      select: {
+        id_rubro: true,
+        nombre: true,
+      },
+    },
+    _count: {
+      select: { stands: true },
+    },
   };
 
   const desplazamiento = (pagina - 1) * limite;
@@ -73,7 +89,7 @@ export const obtenerSectores = async (criteriosConsulta) => {
   const [sectores, total] = await prisma.$transaction([
     prisma.sector.findMany({
       where,
-      include,
+      select: selectLista,
       orderBy,
       skip: desplazamiento,
       take: limite,
@@ -97,9 +113,22 @@ export const obtenerSectorPorId = async (sectorId) => {
     where: {
       id_sector: sectorId,
     },
-    include: {
-      pabellon: true,
-      rubro: true,
+    select: {
+      id_sector: true,
+      codigo_sector: true,
+      nombre_sector: true,
+      pabellon: {
+        select: {
+          id_pabellon: true,
+          nombre_pabellon: true,
+        }
+      },
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre: true,
+        }
+      },
       _count: { select: { stands: true } }
     },
   });
@@ -120,9 +149,13 @@ export const crearSector = async (crearSectorDTO) => {
       rubroId: rubroId ?? null,
     },
     include: {
-      pabellon: true,
-      rubro: true,
-    },
+      pabellon: {
+        select: { id_pabellon: true, nombre_pabellon: true }
+      },
+      rubro: {
+        select: { id_rubro: true, nombre: true }
+      }
+    }
   });
 };
 
@@ -139,9 +172,13 @@ export const actualizarSector = async (sectorId, actualizarSectorDTO) => {
     where: { id_sector: sectorId },
     data,
     include: {
-      pabellon: true,
-      rubro: true,
-    },
+      pabellon: {
+        select: { id_pabellon: true, nombre_pabellon: true }
+      },
+      rubro: {
+        select: { id_rubro: true, nombre: true }
+      }
+    }
   });
 };
 

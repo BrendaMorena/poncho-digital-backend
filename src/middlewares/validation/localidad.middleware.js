@@ -2,8 +2,8 @@ import {
   crearLocalidadSchema,
   actualizarLocalidadSchema,
   consultarLocalidadesSchema,
-} from "../validators/localidad.schema.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
+} from "../../validators/localidad.schema.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
 
 export const validarCreacionLocalidad = (req, res, next) => {
   const resultado = crearLocalidadSchema.safeParse(req.body);

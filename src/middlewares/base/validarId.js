@@ -1,4 +1,4 @@
-import { crearError } from '../utils/errores.js';
+import { crearError } from '../../utils/errores.js';
 
 const validarId = elementoId => (req, res, next) => {
     const id = Number(req.params.id);
