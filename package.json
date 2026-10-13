@@ -5,7 +5,8 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node --experimental-strip-types src/app.js",
-    "dev": "node --experimental-strip-types --watch src/app.js"
+    "dev": "node --experimental-strip-types --watch src/app.js",
+    "seed": "node prisma/seed.js"
   },
   "repository": {
     "type": "git",
