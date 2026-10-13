@@ -2,8 +2,8 @@ import {
   pabellonSchema,
   actualizarPabellonSchema,
   consultarPabellonesSchema,
-} from "../validators/pabellones.schema.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
+} from "../../validators/pabellones.schema.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
 
 export const validarPabellon = (req, res, next) => {
   const resultado = pabellonSchema.safeParse(req.body);

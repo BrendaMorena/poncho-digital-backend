@@ -10,8 +10,8 @@ import {
   validarCreacionLocalidad,
   validarActualizacionLocalidad,
   validarConsultaLocalidades,
-} from "../middlewares/localidad.middleware.js";
-import { validarLocalidadId } from "../middlewares/validarId.js";
+} from "../middlewares/validation/localidad.middleware.js";
+import { validarLocalidadId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 

@@ -1,7 +1,6 @@
-import prisma from "../config/prisma.js";
-import { iniciarSesion } from "../controllers/usuario.controller.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
-import { consultarUsuarioSchema, registroUsuarioSchema } from "../validators/usuarios.schema.js";
+import prisma from "../../config/prisma.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
+import { consultarUsuarioSchema, registroUsuarioSchema, loginSchema } from "../../validators/usuarios.schema.js";
 
 export const validarUsuarios = (schema) => (req, res, next) =>{
   const resultado = schema.safeParse(req.body);
@@ -35,10 +34,24 @@ export const validarConsultaUsuarios = (req, res, next) => {
   return next();
 }
 
-
-
 export const validarCrearUsuario = (req, res, next) => {
-const resultado = registroUsuarioSchema.safeParse( req.body );
+  const resultado = registroUsuarioSchema.safeParse(req.body);
+  if (!resultado.success) {
+    const detalles = detallarErroresZod(resultado.error);
+    return next(
+      crearError(
+        "Los datos enviados para el registro de usuario son inválidos",
+        400,
+        detalles
+      )
+    );
+  }
+  req.crearUsuarioDto = resultado.data;
+  return next();
+};
+
+export const validarInicioSesion = (req, res, next) => {
+  const resultado = loginSchema.safeParse(req.body);
   if (!resultado.success) {
     const detalles = detallarErroresZod(resultado.error);
     return next(
@@ -51,24 +64,4 @@ const resultado = registroUsuarioSchema.safeParse( req.body );
   }
   req.iniciarSesionDTO = resultado.data;
   return next();
-};
-
-
-
-export const validarInicioSesion = (req, res, next) => {
-const resultado = iniciarSesionSchema.safeParse(
-  req.body
-);
-  if (!resultado.success) {
-    const detalles = detallarErroresZod(resultado.error);
-    return next(
-      crearError(
-        "Los datos enviados para el usuario son inválidos",
-        400,
-        detalles
-      )
-    );
-  }
-req.crearUsuarioDto = resultado.data;
-return next();
 };

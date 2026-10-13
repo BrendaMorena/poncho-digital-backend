@@ -30,7 +30,7 @@ export const obtenerStands = async (criteriosConsulta) => {
   const where = {}
 
   if (numero_stand !== undefined) {
-    where.numero_stand = { contains: numero_stand, mode: "insensitive" };
+    where.numero_stand = numero_stand
   }
 
   if (estado !== undefined) {
@@ -52,28 +52,34 @@ export const obtenerStands = async (criteriosConsulta) => {
     ? [{ artesano: { rubro: { nombre: direccion } } }, { id_stand: "asc" }]
     : [{ [ordenarPor]: direccion }, { id_stand: "asc" }];
 
-  const include = {
+  const selectLista = {
+    id_stand: true,
+    numero_stand: true,
+    estado: true,
     sector: {
-      include: { pabellon: true },
+      select: {
+        id_sector: true,
+        codigo_sector: true,
+        nombre_sector: true,
+        pabellon: {
+          select: {
+            id_pabellon: true,
+            nombre_pabellon: true
+          }
+        }
+      }
     },
     artesano: {
       select: {
         id_artesano: true,
         nombre_emprendimiento: true,
-        rubro: {
-          select: {
-            id_rubro: true,
-            nombre: true,
-          },
-        },
-        usuario: {
-          select: {
-            nombre: true,
-            apellido: true,
-          },
-        },
       },
     },
+  };
+
+  const selectMapa = {
+    ...selectLista,
+    coordenada: true,
   };
 
   if (pagina && limite) {
@@ -81,7 +87,7 @@ export const obtenerStands = async (criteriosConsulta) => {
     const [stands, total] = await prisma.$transaction([
       prisma.stand.findMany({
         where,
-        include,
+        select: selectLista,
         orderBy,
         skip: desplazamiento,
         take: limite,
@@ -102,7 +108,7 @@ export const obtenerStands = async (criteriosConsulta) => {
 
   const stands = await prisma.stand.findMany({
     where,
-    include,
+    select: selectMapa,
     orderBy,
   });
 
@@ -119,10 +125,30 @@ export const obtenerStandPorId = async (standId) => {
       id_stand: standId,
     },
     include: {
-      sector: { include: { pabellon: true } },
+      sector: {
+        select: {
+          id_sector: true,
+          codigo_sector: true,
+          nombre_sector: true,
+          pabellon: {
+            select: {
+              id_pabellon: true,
+              nombre_pabellon: true,
+            },
+          },
+        },
+      },
       artesano: {
-        include: {
-          rubro: true,
+        select: {
+          id_artesano: true,
+          nombre_emprendimiento: true,
+          descripcion: true,
+          rubro: {
+            select: {
+              id_rubro: true,
+              nombre: true,
+            },
+          },
           usuario: {
             select: {
               id_usuario: true,
@@ -153,7 +179,13 @@ export const crearStand = async (crearStandDTO) => {
       estado: "DISPONIBLE",
     },
     include: {
-      sector: true,
+      sector: {
+        select: {
+          id_sector: true,
+          codigo_sector: true,
+          nombre_sector: true,
+        },
+      },
     },
   });
 };
@@ -176,8 +208,19 @@ export const actualizarStand = async (idStand, actualizarStandDTO) => {
     where: { id_stand: idStand },
     data,
     include: {
-      sector: true,
-      artesano: true,
+      sector: {
+        select: {
+          id_sector: true,
+          codigo_sector: true,
+          nombre_sector: true,
+        },
+      },
+      artesano: {
+        select: {
+          id_artesano: true,
+          nombre_emprendimiento: true,
+        },
+      },
     },
   });
 };
@@ -268,8 +311,19 @@ export const asignarArtesanoAStand = async ({ artesanoId, standId }) => {
         estado: "OCUPADO",
       },
       include: {
-        sector: true,
-        artesano: true,
+        sector: {
+          select: {
+            id_sector: true,
+            codigo_sector: true,
+            nombre_sector: true,
+          },
+        },
+        artesano: {
+          select: {
+            id_artesano: true,
+            nombre_emprendimiento: true,
+          },
+        },
       },
     });
   });
@@ -292,7 +346,13 @@ export const liberarStand = async (idStand) => {
       estado: "DISPONIBLE",
     },
     include: {
-      sector: true,
+      sector: {
+        select: {
+          id_sector: true,
+          codigo_sector: true,
+          nombre_sector: true,
+        },
+      },
     },
   });
 };

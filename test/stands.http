@@ -12,13 +12,13 @@ GET {{baseUrl}}/info
 ### 1. CREACIÓN DE STANDS (POST /stands)
 ############################################################
 
-# Caso de Éxito 1: Crear nuevo Stand correlativo "50" en Sector 1 (ART1)
+# Caso de Éxito 1: Crear nuevo Stand correlativo 50 en Sector 1 (ART1)
 # Visualmente en el frontend se mostrará como: ART1-50
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
 {
-  "numero_stand": "50",
+  "numero_stand": 50,
   "coordenada": {
     "lat": -28.4683,
     "lng": -65.7792
@@ -28,13 +28,13 @@ Content-Type: application/json
 
 ###
 
-# Caso de Éxito 2: Crear Stand correlativo "51" en Sector 9 (FOOD - Foodtrucks)
+# Caso de Éxito 2: Crear Stand correlativo 51 en Sector 9 (FOOD - Foodtrucks)
 # Visualmente en el frontend se mostrará como: FOOD-51
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
 {
-  "numero_stand": "51",
+  "numero_stand": 51,
   "coordenada": {
     "lat": -28.4719,
     "lng": -65.7829
@@ -49,7 +49,7 @@ POST {{baseUrl}}/stands/
 Content-Type: application/json
 
 {
-  "numero_stand": "99",
+  "numero_stand": 99,
   "coordenada": {
     "lat": -28.4682,
     "lng": -65.7791
@@ -63,7 +63,7 @@ POST {{baseUrl}}/stands/
 Content-Type: application/json
 
 {
-  "numero_stand": "101",
+  "numero_stand": 101,
   "coordenada": {
     "lat": 150.0,
     "lng": -65.7791
@@ -78,7 +78,7 @@ POST {{baseUrl}}/stands/
 Content-Type: application/json
 
 {
-  "numero_stand": "102",
+  "numero_stand": 102,
   "coordenada": {
     "lat": -28.4682,
     "lng": -65.7791
@@ -88,12 +88,12 @@ Content-Type: application/json
 
 ###
 
-# Error 409: Duplicado (el stand '1' ya existe globalmente en la feria)
+# Error 409: Duplicado (el stand 1 ya existe globalmente en la feria)
 POST {{baseUrl}}/stands/
 Content-Type: application/json
 
 {
-  "numero_stand": "1",
+  "numero_stand": 1,
   "coordenada": {
     "lat": -28.4682,
     "lng": -65.7791
@@ -321,12 +321,12 @@ Content-Type: application/json
 
 ###
 
-# Error 409: Cambiar el numero_stand por uno que ya está ocupado ('2')
+# Error 409: Cambiar el numero_stand por uno que ya está ocupado (2)
 PATCH {{baseUrl}}/stands/1
 Content-Type: application/json
 
 {
-  "numero_stand": "2"
+  "numero_stand": 2
 }
 
 ###

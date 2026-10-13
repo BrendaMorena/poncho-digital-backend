@@ -3,8 +3,8 @@ import {
   actualizarStandSchema,
   consultarStandsSchema,
   asignarStandSchema,
-} from "../validators/stands.schema.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
+} from "../../validators/stands.schema.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
 
 
 export const validarStand = (req, res, next) => {

@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 const standBaseSchema = z.object({
-  numero_stand: z
-    .string({ required_error: "El número de stand es obligatorio" })
-    .trim()
-    .min(1, "El número de Stand no puede estar vacío"),
+  numero_stand: z.coerce
+    .number("El número de stand debe ser un número")
+    .int("El número de stand debe ser un número entero")
+    .positive("El número de stand debe ser mayor a 0"),
 
   coordenada: z.object(
     {
@@ -28,7 +28,7 @@ const standBaseSchema = z.object({
   ),
 
   sectorId: z
-    .number({ invalid_type_error: "El sectorId debe ser un número" })
+    .number("El sectorId debe ser un número")
     .int("El sectorId debe ser un número entero")
     .positive("El sectorId debe ser un número positivo"),
 
@@ -51,26 +51,26 @@ export const actualizarStandSchema = standBaseSchema
 
 // Esquema para FILTRAR STANDS (GET /stands)
 export const consultarStandsSchema = z.object({
-  numero_stand: z
-    .string()
-    .trim()
-    .min(1, "El número de stand no puede estar vacío")
+  numero_stand: z.coerce
+    .number("El número de stand debe ser un número")
+    .int("El número de stand debe ser un número entero")
+    .positive("El número de stand debe ser mayor a 0")
     .optional(),
 
   estado: z
     .enum(["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"], {
-      message: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO",
+      error: "El estado debe ser DISPONIBLE, OCUPADO o MANTENIMIENTO",
     })
     .optional(),
 
   sectorId: z.coerce
-    .number({ message: "El sectorId debe ser un número" })
+    .number("El sectorId debe ser un número")
     .int("El sectorId debe ser un número entero")
     .positive("El sectorId debe ser positivo")
     .optional(),
 
   rubroId: z.coerce
-    .number({ message: "El rubroId debe ser un número" })
+    .number("El rubroId debe ser un número")
     .int("El rubroId debe ser un número entero")
     .positive("El rubroId debe ser positivo")
     .optional(),
@@ -84,33 +84,28 @@ export const consultarStandsSchema = z.object({
     .default("asc"),
 
   pagina: z
-    .coerce.number({ message: "La página debe ser un número" })
+    .coerce.number("La página debe ser un número")
     .int("La página debe ser un número entero")
     .positive("La página debe ser mayor a 0")
-    .default(1)
     .optional(),
 
-  limite: z
-    .coerce.number({ message: "El límite debe ser un número" })
+  limite: z.coerce
+    .number("El límite debe ser un número")
     .int("El límite debe ser un número entero")
     .min(1, "El límite mínimo es 1")
     .max(50, "El límite máximo es 50")
-    .default(10)
     .optional(),
 });
 
 // Esquema para ASIGNAR STAND (POST /stands/asignar)
 export const asignarStandSchema = z.object({
   artesanoId: z.coerce
-    .number({
-      required_error: "El artesanoId es obligatorio",
-      invalid_type_error: "El artesanoId debe ser un número",
-    })
+    .number("El artesanoId debe ser un numero y es obligatorio")
     .int("El artesanoId debe ser un número entero")
     .positive("El artesanoId debe ser un número positivo"),
 
   standId: z.coerce
-    .number({ invalid_type_error: "El standId debe ser un número" })
+    .number("El standId debe ser un número")
     .int("El standId debe ser un número entero")
     .positive("El standId debe ser un número positivo")
     .optional(),

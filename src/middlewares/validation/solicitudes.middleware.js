@@ -5,8 +5,8 @@ import {
   solicitarModificacionSchema,
   actualizarSolicitudSchema,
   consultarSolicitudesSchema,
-} from "../validators/solicitudes.schema.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
+} from "../../validators/solicitudes.schema.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
 
 export const validarCreacionSolicitud = (req, res, next) => {
   const resultado = crearSolicitudSchema.safeParse(req.body);

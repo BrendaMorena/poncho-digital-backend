@@ -1,6 +1,6 @@
-import { crearError, detallarErroresZod } from "../utils/errores.js";
-import * as busquedaService from "../services/busqueda.service.js";
-import { busquedaSchema, consultaBusquedaSchema } from "../validators/busqueda.schema.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
+import * as busquedaService from "../../services/busqueda.service.js";
+import { busquedaSchema, consultaBusquedaSchema } from "../../validators/busqueda.schema.js";
 
 export const validarBusqueda = (req, res, next) => {
   const resultado = busquedaSchema.safeParse(req.body)

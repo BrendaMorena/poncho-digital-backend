@@ -45,7 +45,7 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
   
   const desplazamiento = (pagina - 1) * limite;
 
-   const [usuarios, total] = await prisma.$transaction([
+  const [usuarios, total] = await prisma.$transaction([
     prisma.usuario.findMany({
       where,
       orderBy,
@@ -54,7 +54,7 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
     }),
     prisma.usuario.count({ where }),
   ]);
- 
+
   return {
     usuarios,
     paginacion: {
@@ -70,7 +70,7 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
 export const obtenerUsuarioPorId = async (id) =>{
   return await prisma.usuario.findUnique({
     where: { id_usuario: id },
-    include: {
+    select: {
       id_usuario: true, 
       nombre: true,
       apellido: true,
@@ -132,7 +132,7 @@ export const registrarArtesano = async (datosRegistro) => {
         apellido,
         dni,
         email,
-        password: passwordHash, 
+        passwordHash, 
         telefono,
         localidadId,
         rolId: rolArtesano.id_rol,
@@ -187,12 +187,17 @@ export const crearUsuario = async (crearUsuarioDto) => {
       nombre,
       apellido,
       dni,
-      password: passwordHash, // hash
+      passwordHash,
       telefono,
       email,
       localidadId,
       rolId,
-    },
+    }, select: {
+      nombre,
+      apellido,
+      dni,
+      localidadId
+    }
   });
 
   return nuevoUsuario;
@@ -222,7 +227,7 @@ export const actualizarUsuario = async (id, actualizarUsuarioDto) => {
       nombre,
       apellido,
       dni,
-      password: passwordHash,
+      passwordHash,
       telefono,
       email,
       localidadId
@@ -257,6 +262,13 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
   const {nombre, apellido, dni, email, telefono, password, localidadId} = registrarUsuarioDTO
   await existeEmailUsuario(email)
   await existeDniUsuario(dni)
+
+  const localidadExiste = await prisma.localidad.findUnique({
+    where: { id_localidad: localidadId }
+  });
+  if (!localidadExiste) {
+    throw crearError(`No existe una localidad con id ${localidadId}`, 404);
+  }
 
   const passwordHash = await bcrypt.hash(password, FACTOR_COSTO)
 
@@ -295,29 +307,33 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
 }
 
 
-const inciarSesion = async (inciarSesionDTO) => {
-  const { email, password } = inciarSesionDTO 
+export const iniciarSesion = async (iniciarSesionDTO) => {
+  const { email, password } = iniciarSesionDTO;
 
   const usuarioEncontrado = await prisma.usuario.findUnique({
-    where: {email: email}
-  })
+    where: { email },
+    include: {
+      rol: true
+    }
+  });
 
-  if(!usuarioEncontrado){
-    throw crearError("Las credenciales son inválidas.", 401)
+  if (!usuarioEncontrado) {
+    throw crearError("Las credenciales son inválidas.", 401);
   }
 
   const passwordValida = await bcrypt.compare(
     password,
-    usuario.passwordHash
-  )
+    usuarioEncontrado.passwordHash
+  );
 
-  if(!passwordValida){
-    throw crearError ("Las credenciales son inválidas.", 401)
+  if (!passwordValida) {
+    throw crearError("Las credenciales son inválidas.", 401);
   }
 
   return {
-    id: usuario.id,
-    nombre: usuario.nombre,
-    email: usuario.email
-  }
-}
+    id_usuario: usuarioEncontrado.id_usuario,
+    nombre: usuarioEncontrado.nombre,
+    apellido: usuarioEncontrado.apellido,
+    email: usuarioEncontrado.email,
+  };
+};

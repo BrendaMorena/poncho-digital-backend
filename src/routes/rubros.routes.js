@@ -1,8 +1,8 @@
 import express from "express";
 import { obtenerRubros, obtenerRubroPorId, crearRubro, actualizarRubro, eliminarRubro } from "../controllers/rubro.controller.js";
-import { validarRubro } from "../middlewares/rubros.middleware.js";
+import { validarRubro } from "../middlewares/validation/rubros.middleware.js";
 import { crearRubroSchema, actualizarRubroSchema } from "../validators/rubros.schema.js";
-import { validarRubroId } from "../middlewares/validarId.js";
+import { validarRubroId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 

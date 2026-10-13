@@ -55,7 +55,7 @@ export const eliminarRubro = async (req, res, next) => {
   try {
     const id = req.rubroId; 
     await rubroService.eliminarRubro(id);
-    return res.status(200).json({ mensaje: "Rubro eliminado exitosamente" });
+    return res.status(204).send();
   } catch (error) {
     
     if (error.code === "P2003") {

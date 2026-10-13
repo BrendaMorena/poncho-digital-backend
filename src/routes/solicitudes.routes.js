@@ -16,8 +16,8 @@ import {
   validarSolicitudModificacion,
   validarActualizacionSolicitud,
   validarConsultaSolicitudes,
-} from "../middlewares/solicitudes.middleware.js";
-import { validarSolicitudId } from "../middlewares/validarId.js";
+} from "../middlewares/validation/solicitudes.middleware.js";
+import { validarSolicitudId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 

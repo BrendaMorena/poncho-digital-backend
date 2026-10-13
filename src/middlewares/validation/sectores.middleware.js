@@ -2,8 +2,8 @@ import {
   sectorSchema,
   actualizarSectorSchema,
   consultarSectoresSchema,
-} from "../validators/sectores.schema.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
+} from "../../validators/sectores.schema.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
 
 export const validarSector = (req, res, next) => {
   const resultado = sectorSchema.safeParse(req.body);

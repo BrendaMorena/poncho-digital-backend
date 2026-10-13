@@ -2,17 +2,17 @@ import { z } from "zod";
 
 const sectorBaseSchema = z.object({
   codigo_sector: z
-    .string({ required_error: "El código del sector es obligatorio" })
+    .string( "El código del sector es obligatorio" )
     .trim()
     .min(1, "El código del sector no puede estar vacío"),
 
   nombre_sector: z
-    .string({ required_error: "El nombre del sector es obligatorio" })
+    .string("El nombre del sector es obligatorio")
     .trim()
     .min(1, "El nombre del sector no puede estar vacío"),
 
   pabellonId: z
-    .number({ invalid_type_error: "El pabellonId debe ser un número" })
+    .number("El pabellonId debe ser un número")
     .int("El pabellonId debe ser un número entero")
     .positive("El pabellonId debe ser positivo")
     .nullable()
@@ -51,7 +51,7 @@ export const consultarSectoresSchema = z.object({
     .optional(),
 
   pabellonId: z.coerce
-    .number({ message: "El pabellonId debe ser un número" })
+    .number("El pabellonId debe ser un número")
     .int("El pabellonId debe ser un número entero")
     .positive("El pabellonId debe ser positivo")
     .optional(),
@@ -70,13 +70,13 @@ export const consultarSectoresSchema = z.object({
   direccion: z.enum(["asc", "desc"]).default("asc"),
 
   pagina: z.coerce
-    .number({ message: "La página debe ser un número" })
+    .number("La página debe ser un número")
     .int("La página debe ser un número entero")
     .positive("La página debe ser mayor a 0")
     .default(1),
 
   limite: z.coerce
-    .number({ message: "El límite debe ser un número" })
+    .number("El límite debe ser un número")
     .int("El límite debe ser un número entero")
     .min(1, "El límite mínimo es 1")
     .max(50, "El límite máximo es 50")

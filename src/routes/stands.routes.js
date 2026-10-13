@@ -13,9 +13,9 @@ import {
   validarActualizarStand,
   validarConsultaStands,
   validarAsignarStand,
-} from "../middlewares/stands.middleware.js";
-import { validarStandId } from "../middlewares/validarId.js";
-import { capturarBusqueda } from "../middlewares/busquedas.middleware.js";
+} from "../middlewares/validation/stands.middleware.js";
+import { validarStandId } from "../middlewares/base/validarId.js";
+import { capturarBusqueda } from "../middlewares/validation/busquedas.middleware.js";
 
 const router = express.Router();
 

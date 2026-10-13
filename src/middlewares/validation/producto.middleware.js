@@ -2,8 +2,8 @@ import {
   crearProductoSchema,
   actualizarProductoSchema,
   consultarProductoSchema,
-} from "../validators/productos.schema.js";
-import { crearError, detallarErroresZod } from "../utils/errores.js";
+} from "../../validators/productos.schema.js";
+import { crearError, detallarErroresZod } from "../../utils/errores.js";
 
 export const validarCreacionProducto = (req, res, next) => {
   const resultado = crearProductoSchema.safeParse(req.body)

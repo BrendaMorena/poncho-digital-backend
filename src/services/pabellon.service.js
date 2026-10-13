@@ -27,8 +27,10 @@ export const obtenerPabellones = async (criteriosConsulta) => {
 
   const orderBy = [{ [ordenarPor]: direccion }, { id_pabellon: "asc" }];
 
-  const include = {
-    sectores: true,
+  const selectLista = {
+    id_pabellon: true,
+    nombre_pabellon: true,
+    _count: { select: {sectores: true} }
   };
 
   const desplazamiento = (pagina - 1) * limite;
@@ -36,7 +38,7 @@ export const obtenerPabellones = async (criteriosConsulta) => {
   const [pabellones, total] = await prisma.$transaction([
     prisma.pabellon.findMany({
       where,
-      include,
+      select: selectLista,
       orderBy,
       skip: desplazamiento,
       take: limite,
@@ -60,9 +62,17 @@ export const obtenerPabellonPorId = async (pabellonId) => {
     where: {
       id_pabellon: pabellonId,
     },
-    include: {
-      sectores: true,
-    },
+    select: {
+      id_pabellon: true,
+      nombre_pabellon: true,
+      descripcion_pabellon: true,
+      sectores: {
+        select: {
+          id_sector: true,
+          nombre_sector: true,
+        }
+      }
+    }
   });
 };
 
