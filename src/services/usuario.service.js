@@ -86,7 +86,18 @@ export const obtenerUsuarioPorId = async (id) =>{
 
 
 export const registrarArtesano = async (datosRegistro) => {
-  const { nombre, apellido, dni, email, password, telefono, localidadId, rubroId, nombre_emprendimiento, descripcion_emprendimiento, } = datosRegistro;
+  const { 
+    nombre, 
+    apellido, 
+    dni, 
+    email, 
+    password, 
+    telefono,
+    localidadId, 
+    rubroId, 
+    nombre_emprendimiento, 
+    descripcion_emprendimiento, 
+  } = datosRegistro;
   
   
   const emailExiste = await prisma.usuario.findUnique({ where: { email } });
@@ -143,9 +154,17 @@ export const registrarArtesano = async (datosRegistro) => {
 };
 
 export const crearUsuario = async (crearUsuarioDto) => {
-  const { nombre, apellido, dni, password, telefono, email, localidadId, rolId } = crearUsuarioDto;
-  
-  // Validamos email y DNI
+  const { 
+    nombre, 
+    apellido, 
+    dni, 
+    password, 
+    telefono, 
+    email, 
+    localidadId, 
+    rolId 
+  } = crearUsuarioDto;
+    
   const emailExiste = await prisma.usuario.findUnique({ where: { email } });
   if (emailExiste) throw crearError(`El correo ${email} ya está registrado`, 409);
 
@@ -168,7 +187,7 @@ export const crearUsuario = async (crearUsuarioDto) => {
       nombre,
       apellido,
       dni,
-      //password: passwordHash, // hash
+      password: passwordHash, // hash
       telefono,
       email,
       localidadId,
@@ -207,7 +226,7 @@ export const actualizarUsuario = async (id, actualizarUsuarioDto) => {
       telefono,
       email,
       localidadId
-    }
+    } 
   });
 };
 

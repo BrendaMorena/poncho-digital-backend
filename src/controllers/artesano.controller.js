@@ -5,10 +5,11 @@ import * as artesanoService from "../services/artesano.service.js";
 
 export const obtenerArtesanos = async (req, res, next) => {
   try {
-    const artesanos = await artesanoService.obtenerArtesanos(req.consultaArtesanos);
+    const criteriosConsulta = req.consultaArtesanos; 
+    const artesanos = await artesanoService.obtenerArtesanos(criteriosConsulta);
     return res.json(artesanos);
   } catch (error) {
-    next(error); 
+    next(error);
   }
 };
 
@@ -28,12 +29,24 @@ try{
 };
 
 
+export const crearArtesano = async (req, res, next) => {
+  try {
+    const crearArtesanoDTO = req.body;
+    const nuevoArtesano = await artesanoService.crearArtesano(crearArtesanoDTO);
+    return res.status(201).json(nuevoArtesano);
+  } catch (error) {
+    if (error.code === "P2002") {
+      return next(crearError("Este usuario ya se encuentra registrado como artesano", 409));
+    }
+    return next(error);
+  }
+};
 
 export const actualizarArtesano = async (req, res, next) => {
   try {
     const idArtesano = req.artesanoId; 
     const actualizarArtesanoDTO = req.body; 
-    // Llamamos al servicio
+    
     const artesanoActualizado = await artesanoService.actualizarArtesano(idArtesano, actualizarArtesanoDTO);
     
     return res.json(artesanoActualizado);

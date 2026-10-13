@@ -28,7 +28,6 @@ export const registrarArtesano = async (req, res, next) => {
   try {
     const datosRegistro = req.body;
 
-    // Llama al servicio de solicitud
     const resultado = await usuarioService.registrarArtesano(datosRegistro);
 
     return res.status(201).json({
