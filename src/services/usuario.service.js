@@ -43,12 +43,25 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
   
   const orderBy = [{ [ordenarPor]: direccion }, { id_usuario: "asc" }];
   
+  const selectLista = {
+        id_usuario: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        rol: {
+          select: {
+            nombre: true,
+          },
+        },
+      }
+
   const desplazamiento = (pagina - 1) * limite;
 
-  const [usuarios, total] = await prisma.$transaction([
+const [usuarios, total] = await prisma.$transaction([
     prisma.usuario.findMany({
       where,
       orderBy,
+      select: selectLista,
       skip: desplazamiento,
       take: limite,
     }),
@@ -65,7 +78,6 @@ export const obtenerUsuarios = async (criteriosConsulta) => {
     }
   };
 };
-
 
 export const obtenerUsuarioPorId = async (id) =>{
   return await prisma.usuario.findUnique({
@@ -84,74 +96,6 @@ export const obtenerUsuarioPorId = async (id) =>{
   });
 };
 
-
-export const registrarArtesano = async (datosRegistro) => {
-  const { 
-    nombre, 
-    apellido, 
-    dni, 
-    email, 
-    password, 
-    telefono,
-    localidadId, 
-    rubroId, 
-    nombre_emprendimiento, 
-    descripcion_emprendimiento, 
-  } = datosRegistro;
-  
-  
-  const emailExiste = await prisma.usuario.findUnique({ where: { email } });
-  if (emailExiste) {
-    throw crearError(`El correo ${email} ya está registrado`, 409);
-  }
-
-  
-  if (dni) {
-    const dniExiste = await prisma.usuario.findUnique({ where: { dni } });
-    if (dniExiste) {
-      throw crearError(`El DNI ${dni} ya está registrado`, 409);
-    }
-  }
-
-  
-  const rolArtesano = await prisma.rol.findFirst({
-    where: { nombre: { contains: "artesano", mode: "insensitive" } },
-  });
-  if (!rolArtesano) {
-    throw crearError("No se encontró el rol de artesano configurado en el sistema", 500);
-  }
-  
-  const passwordHash = await bcrypt.hash(password, 10);
-  
-  return prisma.$transaction(async (tx) => {
-    
-    // A) Se crea la cuenta
-    const nuevoUsuario = await tx.usuario.create({
-      data: {
-        nombre,
-        apellido,
-        dni,
-        email,
-        passwordHash, 
-        telefono,
-        localidadId,
-        rolId: rolArtesano.id_rol,
-      },
-      include: { rol: true, localidad: true },
-    });
-    // B) Se pide a Solicitud que cree el trámite enlazado
-    const nuevaSolicitud = await solicitudService.crearSolicitud({
-      usuarioId: nuevoUsuario.id_usuario,
-      rubroId,
-      nombre_emprendimiento,
-      descripcion_emprendimiento,
-    }, tx); 
-    return {
-      usuario: nuevoUsuario,
-      solicitud: nuevaSolicitud,
-    };
-  });
-};
 
 export const crearUsuario = async (crearUsuarioDto) => {
   const { 
@@ -256,7 +200,6 @@ const existeEmailUsuario = existeAtributo("usuario", "email")
 const existeDniUsuario = existeAtributo("usuario", "dni")
 
 const FACTOR_COSTO = 10
-const ROL_USUARIO_POR_DEFECTO = 3;
 
 export const registrarUsuario = async (registrarUsuarioDTO) => {
   const {nombre, apellido, dni, email, telefono, password, localidadId} = registrarUsuarioDTO
@@ -268,6 +211,13 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
   });
   if (!localidadExiste) {
     throw crearError(`No existe una localidad con id ${localidadId}`, 404);
+  }
+
+  const rolArtesano = await prisma.rol.findFirst({
+    where: { nombre: { contains: "artesano", mode: "insensitive" } },
+  });
+  if (!rolArtesano) {
+    throw crearError("No se encontró el rol de artesano configurado en el sistema", 500);
   }
 
   const passwordHash = await bcrypt.hash(password, FACTOR_COSTO)
@@ -282,7 +232,7 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
         email,
         telefono,
         passwordHash,
-        rolId: ROL_USUARIO_POR_DEFECTO,
+        rolId: rolArtesano.id_rol,
         localidadId,
       },
       select: {
@@ -305,7 +255,6 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
     return {...nuevoUsuario, solicitud: nuevaSolicitud}
   })
 }
-
 
 export const iniciarSesion = async (iniciarSesionDTO) => {
   const { email, password } = iniciarSesionDTO;

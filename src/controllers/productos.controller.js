@@ -3,14 +3,14 @@ import { crearError } from "../utils/errores.js";
 
 export const crearProducto = async (req, res, next) => {
   try {
-    const crearProductoDTO = req.body;
+    const crearProductoDTO = req.crearProductoDTO;
     const nuevoProducto = await productoServices.crearProducto(crearProductoDTO)
 
     return res.status(201).json(nuevoProducto);
   } catch (error) {
     if (error.code === "P2003") {
       return next(
-        crearError(`El artesano con id ${req.body.artesanoId} no existe en el sistema`, 400)
+        crearError(`El artesano con id ${req.crearProductoDTO?.artesanoId} no existe en el sistema`, 400)
       );
     }
     return next(error)
@@ -19,7 +19,7 @@ export const crearProducto = async (req, res, next) => {
 
 export const obtenerProductos = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaProducto;
+    const criteriosConsulta = req.consultaProductoDTO;
     const productos = await productoServices.consultarProductos(criteriosConsulta);
     return res.json(productos)
   } catch (error) {
@@ -45,7 +45,7 @@ export const obtenerProductoPorId = async (req, res, next) => {
 export const actualizarProducto = async (req, res, next) => {
   try {
     const id = req.productoId
-    const actualizarProductoDTO = req.body
+    const actualizarProductoDTO = req.actualizarProductoDTO;
     const productoActualizado = await productoServices.actualizarProducto(id, actualizarProductoDTO)
 
     return res.json(productoActualizado)
@@ -55,7 +55,7 @@ export const actualizarProducto = async (req, res, next) => {
     }
     if (error.code === "P2003") {
       return next(
-        crearError(`El artesano con id ${req.body.artesanoId} no existe en el sistema`, 400)
+        crearError(`El artesano con id ${req.actualizarProductoDTO?.artesanoId} no existe en el sistema`, 400)
       )
     }
     return next(error)

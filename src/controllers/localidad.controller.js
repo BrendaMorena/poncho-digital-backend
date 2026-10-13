@@ -3,12 +3,13 @@ import { crearError } from "../utils/errores.js";
 
 export const crearLocalidad = async (req, res, next) => {
   try {
-    const nuevaLocalidad = await localidadService.crearLocalidad(req.body);
-    return res.status(201).json(nuevaLocalidad,);
+    const crearLocalidadDTO = req.crearLocalidadDTO;
+    const nuevaLocalidad = await localidadService.crearLocalidad(crearLocalidadDTO);
+    return res.status(201).json(nuevaLocalidad);
   } catch (error) {
     if (error.code === "P2002") {
       return next(
-        crearError(`Ya existe una localidad con el nombre '${req.body.nombre_locacion}'`, 409)
+        crearError(`Ya existe una localidad con el nombre '${req.crearLocalidadDTO?.nombre_locacion}'`, 409)
       );
     }
     return next(error);
@@ -17,7 +18,7 @@ export const crearLocalidad = async (req, res, next) => {
 
 export const obtenerLocalidades = async (req, res, next) => {
   try {
-    const resultado = await localidadService.consultarLocalidades(req.consultaLocalidades);
+    const resultado = await localidadService.consultarLocalidades(req.consultaLocalidadesDTO);
     return res.json(resultado);
   } catch (error) {
     return next(error);
@@ -42,7 +43,8 @@ export const obtenerLocalidadPorId = async (req, res, next) => {
 export const actualizarLocalidad = async (req, res, next) => {
   try {
     const id = req.localidadId;
-    const localidadActualizada = await localidadService.actualizarLocalidad(id, req.body);
+    const actualizarLocalidadDTO = req.actualizarLocalidadDTO;
+    const localidadActualizada = await localidadService.actualizarLocalidad(id, actualizarLocalidadDTO);
 
     return res.json(localidadActualizada);
   } catch (error) {
@@ -51,7 +53,7 @@ export const actualizarLocalidad = async (req, res, next) => {
     }
     if (error.code === "P2002") {
       return next(
-        crearError(`Ya existe una localidad con el nombre '${req.body.nombre_locacion}'`, 409)
+        crearError(`Ya existe una localidad con el nombre '${req.actualizarLocalidadDTO?.nombre_locacion}'`, 409)
       );
     }
     return next(error);

@@ -3,7 +3,7 @@ import * as sectorService from "../services/sector.service.js";
 
 export const obtenerSectores = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaSectores;
+    const criteriosConsulta = req.consultaSectoresDTO;
     const resultado = await sectorService.obtenerSectores(criteriosConsulta);
     return res.json(resultado);
   } catch (error) {
@@ -27,7 +27,7 @@ export const obtenerSectorPorId = async (req, res, next) => {
 
 export const crearSector = async (req, res, next) => {
   try {
-    const crearSectorDTO = req.body;
+    const crearSectorDTO = req.crearSectorDTO;
     const nuevoSector = await sectorService.crearSector(crearSectorDTO);
 
     return res.status(201).json(nuevoSector);
@@ -44,7 +44,7 @@ export const crearSector = async (req, res, next) => {
 export const actualizarSector = async (req, res, next) => {
   try {
     const sectorId = req.sectorId;
-    const actualizarSectorDTO = req.body;
+    const actualizarSectorDTO = req.actualizarSectorDTO;
     const sectorActualizado = await sectorService.actualizarSector(
       sectorId,
       actualizarSectorDTO,

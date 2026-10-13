@@ -1,7 +1,12 @@
 import express from "express";
 import { obtenerUsuarios, obtenerUsuarioPorId, crearUsuario, actualizarUsuario, eliminarUsuario, registrarArtesano, registrarUsuario, iniciarSesion } from "../controllers/usuario.controller.js";
-import { crearUsuarioAdminSchema, actualizarUsuarioSchema } from "../validators/usuarios.schema.js";
-import { validarUsuarios, validarConsultaUsuarios, validarCrearUsuario, validarInicioSesion } from "../middlewares/validation/usuarios.middleware.js";
+import { 
+  validarConsultaUsuarios, 
+  validarCrearUsuarioAdmin, 
+  validarActualizarUsuario, 
+  validarCrearUsuario, 
+  validarInicioSesion 
+} from "../middlewares/validation/usuarios.middleware.js";
 import { validarUsuarioId } from "../middlewares/base/validarId.js";
 // import { soloAdmin, organizadoresAdmins } from "../middlewares/validation/roles.middleware.js";
 
@@ -12,13 +17,13 @@ const router = express.Router();
 //router.get("/:id", organizadoresAdmins, validarUsuarioId, obtenerUsuarioPorId);
 router.get("/", validarConsultaUsuarios, obtenerUsuarios);
 router.get("/:id", validarUsuarioId, obtenerUsuarioPorId);
-//router.post("/", soloAdmin, validarUsuarios(crearUsuarioSchema), crearUsuario);
-router.post("/", validarUsuarios(crearUsuarioAdminSchema), crearUsuario);
-router.patch("/:id", validarUsuarioId, validarUsuarios(actualizarUsuarioSchema), actualizarUsuario); //para el futuro cuando ya tengamos login permitir que el uduairo pueda modificar su pass
+//router.post("/", soloAdmin, validarCrearUsuarioAdmin, crearUsuario);
+router.post("/", validarCrearUsuarioAdmin, crearUsuario);
+router.patch("/:id", validarUsuarioId, validarActualizarUsuario, actualizarUsuario); //para el futuro cuando ya tengamos login permitir que el uduairo pueda modificar su pass
 //router.delete("/:id", soloAdmin, validarUsuarioId, eliminarUsuario)
-router.delete("/:id", validarUsuarioId, eliminarUsuario)
+router.delete("/:id", validarUsuarioId, eliminarUsuario);
 // router.post("/registro", validarUsuarios(registroArtesanoSchema), registrarArtesano);
-router.post("/registro", validarCrearUsuario, registrarUsuario)
-router.post("/login", validarInicioSesion, iniciarSesion)
+router.post("/registro", validarCrearUsuario, registrarUsuario);
+router.post("/login", validarInicioSesion, iniciarSesion);
 
 export default router;

@@ -4,7 +4,7 @@ import * as standService from "../services/stand.service.js";
 
 export const obtenerStands = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaStands
+    const criteriosConsulta = req.consultaStandsDTO;
     const stands = await standService.obtenerStands(criteriosConsulta);
     return res.json(stands);
   } catch (error) {
@@ -27,13 +27,13 @@ export const obtenerStandPorId = async (req, res, next) => {
 // Segun tengo entendido si devuelve P2002 ya existe en bd
 export const crearStand = async (req, res, next) => {
   try {
-    const crearStandDTO = req.body
+    const crearStandDTO = req.crearStandDTO;
     const nuevoStand = await standService.crearStand(crearStandDTO)
 
     return res.status(201).json(nuevoStand)
   } catch (error) {
     if(error.code === "P2002"){
-      return next(crearError(`El Stand ${req.body.numero_stand} ya existe en el sistema`, 409))
+      return next(crearError(`El Stand ${req.crearStandDTO?.numero_stand} ya existe en el sistema`, 409))
     }
     return next(error)
   }
@@ -42,7 +42,7 @@ export const crearStand = async (req, res, next) => {
 export const actualizarStand = async (req, res, next) => {
   try {
     const idStand = req.standId
-    const actualizarStandDTO = req.body
+    const actualizarStandDTO = req.actualizarStandDTO;
     const standActualizado = await standService.actualizarStand(idStand, actualizarStandDTO)
     return res.json(standActualizado)
   } catch (error) {
@@ -69,7 +69,7 @@ export const eliminarStand = async (req, res, next) => {
 
 export const asignarStand = async (req, res, next) => {
   try {
-    const resultado = await standService.asignarArtesanoAStand(req.body);
+    const resultado = await standService.asignarArtesanoAStand(req.asignarStandDTO);
     return res.status(200).json(resultado);
   } catch (error) {
     if (error.code === "P2002") {

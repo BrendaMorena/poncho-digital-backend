@@ -3,7 +3,7 @@ import * as pabellonService from "../services/pabellon.service.js";
 
 export const obtenerPabellones = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaPabellones;
+    const criteriosConsulta = req.consultaPabellonesDTO;
     const resultado = await pabellonService.obtenerPabellones(criteriosConsulta);
     return res.json(resultado);
   } catch (error) {
@@ -27,7 +27,7 @@ export const obtenerPabellonPorId = async (req, res, next) => {
 
 export const crearPabellon = async (req, res, next) => {
   try {
-    const crearPabellonDTO = req.body;
+    const crearPabellonDTO = req.crearPabellonDTO;
     const nuevoPabellon = await pabellonService.crearPabellon(crearPabellonDTO);
 
     return res.status(201).json(nuevoPabellon);
@@ -35,7 +35,7 @@ export const crearPabellon = async (req, res, next) => {
     if (error.code === "P2002") {
       return next(
         crearError(
-          `El Pabellón "${req.body.nombre_pabellon}" ya existe en el sistema`,
+          `El Pabellón "${req.crearPabellonDTO?.nombre_pabellon}" ya existe en el sistema`,
           409
         )
       );
@@ -47,7 +47,7 @@ export const crearPabellon = async (req, res, next) => {
 export const actualizarPabellon = async (req, res, next) => {
   try {
     const pabellonId = req.pabellonId;
-    const actualizarPabellonDTO = req.body;
+    const actualizarPabellonDTO = req.actualizarPabellonDTO;
     const pabellonActualizado = await pabellonService.actualizarPabellon(
       pabellonId,
       actualizarPabellonDTO
@@ -58,7 +58,7 @@ export const actualizarPabellon = async (req, res, next) => {
     if (error.code === "P2002") {
       return next(
         crearError(
-          `El nombre de pabellón "${req.body.nombre_pabellon}" ya está en uso`,
+          `El nombre de pabellón "${req.actualizarPabellonDTO?.nombre_pabellon}" ya está en uso`,
           409
         )
       );

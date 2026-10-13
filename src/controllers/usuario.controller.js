@@ -3,7 +3,7 @@ import * as usuarioService from "../services/usuario.service.js";
 
 export const obtenerUsuarios = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaUsuarios; 
+    const criteriosConsulta = req.consultaUsuariosDTO; 
     const usuarios = await usuarioService.obtenerUsuarios(criteriosConsulta);
     return res.json(usuarios);
   } catch (error) {
@@ -43,7 +43,7 @@ export const registrarArtesano = async (req, res, next) => {
 //crear admin
 export const crearUsuario = async (req, res, next) => {
   try {
-    const crearUsuarioDTO = req.body;
+    const crearUsuarioDTO = req.crearUsuarioDTO;
     const nuevoUsuario = await usuarioService.crearUsuario(crearUsuarioDTO);
     return res.status(201).json(nuevoUsuario);
   } catch (error) {
@@ -57,7 +57,7 @@ export const crearUsuario = async (req, res, next) => {
 export const actualizarUsuario = async (req, res, next) => {
   try {
     const idUsuario = req.usuarioId;
-    const actualizarUsuarioDTO = req.body;
+    const actualizarUsuarioDTO = req.actualizarUsuarioDTO;
     const usuarioActualizado = await usuarioService.actualizarUsuario(
       idUsuario,
       actualizarUsuarioDTO,
@@ -80,7 +80,7 @@ export const eliminarUsuario = async (req, res, next) => {
 
 export const registrarUsuario = async (req, res, next) => {
   try {
-    const registrarUsuarioDTO = req.crearUsuarioDto;
+    const registrarUsuarioDTO = req.registroUsuarioDTO;
     const usuario = await usuarioService.registrarUsuario(registrarUsuarioDTO);
     return res.status(201).json(usuario);
   } catch (error) {

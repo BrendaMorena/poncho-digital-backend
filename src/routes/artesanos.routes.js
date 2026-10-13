@@ -6,18 +6,21 @@ import {
   actualizarArtesano, 
   eliminarArtesano 
 } from "../controllers/artesano.controller.js";
-import { crearArtesanoSchema, actualizarArtesanoSchema } from "../validators/artesanos.schema.js";
-import { validarArtesanos, validarConsultaArtesanos } from "../middlewares/artesanos.middleware.js";
-import { validarArtesanoId } from "../middlewares/validarId.js";
+import { 
+  validarCreacionArtesano,
+  validarActualizarArtesano, 
+  validarConsultaArtesanos 
+} from "../middlewares/validation/artesanos.middleware.js";
+import { validarArtesanoId } from "../middlewares/base/validarId.js";
 
 const router = express.Router();
 
 router.get("/", validarConsultaArtesanos, obtenerArtesanos);
 router.get("/:id", validarArtesanoId, obtenerArtesanoPorId);
-router.post("/", validarArtesanos(crearArtesanoSchema), crearArtesano);
+router.post("/", validarCreacionArtesano, crearArtesano);
 
 // PATCH y DELETE (Agregar middlewares de autenticación cuando esté el Login)
-router.patch("/:id", validarArtesanoId, validarArtesanos(actualizarArtesanoSchema), actualizarArtesano);
+router.patch("/:id", validarArtesanoId, validarActualizarArtesano, actualizarArtesano);
 router.delete("/:id", validarArtesanoId, eliminarArtesano);
 
 export default router;

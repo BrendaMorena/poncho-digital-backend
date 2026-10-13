@@ -3,7 +3,7 @@ import { crearError } from "../utils/errores.js";
 
 export const crearSolicitud = async (req, res, next) => {
   try {
-    const crearSolicitudDTO = req.body;
+    const crearSolicitudDTO = req.crearSolicitudDTO;
     const nuevaSolicitud = await solicitudServices.crearSolicitud(crearSolicitudDTO);
 
     return res.status(201).json({
@@ -27,7 +27,7 @@ export const crearSolicitud = async (req, res, next) => {
 
 export const obtenerSolicitudes = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaSolicitudes;
+    const criteriosConsulta = req.consultaSolicitudesDTO;
     const resultado = await solicitudServices.consultarSolicitudes(criteriosConsulta);
     return res.json(resultado);
   } catch (error) {
@@ -53,7 +53,7 @@ export const obtenerSolicitudPorId = async (req, res, next) => {
 export const aprobarSolicitud = async (req, res, next) => {
   try {
     const id = req.solicitudId;
-    const resultado = await solicitudServices.aprobarSolicitud(id, req.body);
+    const resultado = await solicitudServices.aprobarSolicitud(id, req.aprobarSolicitudDTO);
 
     return res.status(200).json(resultado);
   } catch (error) {
@@ -69,7 +69,7 @@ export const aprobarSolicitud = async (req, res, next) => {
 export const rechazarSolicitud = async (req, res, next) => {
   try {
     const id = req.solicitudId;
-    const resultado = await solicitudServices.rechazarSolicitud(id, req.body);
+    const resultado = await solicitudServices.rechazarSolicitud(id, req.rechazarSolicitudDTO);
 
     return res.status(200).json(resultado);
   } catch (error) {
@@ -80,7 +80,7 @@ export const rechazarSolicitud = async (req, res, next) => {
 export const solicitarModificacion = async (req, res, next) => {
   try {
     const id = req.solicitudId;
-    const resultado = await solicitudServices.solicitarModificacion(id, req.body);
+    const resultado = await solicitudServices.solicitarModificacion(id, req.solicitarModificacionDTO);
 
     return res.status(200).json(resultado);
   } catch (error) {
@@ -91,7 +91,7 @@ export const solicitarModificacion = async (req, res, next) => {
 export const actualizarSolicitud = async (req, res, next) => {
   try {
     const id = req.solicitudId;
-    const resultado = await solicitudServices.actualizarSolicitud(id, req.body);
+    const resultado = await solicitudServices.actualizarSolicitud(id, req.actualizarSolicitudDTO);
 
     return res.status(200).json(resultado);
   } catch (error) {
@@ -100,7 +100,7 @@ export const actualizarSolicitud = async (req, res, next) => {
     }
     if (error.code === "P2003") {
       return next(
-        crearError(`El rubro con id ${req.body.rubroId} no existe en el sistema`, 400)
+        crearError(`El rubro con id ${req.actualizarSolicitudDTO?.rubroId} no existe en el sistema`, 400)
       );
     }
     return next(error);

@@ -5,7 +5,7 @@ import * as artesanoService from "../services/artesano.service.js";
 
 export const obtenerArtesanos = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaArtesanos; 
+    const criteriosConsulta = req.consultaArtesanosDTO; 
     const artesanos = await artesanoService.obtenerArtesanos(criteriosConsulta);
     return res.json(artesanos);
   } catch (error) {
@@ -31,7 +31,7 @@ try{
 
 export const crearArtesano = async (req, res, next) => {
   try {
-    const crearArtesanoDTO = req.body;
+    const crearArtesanoDTO = req.crearArtesanoDTO;
     const nuevoArtesano = await artesanoService.crearArtesano(crearArtesanoDTO);
     return res.status(201).json(nuevoArtesano);
   } catch (error) {
@@ -45,7 +45,7 @@ export const crearArtesano = async (req, res, next) => {
 export const actualizarArtesano = async (req, res, next) => {
   try {
     const idArtesano = req.artesanoId; 
-    const actualizarArtesanoDTO = req.body; 
+    const actualizarArtesanoDTO = req.actualizarArtesanoDTO; 
     
     const artesanoActualizado = await artesanoService.actualizarArtesano(idArtesano, actualizarArtesanoDTO);
     

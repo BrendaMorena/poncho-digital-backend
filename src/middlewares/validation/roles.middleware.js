@@ -1,9 +1,10 @@
-import { crearError, detallarErroresZod } from "../../utils/errores.js";
+import { crearError } from "../../utils/errores.js";
 import {
   rolSchema,
   actualizarRolSchema,
   consultarRolesSchema,
 } from "../../validators/roles.schema.js";
+import { validarSchemaBody, validarSchemaQuery } from "../base/validarSchema.js";
 
 export const soloAdmin = (req, res, next) => {
   // Asumimos que el sistema de login ya metió los datos en req.usuario
@@ -21,53 +22,7 @@ export const organizadoresAdmins = (req, res, next) => {
   next();
 };
 
-
-
-export const validarRol = (req, res, next) => {
-  const resultado = rolSchema.safeParse(req.body);
-  if (!resultado.success) {
-    const detalles = detallarErroresZod(resultado.error);
-    return next(
-      crearError(
-        "Los datos enviados para el rol son inválidos",
-        400,
-        detalles
-      )
-    );
-  }
-  req.body = resultado.data;
-  return next();
-};
-
-export const validarActualizarRol = (req, res, next) => {
-  const resultado = actualizarRolSchema.safeParse(req.body);
-  if (!resultado.success) {
-    const detalles = detallarErroresZod(resultado.error);
-    return next(
-      crearError(
-        "Los datos enviados para actualizar el rol son inválidos",
-        400,
-        detalles
-      )
-    );
-  }
-  req.body = resultado.data;
-  return next();
-};
-
-export const validarConsultaRoles = (req, res, next) => {
-  const resultado = consultarRolesSchema.safeParse(req.query);
-  if (!resultado.success) {
-    const detalles = detallarErroresZod(resultado.error);
-    return next(
-      crearError(
-        "Los datos enviados para consultar los roles son inválidos",
-        400,
-        detalles
-      )
-    );
-  }
-  req.consultaRoles = resultado.data;
-  return next();
-};
+export const validarRol = validarSchemaBody(rolSchema, "crearRolDTO", "Los datos enviados para el rol son inválidos");
+export const validarActualizarRol = validarSchemaBody(actualizarRolSchema, "actualizarRolDTO", "Los datos enviados para actualizar el rol son inválidos");
+export const validarConsultaRoles = validarSchemaQuery(consultarRolesSchema, "consultaRolesDTO", "Los datos enviados para consultar los roles son inválidos");
 
