@@ -6,7 +6,6 @@ const verificarUsuarioArtesano = async (usuarioId, tx = prisma) => {
   const usuario = await tx.usuario.findUnique({
     where: { id_usuario: usuarioId },
     include: {
-      rol: true,
       solicitud: true,
       artesano: true,
     },
@@ -57,8 +56,14 @@ export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
       estado_solicitud: "PENDIENTE",
     },
     select: {
-      id_solicitud: true
-    }
+      id_solicitud: true,
+      nombre_emprendimiento: true,
+      descripcion_emprendimiento: true,
+      estado_solicitud: true,
+      usuarioId: true,
+      rubroId: true,
+      createdAt: true,
+    },
   });
 };
 
@@ -98,23 +103,18 @@ export const consultarSolicitudes = async (criteriosConsulta) => {
       ],
       skip: desplazamiento,
       take: limite,
-      include: {
+      select: {
+        id_solicitud: true,
+        nombre_emprendimiento: true,
+        estado_solicitud: true,
+        createdAt: true,
         usuario: {
           select: {
             id_usuario: true,
             nombre: true,
             apellido: true,
-            email: true,
-            telefono: true,
-            rol: {
-              select: {
-                id_rol: true,
-                nombre: true,
-              },
-            },
           },
         },
-        rubro: true,
       },
     }),
     prisma.solicitud.count({ where }),
@@ -134,7 +134,14 @@ export const consultarSolicitudes = async (criteriosConsulta) => {
 export const obtenerSolicitudPorId = async (id) => {
   return prisma.solicitud.findUnique({
     where: { id_solicitud: id },
-    include: {
+    select: {
+      id_solicitud: true,
+      estado_solicitud: true,
+      nombre_emprendimiento: true,
+      descripcion_emprendimiento: true,
+      observaciones_admin: true,
+      createdAt: true,
+      updatedAt: true,
       usuario: {
         select: {
           id_usuario: true,
@@ -142,15 +149,14 @@ export const obtenerSolicitudPorId = async (id) => {
           apellido: true,
           email: true,
           telefono: true,
-          rol: {
-            select: {
-              id_rol: true,
-              nombre: true,
-            },
-          },
         },
       },
-      rubro: true,
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre: true,
+        },
+      },
     },
   });
 };
@@ -160,9 +166,6 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
 
   const solicitud = await prisma.solicitud.findUnique({
     where: { id_solicitud: id },
-    include: {
-      rubro: true,
-    },
   });
 
   if (!solicitud) {
@@ -192,7 +195,12 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
         observaciones_admin: observaciones_admin ?? solicitud.observaciones_admin ?? "Solicitud aprobada",
       },
       include: {
-        rubro: true,
+        rubro: {
+          select: {
+            id_rubro: true,
+            nombre: true,
+          },
+        },
       },
     });
 
@@ -214,7 +222,12 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
             telefono: true,
           },
         },
-        rubro: true,
+        rubro: {
+          select: {
+            id_rubro: true,
+            nombre: true,
+          },
+        },
       },
     });
 

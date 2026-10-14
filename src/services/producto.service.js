@@ -24,9 +24,6 @@ export const crearProducto = async (crearProductoDTO) => {
       precio,
       artesanoId,
     },
-    include: {
-      artesano: true,
-    },
   })
 }
 
@@ -79,15 +76,19 @@ export const consultarProductos = async (criteriosConsulta) => {
       ],
       skip: desplazamiento,
       take: limite,
-      include: {
+      select: {
+        id_producto: true,
+        nombre_producto: true,
+        precio:true,
         artesano: {
-          include: {
-            rubro: true,
-            usuario: {
+          select: {
+            id_artesano: true,
+            nombre_emprendimiento:true,
+            rubro:{
               select: {
-                nombre: true,
-                apellido: true,
-              },
+                id_rubro: true,
+                nombre:true
+              }
             },
           },
         },
@@ -110,8 +111,29 @@ export const consultarProductos = async (criteriosConsulta) => {
 export const obtenerProductoPorId = async (id) => {
   return prisma.producto.findUnique({
     where: { id_producto: id },
-    include: { artesano: true },
-  })
+    include: {
+      artesano: {
+        select: {
+          id_artesano: true,
+          nombre_emprendimiento: true,
+          descripcion: true,
+          rubro: {
+            select: {
+              id_rubro: true,
+              nombre: true,
+            },
+          },
+          usuario: {
+            select: {
+              nombre: true,
+              apellido: true,
+              telefono: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 export const actualizarProducto = async (id, actualizarProductoDTO) => {
@@ -119,10 +141,15 @@ export const actualizarProducto = async (id, actualizarProductoDTO) => {
     where: { id_producto: id },
     data: actualizarProductoDTO,
     include: {
-      artesano: true,
+      artesano: {
+        select: {
+          id_artesano: true,
+          nombre_emprendimiento: true,
+        },
+      },
     },
-  })
-}
+  });
+};
 
 
 export const eliminarProducto = async (id) => {

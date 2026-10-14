@@ -14,16 +14,6 @@ Content-Type: application/json
 
 ###
 
-# Caso de Éxito 2: Crear otra localidad
-POST {{baseUrl}}/localidades
-Content-Type: application/json
-
-{
-  "nombre_locacion": "Antofagasta de la Sierra"
-}
-
-###
-
 # Error 409: Nombre duplicado (ya existe en la base de datos)
 POST {{baseUrl}}/localidades
 Content-Type: application/json
@@ -193,4 +183,4 @@ DELETE {{baseUrl}}/localidades/abc
 
 # Caso de Éxito: Eliminar una localidad recién creada sin usuarios asociados
 # (Reemplazar con el ID devuelto por el POST de prueba)
-DELETE {{baseUrl}}/localidades/2
+DELETE {{baseUrl}}/localidades/11

@@ -10,39 +10,36 @@ export const estadosValidos = [
 // (Postulación del Artesano)
 export const crearSolicitudSchema = z.object({
   nombre_emprendimiento: z
-    .string({error: "El nombre es obligatorio y tiene que ser texto"})
+    .string("El nombre del emprendimiento es obligatorio")
     .trim()
-    .min(3, "El nombre del emprendimiento debe tener mínimo 3 carácteres"),
+    .min(3, "El nombre del emprendimiento debe tener mínimo 3 caracteres"),
   descripcion_emprendimiento: z
-    .string({ required_error: "La descripción del emprendimiento es obligatoria" })
+    .string("La descripción del emprendimiento es obligatoria")
     .trim()
     .min(10, "La descripción del emprendimiento debe tener al menos 10 caracteres"),
   usuarioId: z
-    .number({ required_error: "El usuarioId es obligatorio" })
-    .int()
+    .number("El usuarioId es obligatorio")
+    .int("El usuarioId debe ser un número entero")
     .positive("El usuarioId debe ser un entero positivo"),
   rubroId: z
-    .number({ required_error: "El rubroId es obligatorio" })
-    .int()
+    .number("El rubroId es obligatorio")
+    .int("El rubroId debe ser un número entero")
     .positive("El rubroId debe ser un entero positivo"),
 });
 
 // APROBAR solicitud (Organizador)
-// Las observaciones son opcionales
 export const aprobarSolicitudSchema = z.object({
   observaciones_admin: z
-    .string()
+    .string("Las observaciones deben ser texto")
     .trim()
     .min(1, "Las observaciones no pueden estar vacías")
     .optional(),
 });
 
-
 // RECHAZAR solicitud (Organizador)
-// Las observaciones son obligatorias para fundamentar el rechazo
 export const rechazarSolicitudSchema = z.object({
   observaciones_admin: z
-    .string({ required_error: "Debes incluir el motivo del rechazo en observaciones_admin" })
+    .string("Debes incluir el motivo del rechazo en observaciones_admin")
     .trim()
     .min(5, "El motivo del rechazo debe tener al menos 5 caracteres"),
 });
@@ -50,7 +47,7 @@ export const rechazarSolicitudSchema = z.object({
 // SOLICITAR MODIFICACIÓN (Organizador)
 export const solicitarModificacionSchema = z.object({
   observaciones_admin: z
-    .string({ required_error: "Debes detallar las modificaciones solicitadas en observaciones_admin" })
+    .string("Debes detallar las modificaciones solicitadas en observaciones_admin")
     .trim()
     .min(5, "Debes detallar qué modificaciones requiere la solicitud (mínimo 5 caracteres)"),
 });
@@ -59,13 +56,13 @@ export const solicitarModificacionSchema = z.object({
 export const actualizarSolicitudSchema = z
   .object({
     descripcion_emprendimiento: z
-      .string()
+      .string("La descripción debe ser texto")
       .trim()
       .min(10, "La descripción debe tener al menos 10 caracteres")
       .optional(),
     rubroId: z
-      .number()
-      .int()
+      .number("El rubroId debe ser un número")
+      .int("El rubroId debe ser un número entero")
       .positive("El rubroId debe ser un entero positivo")
       .optional(),
   })
@@ -76,13 +73,31 @@ export const actualizarSolicitudSchema = z
     }
   );
 
-
 export const consultarSolicitudesSchema = z.object({
   estado_solicitud: z.enum(estadosValidos).optional(),
-  usuarioId: z.coerce.number().int().positive("El usuarioId debe ser un entero positivo").optional(),
-  rubroId: z.coerce.number().int().positive("El rubroId debe ser un entero positivo").optional(),
-  ordenPor: z.enum(["id_solicitud", "estado_solicitud", "createdAt"]).default("id_solicitud"),
+  usuarioId: z.coerce
+    .number("El usuarioId debe ser un número")
+    .int("El usuarioId debe ser un número entero")
+    .positive("El usuarioId debe ser un entero positivo")
+    .optional(),
+  rubroId: z.coerce
+    .number("El rubroId debe ser un número")
+    .int("El rubroId debe ser un número entero")
+    .positive("El rubroId debe ser un entero positivo")
+    .optional(),
+  ordenPor: z
+    .enum(["id_solicitud", "estado_solicitud", "createdAt"])
+    .default("id_solicitud"),
   direccion: z.enum(["asc", "desc"]).default("desc"),
-  pagina: z.coerce.number().int().positive("La página debe ser un número positivo").default(1),
-  limite: z.coerce.number().int().min(1).max(50, "El límite máximo es 50").default(10),
+  pagina: z.coerce
+    .number("La página debe ser un número")
+    .int("La página debe ser un número entero")
+    .positive("La página debe ser un número positivo")
+    .default(1),
+  limite: z.coerce
+    .number("El límite debe ser un número")
+    .int("El límite debe ser un número entero")
+    .min(1, "El límite mínimo es 1")
+    .max(50, "El límite máximo es 50")
+    .default(10),
 });

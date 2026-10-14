@@ -8,6 +8,12 @@ export const crearLocalidad = async (crearLocalidadDTO) => {
     data: {
       nombre_locacion,
     },
+    select: {
+      id_localidad: true,
+      nombre_locacion: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 };
 
@@ -36,6 +42,10 @@ export const consultarLocalidades = async (criteriosConsulta) => {
       orderBy,
       skip: desplazamiento,
       take: limite,
+      select: {
+        id_localidad: true,
+        nombre_locacion: true,
+      },
     }),
     prisma.localidad.count({ where }),
   ]);
@@ -54,6 +64,12 @@ export const consultarLocalidades = async (criteriosConsulta) => {
 export const obtenerLocalidadPorId = async (id) => {
   return prisma.localidad.findUnique({
     where: { id_localidad: id },
+    select: {
+      id_localidad: true,
+      nombre_locacion: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 };
 
@@ -72,6 +88,12 @@ export const actualizarLocalidad = async (id, actualizarLocalidadDTO) => {
     where: { id_localidad: id },
     data: {
       nombre_locacion,
+    },
+    select: {
+      id_localidad: true,
+      nombre_locacion: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 };

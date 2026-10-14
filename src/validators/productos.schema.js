@@ -2,20 +2,16 @@ import { z } from "zod";
 
 const productoBaseSchema = z.object({
   nombre_producto: z
-    .string({ required_error: "El nombre del producto es obligatorio" })
+    .string("El nombre del producto es obligatorio")
     .trim()
     .min(1, "El nombre del producto no puede estar vacío"),
 
   precio: z
-    .number({
-      required_error: "El precio es obligatorio"
-    })
+    .number( "El precio es obligatorio")
     .positive("El precio debe ser mayor a 0"),
 
   artesanoId: z
-    .number({
-      required_error: "El artesanoId es obligatorio"
-    })
+    .number("El artesanoId es obligatorio")
     .int("El artesanoId debe ser un número entero")
     .positive("El artesanoId debe ser un número positivo")
 })
@@ -23,7 +19,7 @@ const productoBaseSchema = z.object({
 // Esquema para CREAR (POST)
 export const crearProductoSchema = productoBaseSchema
 
-// Esquema para ACTUALIZAR (PATCH): campos opcionales, pero exige al menos uno
+// Esquema para ACTUALIZAR (PATCH)
 export const actualizarProductoSchema = productoBaseSchema.partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: "Debe enviar al menos un campo para actualizar.",
@@ -34,54 +30,54 @@ export const consultarProductoSchema = z
     nombre_producto: z
       .string()
       .trim()
-      .min(1, { message: "El nombre del producto no puede estar vacío" })
+      .min(1, "El nombre del producto no puede estar vacío" )
       .optional(),
 
     artesanoId: z.coerce
-      .number({ invalid_type_error: "El artesanoId debe ser un número" })
-      .int({ message: "El artesanoId debe ser un número entero" })
-      .positive({ message: "El artesanoId debe ser un número positivo" })
+      .number("El artesanoId debe ser un número" )
+      .int("El artesanoId debe ser un número entero")
+      .positive("El artesanoId debe ser un número positivo" )
       .optional(),
 
     rubroId: z.coerce
-      .number({ invalid_type_error: "El rubroId debe ser un número" })
-      .int({ message: "El rubroId debe ser un número entero" })
-      .positive({ message: "El rubroId debe ser un número positivo" })
+      .number("El rubroId debe ser un número")
+      .int("El rubroId debe ser un número entero")
+      .positive("El rubroId debe ser un número positivo")
       .optional(),
 
     precioDesde: z.coerce
-      .number({ invalid_type_error: "El precioDesde debe ser un número" })
-      .min(0, { message: "El precioDesde no puede ser negativo" })
+      .number("El precioDesde debe ser un número")
+      .min(0, "El precioDesde no puede ser negativo")
       .optional(),
 
     precioHasta: z.coerce
-      .number({ invalid_type_error: "El precioHasta debe ser un número" })
-      .min(0, { message: "El precioHasta no puede ser negativo" })
+      .number("El precioHasta debe ser un número")
+      .min(0, "El precioHasta no puede ser negativo")
       .optional(),
 
     ordenPor: z
       .enum(["nombre_producto", "precio", "createdAt"], {
-        errorMap: () => ({ message: "El orden debe ser 'nombre_producto' o 'precio'" }),
+        errorMap: () => ("El orden debe ser 'nombre_producto' o 'precio'" ),
       })
       .default("nombre_producto"),
 
     direccion: z
       .enum(["asc", "desc"], {
-        errorMap: () => ({ message: "La dirección debe ser 'asc' o 'desc'" }),
+        errorMap: () => ("La dirección debe ser 'asc' o 'desc'"),
       })
       .default("asc"),
 
     pagina: z.coerce
-      .number({ invalid_type_error: "La página debe ser un número" })
-      .int({ message: "La página debe ser un número entero" })
-      .positive({ message: "La página debe ser mayor a 0" })
+      .number("La página debe ser un número" )
+      .int("La página debe ser un número entero" )
+      .positive("La página debe ser mayor a 0")
       .default(1),
 
     limite: z.coerce
-      .number({ invalid_type_error: "El límite debe ser un número" })
-      .int({ message: "El límite debe ser un número entero" })
-      .min(1, { message: "El límite mínimo es 1" })
-      .max(50, { message: "El límite máximo permitido es 50" })
+      .number("El límite debe ser un número" )
+      .int("El límite debe ser un número entero")
+      .min(1, "El límite mínimo es 1")
+      .max(50, "El límite máximo permitido es 50" )
       .default(10),
   })
   .refine(

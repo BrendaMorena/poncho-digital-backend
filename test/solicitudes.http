@@ -1,70 +1,106 @@
-### Base URL
-@baseUrl = http://localhost:5500
+@baseUrl = http://localhost:3000
 
-### 1. Info general del sistema
-GET {{baseUrl}}/info
-
-### ----------------------------------------------------
-### STANDS
-### ----------------------------------------------------
-
-### Listar todos los stands
-GET {{baseUrl}}/stands
-
-### Obtener stand por ID
-GET {{baseUrl}}/stands/1
+############################################################
+### 1. CREACIÓN DE SOLICITUDES (POST /solicitudes)
+############################################################
 
 
-### ----------------------------------------------------
-### FLUJO DE SOLICITUDES (PONCHO DIGITAL)
-### ----------------------------------------------------
 
-### 1. El artesano crea su postulación (Estado inicial: PENDIENTE)
+###
+
+# Error 400: Faltan campos requeridos (nombre o descripción)
 POST {{baseUrl}}/solicitudes
 Content-Type: application/json
 
 {
-  "descripcion_emprendimiento": "Elaboración de ponchos catamarqueños artesanales tejidos en telar criollo",
+  "descripcion_emprendimiento": "Descripción corta",
   "usuarioId": 1,
   "rubroId": 1
 }
 
-### 2. El organizador consulta las solicitudes en estado PENDIENTE
+###
+
+# Error 400: Descripción demasiado corta (mínimo 10 caracteres)
+POST {{baseUrl}}/solicitudes
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Artesanías Catamarca",
+  "descripcion_emprendimiento": "Corta",
+  "usuarioId": 1,
+  "rubroId": 1
+}
+
+###
+
+############################################################
+### 2. CONSULTAR SOLICITUDES CON FILTROS Y PAGINACIÓN (GET /solicitudes)
+############################################################
+
+# 1. Listar todas las solicitudes (valores por defecto: pagina=1, limite=10, orden=id_solicitud desc)
+GET {{baseUrl}}/solicitudes
+
+###
+
+# 2. Filtrar solicitudes en estado PENDIENTE
 GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE
 
-### 3. El organizador consulta todas las solicitudes paginadas
-GET {{baseUrl}}/solicitudes?pagina=1&limite=10&ordenPor=id_solicitud&direccion=desc
+###
 
-### 4. Consultar una solicitud específica por su ID
+# 3. Filtrar solicitudes en estado APROBADO
+GET {{baseUrl}}/solicitudes?estado_solicitud=APROBADO
+
+###
+
+# 4. Filtrar solicitudes que requieren modificación
+GET {{baseUrl}}/solicitudes?estado_solicitud=MODIFICACION_SOLICITADA
+
+###
+
+# 5. Filtrar por rubro específico (ej: rubro 1 - Textil)
+GET {{baseUrl}}/solicitudes?rubroId=1
+
+###
+
+# 6. Paginación y ordenamiento por fecha de creación descendente
+GET {{baseUrl}}/solicitudes?pagina=1&limite=5&ordenPor=createdAt&direccion=desc
+
+###
+
+############################################################
+### 3. OBTENER SOLICITUD POR ID (GET /solicitudes/:id)
+############################################################
+
+# Caso de Éxito: Obtener detalle completo de la solicitud
 GET {{baseUrl}}/solicitudes/1
 
-### 5. ACCIÓN DEL ORGANIZADOR: APROBAR
-###    - Requiere que la solicitud esté en estado PENDIENTE.
-###    - Pasa la solicitud a APROBADO.
-###    - Da de alta al artesano en la base de datos como ACTIVO (sin requerir stand).
+###
+
+# Error 404: Solicitud inexistente
+GET {{baseUrl}}/solicitudes/9999
+
+###
+
+# Error 400: ID inválido (debe ser un entero positivo)
+GET {{baseUrl}}/solicitudes/invalido
+
+###
+
+############################################################
+### 4. ACCIONES DEL ORGANIZADOR (PATCH /solicitudes/:id/...)
+############################################################
+
+# 4.1 APROBAR SOLICITUD (Pasa a APROBADO y da de alta al artesano como ACTIVO)
 PATCH {{baseUrl}}/solicitudes/1/aprobar
 Content-Type: application/json
 
 {
-  "observaciones_admin": "Solicitud aprobada tras verificar documentación y calidad de productos"
+  "observaciones_admin": "Solicitud aprobada tras verificar autenticidad y calidad de productos tradicionales"
 }
 
-### (Paso 2 posterior: Para asignarle un stand al nuevo artesano aprobado, usar POST /stands/asignar)
+###
 
-
-### 6. ACCIÓN DEL ORGANIZADOR: RECHAZAR
-###    - Requiere que la solicitud esté en PENDIENTE.
-###    - observaciones_admin es obligatorio para justificar el rechazo.
-PATCH {{baseUrl}}/solicitudes/1/rechazar
-Content-Type: application/json
-
-{
-  "observaciones_admin": "No cumple con los requisitos mínimos de producción propia y artesanal"
-}
-
-### 7. ACCIÓN DEL ORGANIZADOR: SOLICITAR MODIFICACIÓN
-###    - Requiere que la solicitud esté en PENDIENTE.
-###    - observaciones_admin es obligatorio para detallar lo que debe corregir.
+# 4.2 SOLICITAR MODIFICACIÓN (Pasa a MODIFICACION_SOLICITADA, observaciones obligatorias)
 PATCH {{baseUrl}}/solicitudes/1/solicitar-modificacion
 Content-Type: application/json
 
@@ -72,111 +108,101 @@ Content-Type: application/json
   "observaciones_admin": "Por favor detallar con mayor precisión el origen de la materia prima y el tipo de telar utilizado"
 }
 
-### 8. ACCIÓN DEL ARTESANO: ACTUALIZAR SOLICITUD
-###    - Corrige su postulación.
-###    - Vuelve automáticamente a estado PENDIENTE para que el organizador la vuelva a evaluar.
-PUT {{baseUrl}}/solicitudes/1
+###
+
+# Error 400 al solicitar modificación: Observaciones vacías o muy cortas (mínimo 5 caracteres)
+PATCH {{baseUrl}}/solicitudes/1/solicitar-modificacion
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Rev"
+}
+
+###
+
+# 4.3 RECHAZAR SOLICITUD (Pasa a RECHAZADO, observaciones obligatorias)
+PATCH {{baseUrl}}/solicitudes/1/rechazar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "No cumple con los requisitos mínimos de producción propia y artesanal exigidos"
+}
+
+###
+
+############################################################
+### 5. ACTUALIZAR SOLICITUD POR EL ARTESANO (PATCH /solicitudes/:id)
+############################################################
+
+# Caso de Éxito: El artesano corrige su descripción (vuelve automáticamente a PENDIENTE)
+PATCH {{baseUrl}}/solicitudes/1
 Content-Type: application/json
 
 {
   "descripcion_emprendimiento": "Elaboración de ponchos catamarqueños de vicuña y oveja hilados a mano en telar criollo de cuatro cuadros"
 }
 
-### 9. ELIMINAR SOLICITUD (Solo si aún no fue aprobada)
+###
+
+# Caso de Éxito: El artesano modifica el rubro de su postulación
+PATCH {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{
+  "rubroId": 2
+}
+
+###
+
+# Error 400: Enviar body vacío sin campos para modificar
+PATCH {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{}
+
+###
+
+############################################################
+### 6. ELIMINAR SOLICITUD (DELETE /solicitudes/:id)
+############################################################
+
+# Error 400: Intentar eliminar una solicitud ya APROBADA
 DELETE {{baseUrl}}/solicitudes/1
 
-### ----------------------------------------------------
-### LOCALIDADES (CRUD Y PAGINACIÓN)
-### ----------------------------------------------------
+###
 
-### 1. Crear una nueva localidad
-POST {{baseUrl}}/localidades
-Content-Type: application/json
-
-{
-  "nombre_locacion": "San Fernando del Valle de Catamarca"
-}
-
-### 2. Listar todas las localidades con paginación por defecto
-GET {{baseUrl}}/localidades
-
-### 3. Listar localidades con paginación personalizada y ordenamiento
-GET {{baseUrl}}/localidades?pagina=1&limite=5&ordenPor=nombre_locacion&direccion=asc
-
-### 4. Buscar localidades por término (filtro insensible a mayúsculas/minúsculas)
-GET {{baseUrl}}/localidades?buscar=Valle&pagina=1&limite=10
-
-### 5. Obtener una localidad por su ID
-GET {{baseUrl}}/localidades/1
-
-### 6. Actualizar una localidad existente por su ID
-PUT {{baseUrl}}/localidades/1
-Content-Type: application/json
-
-{
-  "nombre_locacion": "Valle Viejo"
-}
-
-### 7. Eliminar una localidad por su ID (solo si no tiene usuarios asociados)
-DELETE {{baseUrl}}/localidades/1
-
-
-
-### PRUEBA BREM USUARIO/SOLICITUD
-
-
-
-### paso 1 para ver la soli que mande de luna
-### 2. El organizador consulta las solicitudes en estado PENDIENTE
-GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE
-
-### paso 2 para ver el id del stand disponible
-### Listar todos los stands
-GET {{baseUrl}}/stands
-
-### paso 3 para aprobar la solicitud de luna y asignarle un stand
+# Error 404: Solicitud inexistente
+DELETE {{baseUrl}}/solicitudes/9999
 
 ###
-PATCH http://localhost:5500/solicitudes/1/aprobar
-Content-Type: application/json
 
-{
-  "observaciones_admin": "Documentación en regla, productos de excelente calidad.",
-  "standId": 10
-}
+# Error 400: ID inválido
+DELETE {{baseUrl}}/solicitudes/abc
 
 ###
-POST http://localhost:3000/usuarios/registro
-Content-Type: application/json
 
-{
-    "nombre": "juan",
-    "apellido": "juanes",
-    "dni": "132312312",
-    "email": "lucas@gmail.com",
-    "telefono": "3834123456",
-    "password": ".",
-    "rolId": 1,
-    "localidadId": 1,
-    "rubroId": 1,
-    "nombre_emprendimiento": "Pinturas Locas",
-    "descripcion_emprendimiento": "hola 123 vendemos tomates"
-}
+# Caso de Éxito: Eliminar solicitud pendiente o rechazada
+DELETE {{baseUrl}}/solicitudes/2
 
 ###
-POST http://localhost:3000/usuarios/registro
+
+############################################################
+### 7. AUXILIAR: REGISTRO INTEGRAL DE ARTESANO (POST /usuarios/registro)
+############################################################
+
+# Crea un Usuario y su Solicitud PENDIENTE asociada en un solo paso
+POST {{baseUrl}}/usuarios/registro
 Content-Type: application/json
 
 {
-    "nombre": "Leonel",
-    "apellido": "Flores",
-    "dni": "260620011",
-    "email": "leoflores12@gmail.com",
-    "telefono": "3833991122",
-    "password": "contraseña123",
-    "rolId": 3,
-    "localidadId": 1,
-    "rubroId": 2,
-    "nombre_emprendimiento": "Ceramicas reynoso",
-    "descripcion_emprendimiento": "Piezas artesanales de cerámica moldeadas a mano"
+  "nombre": "Leonel",
+  "apellido": "Flores",
+  "dni": "26062001",
+  "email": "leoflores.artesanias@gmail.com",
+  "telefono": "3834991122",
+  "password": "PonchoSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 2,
+  "nombre_emprendimiento": "Cerámicas Catamarca",
+  "descripcion_emprendimiento": "Piezas artesanales de cerámica moldeadas a mano con arcilla de la zona"
 }
