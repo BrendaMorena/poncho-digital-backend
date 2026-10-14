@@ -1,6 +1,6 @@
 import prisma from "../config/prisma.js";
 import { crearError } from "../utils/errores.js";
-
+import * as artesanoService from "./artesano.service.js";
 
 const verificarUsuarioArtesano = async (usuarioId, tx = prisma) => {
   const usuario = await tx.usuario.findUnique({
@@ -204,7 +204,7 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
       },
     });
 
-    const nuevoArtesano = await tx.artesano.create({
+    /*const nuevoArtesano = await tx.artesano.create({
       data: {
         nombre_emprendimiento: solicitud.nombre_emprendimiento,
         descripcion: solicitud.descripcion_emprendimiento,
@@ -229,7 +229,14 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
           },
         },
       },
-    });
+    });*/
+
+    const nuevoArtesano = await artesanoService.crearArtesano({
+      nombre_emprendimiento: solicitud.nombre_emprendimiento,
+      descripcion: solicitud.descripcion_emprendimiento,
+      usuarioId: solicitud.usuarioId,
+      rubroId: solicitud.rubroId,
+    }, tx);
 
     return {
       mensaje: "Solicitud aprobada con éxito. El artesano ha sido registrado como ACTIVO y queda disponible para asignación de stand.",

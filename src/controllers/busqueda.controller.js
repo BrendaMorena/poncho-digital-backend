@@ -3,7 +3,7 @@ import { crearError } from "../utils/errores.js";
 
 export const crearBusqueda = async (req, res, next) => {
   try {
-    const nuevaBusqueda = await busquedaService.crearBusqueda(req.body);
+    const nuevaBusqueda = await busquedaService.crearBusqueda(req.crearBusquedaDTO);
     return res.status(201).json(nuevaBusqueda);
   } catch (error) {
     return next(error);
@@ -12,7 +12,7 @@ export const crearBusqueda = async (req, res, next) => {
 
 export const obtenerBusquedas = async (req, res, next) => {
   try {
-    const resultado = await busquedaService.consultarBusquedas(req.valoresBusqueda);
+    const resultado = await busquedaService.consultarBusquedas(req.consultaBusquedaDTO);
     return res.status(200).json(resultado);
   } catch (error) {
     return next(error);

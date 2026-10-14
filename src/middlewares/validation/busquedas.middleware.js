@@ -1,38 +1,11 @@
-import { crearError, detallarErroresZod } from "../../utils/errores.js";
 import * as busquedaService from "../../services/busqueda.service.js";
 import { busquedaSchema, consultaBusquedaSchema } from "../../validators/busqueda.schema.js";
+import { validarSchemaBody, validarSchemaQuery } from "../base/validarSchema.js";
 
-export const validarBusqueda = (req, res, next) => {
-  const resultado = busquedaSchema.safeParse(req.body)
-  if (!resultado.success) {
-    const detalles = detallarErroresZod(resultado.error);
-    return next(
-      crearError(
-        "Los datos enviados para la busqueda son inválidos",
-        400,
-        detalles
-      )
-    );
-  }
-  req.body = resultado.data
-  return next()
-};
+export const mensajeError = "Los datos enviados para la busqueda son inválidos";
 
-export const validarConsultaBusqueda = (req, res, next) => {
-  const resultado = consultaBusquedaSchema.safeParse(req.query)
-  if (!resultado.success) {
-    const detalles = detallarErroresZod(resultado.error);
-    return next(
-      crearError(
-        "Los datos enviados para la busqueda son inválidos",
-        400,
-        detalles
-      )
-    );
-  }
-  req.valoresBusqueda = resultado.data
-  return next()
-};
+export const validarBusqueda = validarSchemaBody(busquedaSchema, "crearBusquedaDTO", mensajeError);
+export const validarConsultaBusqueda = validarSchemaQuery(consultaBusquedaSchema, "consultaBusquedaDTO", mensajeError);
 
 
 export const capturarBusqueda = (req, res, next) => {

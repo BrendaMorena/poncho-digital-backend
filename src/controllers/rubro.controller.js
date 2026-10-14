@@ -26,7 +26,7 @@ export const obtenerRubroPorId = async (req, res, next) => {
 
 export const crearRubro = async (req, res, next) => {
   try {
-    const dto = req.body;
+    const dto = req.crearRubroDTO;
     const nuevoRubro = await rubroService.crearRubro(dto);
     return res.status(201).json(nuevoRubro);
   } catch (error) {
@@ -40,7 +40,7 @@ export const crearRubro = async (req, res, next) => {
 export const actualizarRubro = async (req, res, next) => {
   try {
     const id = req.rubroId; 
-    const dto = req.body;
+    const dto = req.actualizarRubroDTO;
     const rubroActualizado = await rubroService.actualizarRubro(id, dto);
     return res.status(200).json(rubroActualizado);
   } catch (error) {
