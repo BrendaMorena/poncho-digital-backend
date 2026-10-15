@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
 import { secretoJWT } from "../config/jwt.js";
 import { randomUUID } from "node:crypto";
-
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { z } from "zod";
 
 export const generarToken = (usuario) => {
   return jwt.sign({ sub: usuario.id_usuario, jti: randomUUID() }, secretoJWT, {
@@ -19,7 +17,7 @@ export const verificarToken = (token) => {
   if (
     typeof payload !== "object" ||
     payload === null ||
-    !uuidRegex.test(payload.sub) ||
+    !z.string().uuid().safeParse(payload.sub).success ||
     !Number.isFinite(payload.exp)
   ) {
     throw new jwt.JsonWebTokenError("Contenido del token inválido.");

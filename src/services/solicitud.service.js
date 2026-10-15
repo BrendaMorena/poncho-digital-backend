@@ -110,6 +110,12 @@ export const consultarSolicitudes = async (criteriosConsulta) => {
             apellido: true,
           },
         },
+        rubro: {
+          select: {
+            id_rubro: true,
+            nombre_rubro: true,
+          },
+        },
       },
     }),
     prisma.solicitud.count({ where }),
@@ -189,7 +195,7 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
         estado_solicitud: "APROBADO",
         observaciones_admin: observaciones_admin ?? solicitud.observaciones_admin ?? "Solicitud aprobada",
       },
-      select: {
+      include: {
         rubro: {
           select: {
             id_rubro: true,
@@ -230,6 +236,7 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
       nombre_emprendimiento: solicitud.nombre_emprendimiento,
       descripcion: solicitud.descripcion_emprendimiento,
       usuarioId: solicitud.usuarioId,
+      rubroId: solicitud.rubroId,
     }, tx);
 
     return {

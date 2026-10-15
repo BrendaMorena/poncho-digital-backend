@@ -1,4 +1,5 @@
 import { crearError } from '../../utils/errores.js';
+import { z } from "zod";
 
 const validarId = elementoId => (req, res, next) => {
     const id = Number(req.params.id);
@@ -21,9 +22,8 @@ export const validarSolicitudId = validarId("solicitudId");
 export const validarLocalidadId = validarId("localidadId");
 export const validarUsuarioId = (req, res, next) => {
     const { id } = req.params;
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-    if (!uuidRegex.test(id)) {
+    if (!z.string().uuid().safeParse(id).success) {
         return next(crearError('El ID del usuario debe ser un UUID válido', 400));
     }
     req.usuarioId = id;

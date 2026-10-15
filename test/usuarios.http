@@ -267,11 +267,11 @@ Content-Type: application/json
 ### FLUJO 4: ELIMINACIÓN DE USUARIOS (DELETE /usuarios/:id)
 ###############################################################################
 
-### CP-DEL-01: Eliminar usuario existente - Camino feliz (Usuario semilla ID: a0000000-0000-0000-0000-000000000003)
-DELETE {{baseUrl}}/usuarios/a0000000-0000-0000-0000-000000000003
+### CP-DEL-01: Eliminar usuario existente - Camino feliz (Usuario semilla ID: a0000000-0000-4000-8000-000000000003)
+DELETE {{baseUrl}}/usuarios/a0000000-0000-4000-8000-000000000003
 
 ### CP-DEL-02: Comprobar que el usuario eliminado ya no existe (debe retornar 404)
-GET {{baseUrl}}/usuarios/a0000000-0000-0000-0000-000000000003
+GET {{baseUrl}}/usuarios/a0000000-0000-4000-8000-000000000003
 
 ### CP-DEL-03: Error 404 - Intentar eliminar un usuario con UUID inexistente
 DELETE {{baseUrl}}/usuarios/ffffffff-ffff-ffff-ffff-ffffffffffff

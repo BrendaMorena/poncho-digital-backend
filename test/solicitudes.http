@@ -13,8 +13,8 @@ POST {{baseUrl}}/solicitudes
 Content-Type: application/json
 
 {
-  "descripcion_emprendimiento": "Descripción corta",
-  "usuarioId": 1,
+  "descripcion_emprendimiento": "Descripción adecuada de más de 10 caracteres",
+  "usuarioId": "a0000000-0000-4000-8000-000000000003",
   "rubroId": 1
 }
 
@@ -27,7 +27,7 @@ Content-Type: application/json
 {
   "nombre_emprendimiento": "Artesanías Catamarca",
   "descripcion_emprendimiento": "Corta",
-  "usuarioId": 1,
+  "usuarioId": "a0000000-0000-4000-8000-000000000003",
   "rubroId": 1
 }
 
@@ -150,6 +150,16 @@ Content-Type: application/json
 
 {
   "rubroId": 2
+}
+
+###
+
+# Caso de Éxito: El artesano modifica el nombre de su emprendimiento
+PATCH {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Tejidos y Telar Catamarca"
 }
 
 ###

@@ -16,11 +16,12 @@ export const crearSolicitudSchema = z.object({
   descripcion_emprendimiento: z
     .string("La descripción del emprendimiento es obligatoria")
     .trim()
-    .min(10, "La descripción del emprendimiento debe tener al menos 10 caracteres"),
+    .min(
+      10,
+      "La descripción del emprendimiento debe tener al menos 10 caracteres",
+    ),
   usuarioId: z
-    .number("El usuarioId es obligatorio")
-    .int("El usuarioId debe ser un número entero")
-    .positive("El usuarioId debe ser un entero positivo"),
+    .uuid("El usuarioId debe ser un UUID válido"),
   rubroId: z
     .number("El rubroId es obligatorio")
     .int("El rubroId debe ser un número entero")
@@ -47,14 +48,24 @@ export const rechazarSolicitudSchema = z.object({
 // SOLICITAR MODIFICACIÓN (Organizador)
 export const solicitarModificacionSchema = z.object({
   observaciones_admin: z
-    .string("Debes detallar las modificaciones solicitadas en observaciones_admin")
+    .string(
+      "Debes detallar las modificaciones solicitadas en observaciones_admin",
+    )
     .trim()
-    .min(5, "Debes detallar qué modificaciones requiere la solicitud (mínimo 5 caracteres)"),
+    .min(
+      5,
+      "Debes detallar qué modificaciones requiere la solicitud (mínimo 5 caracteres)",
+    ),
 });
 
 // ACTUALIZAR solicitud (El artesano corrige y responde a observaciones)
 export const actualizarSolicitudSchema = z
   .object({
+    nombre_emprendimiento: z
+      .string("El nombre del emprendimiento debe ser texto")
+      .trim()
+      .min(3, "El nombre del emprendimiento debe tener mínimo 3 caracteres")
+      .optional(),
     descripcion_emprendimiento: z
       .string("La descripción debe ser texto")
       .trim()
@@ -67,18 +78,20 @@ export const actualizarSolicitudSchema = z
       .optional(),
   })
   .refine(
-    (data) => data.descripcion_emprendimiento !== undefined || data.rubroId !== undefined,
+    (data) =>
+      data.nombre_emprendimiento !== undefined ||
+      data.descripcion_emprendimiento !== undefined ||
+      data.rubroId !== undefined,
     {
-      message: "Debes proveer al menos un campo a modificar (descripcion_emprendimiento o rubroId)",
-    }
+      message:
+        "Debes proveer al menos un campo a modificar (nombre_emprendimiento, descripcion_emprendimiento o rubroId)",
+    },
   );
 
 export const consultarSolicitudesSchema = z.object({
   estado_solicitud: z.enum(estadosValidos).optional(),
-  usuarioId: z.coerce
-    .number("El usuarioId debe ser un número")
-    .int("El usuarioId debe ser un número entero")
-    .positive("El usuarioId debe ser un entero positivo")
+  usuarioId: z
+    .uuid("El usuarioId debe ser un UUID válido")
     .optional(),
   rubroId: z.coerce
     .number("El rubroId debe ser un número")

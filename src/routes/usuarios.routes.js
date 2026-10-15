@@ -19,7 +19,7 @@ import {
 import { validarUsuarioId } from "../middlewares/base/validarId.js";
 import { autenticarUsuario } from "../middlewares/auth/autenticacion.middleware.js";
 import { cerrarSesion } from "../controllers/sesion.controller.js";
-// import { soloAdmin, organizadoresAdmins } from "../middlewares/validation/roles.middleware.js";
+
 
 const router = express.Router();
 
@@ -33,17 +33,23 @@ router.post("/logout", autenticarUsuario, cerrarSesion);
 router.get("/", validarConsultaUsuarios, obtenerUsuarios);
 router.get("/:id", validarUsuarioId, obtenerUsuarioPorId);
 router.post("/", validarCrearUsuarioAdmin, crearUsuario);
-router.patch(
-  "/:id",
-  validarUsuarioId,
-  validarActualizarUsuario,
-  actualizarUsuario,
-);
+router.patch("/:id", validarUsuarioId, validarActualizarUsuario, actualizarUsuario);
 router.delete("/:id", validarUsuarioId, eliminarUsuario);
 
 export default router;
 
+
+
+
+
+
+
+
+
 // Rutas BRENDA
+
+// import { soloAdmin, organizadoresAdmins } from "../middlewares/validation/roles.middleware.js";
+
 //router.get("/", organizadoresAdmins,validarConsultaUsuarios, obtenerUsuarios);
 //router.get("/:id", organizadoresAdmins, validarUsuarioId, obtenerUsuarioPorId);
 //router.post("/", soloAdmin, validarCrearUsuarioAdmin, crearUsuario);

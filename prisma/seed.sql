@@ -133,13 +133,13 @@ SET "estado"     = EXCLUDED."estado",
 -- ============================================================
 INSERT INTO "Usuario" ("id_usuario", "nombre", "apellido", "dni", "email", "telefono", "passwordHash", "rolId", "localidadId", "updatedAt") VALUES
 -- Admin (rolId: 1)
-('a0000000-0000-0000-0000-000000000001'::uuid, 
+('a0000000-0000-4000-8000-000000000001'::uuid, 
  'Administrador', 'Poncho', '11111111', 'admin@ponchodigital.com', '3834111111', 
  '$2b$10$efWDIKJqRwZUYTUhRjKD/uPeE3EoHD02gzQx6ABCjmGvV6IwgyNOK', 1, 1, NOW()),
 
 -- Usuario estándar / Visitante (rolId: 3)
-('a0000000-0000-0000-0000-000000000003'::uuid, 
+('a0000000-0000-4000-8000-000000000003'::uuid, 
  'Usuario', 'Prueba', '33333333', 'usuario.test@gmail.com', '3834333333', 
  '$2b$10$MH5.p5piJc/uvyfTEn3wh.c.Vsv1kF/ADEIKIXj5QvRyWpOKllvJS', 3, 1, NOW())
 
-ON CONFLICT ("email") DO NOTHING;
+ON CONFLICT ("email") DO UPDATE SET "id_usuario" = EXCLUDED."id_usuario";
