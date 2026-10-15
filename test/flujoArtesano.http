@@ -1,0 +1,172 @@
+@baseUrl = http://127.0.0.1:5500
+
+###############################################################################
+### CASO DE PRUEBA: FLUJO INTEGRAL DEL MÓDULO ARTESANOS
+###
+### 1. Pre-requisito: Creación de un Usuario para asociar (POST /usuarios/)
+### 2. Creación del Artesano (POST /artesanos) -> Verifica estado ACTIVO e ID generado.
+### 3. Consulta de detalle por ID (GET /artesanos/:id) -> Verifica relaciones.
+### 4. Consulta de listado con paginación (GET /artesanos?pagina=1&limite=10).
+### 5. Filtrado por nombre de emprendimiento y rubro (GET /artesanos?...).
+### 6. Actualización de datos del artesano (PATCH /artesanos/:id).
+### 7. Verificación de cambios aplicados (GET /artesanos/:id).
+### 8. Pruebas de validación y control de errores (400, 404, 409).
+### 9. Baja lógica del artesano (DELETE /artesanos/:id).
+### 10. Verificación de estado INACTIVO posterior a la baja.
+### 11. Limpieza / Teardown: Eliminación del usuario de prueba.
+###############################################################################
+
+
+### ---------------------------------------------------------------------------
+### PRE-REQUISITO: Crear un usuario para vincular al artesano
+### ---------------------------------------------------------------------------
+# @name crearUsuarioBase
+POST {{baseUrl}}/usuarios
+Content-Type: application/json
+
+{
+  "nombre": "Esteban",
+  "apellido": "Quirós",
+  "dni": "34991189",
+  "email": "esteban.artesanias2@gmail.com",
+  "telefono": "3834887761",
+  "password": "PasswordArtesano2026!",
+  "localidadId": 1,
+  "rolId": 3
+}
+
+### Variable dinámica del usuario generado
+@usuarioId = {{crearUsuarioBase.response.body.id_usuario}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 1: Crear un Artesano vinculado al usuario (Camino feliz)
+### ---------------------------------------------------------------------------
+# @name crearArtesano
+POST {{baseUrl}}/artesanos
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Alfarería Quirós",
+  "descripcion_emprendimiento": "Piezas artesanales en greda y arcilla cocida a horno de leña",
+  "usuarioId": "{{usuarioId}}",
+  "rubroId": 1
+}
+
+### Variable dinámica del artesano creado
+@artesanoId = {{crearArtesano.response.body.id_artesano}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 2: Consultar el artesano por su ID
+### ---------------------------------------------------------------------------
+# @name obtenerDetalleArtesano
+GET {{baseUrl}}/artesanos/{{artesanoId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 3: Listar artesanos con paginación y ordenamiento
+### ---------------------------------------------------------------------------
+# @name listarArtesanos
+GET {{baseUrl}}/artesanos?pagina=1&limite=5&ordenarPor=createdAt&direccion=desc
+
+
+### ---------------------------------------------------------------------------
+### PASO 4: Filtrar artesanos por nombre de emprendimiento y por rubro
+### ---------------------------------------------------------------------------
+# @name filtrarArtesanos
+GET {{baseUrl}}/artesanos?nombre_emprendimiento=Quirós&rubroId=1&pagina=1&limite=10
+
+
+### ---------------------------------------------------------------------------
+### PASO 5: Actualizar datos del Artesano (PATCH)
+### ---------------------------------------------------------------------------
+# @name actualizarArtesano
+PATCH {{baseUrl}}/artesanos/{{artesanoId}}
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Alfarería Quirós & Tradición",
+  "descripcion_emprendimiento": "Vasijas, cuencos y jarros utilitarios en cerámica esmaltada artesanalmente",
+  "rubroId": 1
+}
+
+
+### ---------------------------------------------------------------------------
+### PASO 6: Verificar que los datos se actualizaron correctamente
+### ---------------------------------------------------------------------------
+GET {{baseUrl}}/artesanos/{{artesanoId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 7: CASOS DE ERROR Y VALIDACIONES
+### ---------------------------------------------------------------------------
+
+### 7.1 Error 409: Intentar registrar un segundo artesano con el mismo usuarioId
+POST {{baseUrl}}/artesanos
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Segundo Emprendimiento",
+  "descripcion_emprendimiento": "Intento de registrar otro artesano con la misma cuenta",
+  "usuarioId": "{{usuarioId}}",
+  "rubroId": 1
+}
+
+### 7.2 Error 400: Descripción demasiado corta (mínimo 10 caracteres)
+POST {{baseUrl}}/artesanos
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Emprendimiento Corto",
+  "descripcion_emprendimiento": "Corta",
+  "usuarioId": "{{usuarioId}}",
+  "rubroId": 1
+}
+
+### 7.3 Error 400: usuarioId no es un UUID válido
+POST {{baseUrl}}/artesanos
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Taller Creativo",
+  "descripcion_emprendimiento": "Producción en telar y lana de oveja tradicional",
+  "usuarioId": "id-invalido-no-uuid",
+  "rubroId": 1
+}
+
+### 7.4 Error 404: Rubro inexistente
+POST {{baseUrl}}/artesanos
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Taller Creativo",
+  "descripcion_emprendimiento": "Producción en telar y lana de oveja tradicional",
+  "usuarioId": "{{usuarioId}}",
+  "rubroId": 99999
+}
+
+### 7.5 Error 404: Consultar artesano con ID inexistente
+GET {{baseUrl}}/artesanos/999999
+
+### 7.6 Error 400: Consultar artesano con ID que no es un entero positivo
+GET {{baseUrl}}/artesanos/abc-invalido
+
+
+### ---------------------------------------------------------------------------
+### PASO 8: Baja lógica del artesano (DELETE)
+### ---------------------------------------------------------------------------
+# @name eliminarArtesano
+DELETE {{baseUrl}}/artesanos/{{artesanoId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 9: Verificar que el artesano ahora tiene estado INACTIVO
+### ---------------------------------------------------------------------------
+GET {{baseUrl}}/artesanos/{{artesanoId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 10: LIMPIEZA / TEARDOWN (Restaura la base de datos eliminando el usuario)
+### ---------------------------------------------------------------------------
+DELETE {{baseUrl}}/usuarios/{{usuarioId}}

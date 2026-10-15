@@ -228,7 +228,7 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
 
     const nuevoArtesano = await artesanoService.crearArtesano({
       nombre_emprendimiento: solicitud.nombre_emprendimiento,
-      descripcion: solicitud.descripcion_emprendimiento,
+      descripcion_emprendimiento: solicitud.descripcion_emprendimiento,
       usuarioId: solicitud.usuarioId,
     }, tx);
 
