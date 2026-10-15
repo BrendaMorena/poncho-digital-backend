@@ -285,6 +285,6 @@ export const iniciarSesion = async (iniciarSesionDTO) => {
     id_usuario: usuarioEncontrado.id_usuario,
     nombre: usuarioEncontrado.nombre,
     apellido: usuarioEncontrado.apellido,
-    email: usuarioEncontrado.email,
+    // email: usuarioEncontrado.email,
   };
 };

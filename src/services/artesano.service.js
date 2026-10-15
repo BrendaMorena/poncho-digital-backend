@@ -89,7 +89,12 @@ export const obtenerArtesanoPorId = async (id) => {
           localidad: true,
         }
       },
-      rubro: true,
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre_rubro: true,
+        },
+      },
       stand: {
         select: {
           numero_stand: true,
@@ -144,13 +149,24 @@ export const crearArtesano = async (crearArtesanoDTO, tx = prisma) => {
       estado,
     },
     include: {
-      usuario: true,
-      rubro: true,
+      usuario: {
+        select: {
+          id_usuario: true,
+          nombre: true,
+          apellido: true,
+          email: true,
+          telefono: true,
+        },
+      },
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre_rubro: true,
+        },
+      },
     },
   });
 };
-
-// no devolver todo
 
 export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
   const artesano = await prisma.artesano.findUnique({
@@ -179,9 +195,22 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
       rubroId,
     },
     include: {
-      usuario: { select: { nombre: true, apellido: true, email: true, localidad: true } },
-      rubro: true
-    }
+      usuario: {
+        select: {
+          id_usuario: true,
+          nombre: true,
+          apellido: true,
+          email: true,
+          telefono: true,
+        },
+      },
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre_rubro: true,
+        },
+      },
+    },
   });
 };
 

@@ -17,7 +17,7 @@ export const verificarToken = (token) => {
   if (
     typeof payload !== "object" ||
     payload === null ||
-    !z.string().uuid().safeParse(payload.sub).success ||
+    !z.uuid().safeParse(payload.sub).success ||
     !Number.isFinite(payload.exp)
   ) {
     throw new jwt.JsonWebTokenError("Contenido del token inválido.");

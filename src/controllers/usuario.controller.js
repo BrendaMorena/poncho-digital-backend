@@ -25,21 +25,6 @@ export const obtenerUsuarioPorId = async (req, res, next) => {
   }
 };
 
-export const registrarArtesano = async (req, res, next) => {
-  try {
-    const datosRegistro = req.body;
-
-    const resultado = await usuarioService.registrarArtesano(datosRegistro);
-
-    return res.status(201).json({
-      mensaje:
-        "Postulación a artesano enviada con éxito. Ya puedes iniciar sesión.",
-      datos: resultado,
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
 
 //crear admin
 export const crearUsuario = async (req, res, next) => {
@@ -93,7 +78,7 @@ export const iniciarSesion = async (req, res, next) => {
   try {
     const usuario = await usuarioService.iniciarSesion(req.iniciarSesionDTO);
     const token = generarToken(usuario);
-
+    
     return res.status(200).json({
       mensaje: "Credenciales verificadas correctamente.",
       token: token,
@@ -119,3 +104,21 @@ export const obtenerMiPerfil = async (req, res, next) => {
     return next(error);
   }
 };
+
+
+
+// export const registrarArtesano = async (req, res, next) => {
+//   try {
+//     const datosRegistro = req.body;
+
+//     const resultado = await usuarioService.registrarArtesano(datosRegistro);
+
+//     return res.status(201).json({
+//       mensaje:
+//         "Postulación a artesano enviada con éxito. Ya puedes iniciar sesión.",
+//       datos: resultado,
+//     });
+//   } catch (error) {
+//     return next(error);
+//   }
+// };

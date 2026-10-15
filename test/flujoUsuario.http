@@ -33,6 +33,7 @@ Content-Type: application/json
   "rubroId": 1,
   "nombre_emprendimiento": "Tejidos Navarro",
   "descripcion_emprendimiento": "Ponchos catamarquenos tradicionales tejidos en telar criollo"
+  //"rolId": 2 (agregar coma antes)
 }
 
 ### Variables dinamicas capturadas del registro
