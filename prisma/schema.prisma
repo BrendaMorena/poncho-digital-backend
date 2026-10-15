@@ -134,7 +134,7 @@ model Usuario {
   apellido    String
   dni         String   @unique
   passwordHash    String
-  email       String @unique 
+  email       String @unique
   telefono    String
 
   createdAt   DateTime @default(now())

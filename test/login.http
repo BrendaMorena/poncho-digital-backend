@@ -10,9 +10,6 @@ Content-Type: application/json
   "password":"PonchoSeguro2026."
 }
 
-
-# eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjc1NTZiMi1lNDUwLTQwMjEtYWY0Yi0yMTk3NTdkNDYxMWUiLCJqdGkiOiJmM2NhOWFjNS1kZDA2LTRiNmUtOTgwZS0zY2YyZDk4N2NhMzIiLCJpYXQiOjE3OTIwOTQwMDksImV4cCI6MTc5MjA5NDA2OX0.56koAwSGiitxrjfNFAv5_zI2wbAm0M-gfI_ZV81GLOk
-
 # {
 #   "email":"admin@ponchodigital.com",
 #   "password":"AdminPoncho2026!"
@@ -29,7 +26,7 @@ Content-Type: application/json
 ### Caso 1: Acceso exitoso con Bearer Token válido
 # Resultado esperado: 200 OK (devuelve la información del perfil)
 GET {{baseUrl}}/usuarios/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjc1NTZiMi1lNDUwLTQwMjEtYWY0Yi0yMTk3NTdkNDYxMWUiLCJqdGkiOiI3ZDVjYzJkNy0yN2E4LTRiZjUtYTBmOS0zNmE4ZjhhZmYwYTgiLCJpYXQiOjE3OTIwOTQxNTcsImV4cCI6MTc5MjA5NDIxN30.kpqIlQ1FHVXZ0l-GD0oocO_JSx5mfWqTkMJl5sinWgE
+Authorization: Bearer {{token}}
 
 
 ### Caso 2: Intento de acceso SIN token
@@ -44,7 +41,7 @@ Authorization: Bearer token_invalido
 ###
 
 POST {{baseUrl}}/usuarios/logout
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjc1NTZiMi1lNDUwLTQwMjEtYWY0Yi0yMTk3NTdkNDYxMWUiLCJqdGkiOiI3ZGYyZTRhMC01ZTI1LTQ0N2EtYjcxMi1lM2Y3NWEyZmM4ODUiLCJpYXQiOjE3OTIwOTQxNzksImV4cCI6MTc5MjA5NDIzOX0.5qk84U7a1pKUua6xwTVqFo2u-MgwBXJRIcvrQ5530TM
+Authorization: Bearer {{token}}
 
 ###
 

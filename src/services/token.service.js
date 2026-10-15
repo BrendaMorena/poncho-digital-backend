@@ -6,7 +6,7 @@ import { z } from "zod";
 export const generarToken = (usuario) => {
   return jwt.sign({ sub: usuario.id_usuario, jti: randomUUID() }, secretoJWT, {
     algorithm: "HS256",
-    expiresIn: "1m",
+    expiresIn: "4m",
   });
 };
 

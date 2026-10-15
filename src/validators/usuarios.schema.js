@@ -105,19 +105,19 @@ export const crearUsuarioAdminSchema = usuarioBaseSchema.extend({
     .positive("El rolId tiene que ser un numero entero positivo.")
 });
 
-// 3. SCHEMA PARA AUTO-REGISTRO: Sin rolId, pero con los datos de la postulación
+// 3. SCHEMA PARA REGISTRO: datos de la postulación
 export const registroUsuarioSchema = usuarioBaseSchema.extend({
   rubroId: z
-    .number({ error: "El rubroId es obligatorio" })
+    .number("El rubroId es obligatorio")
     .int()
     .positive("El rubro tiene que ser un numero entero positivo."),
 
   nombre_emprendimiento: z
-    .string({error: "El nombre es obligatorio y tiene que ser texto"})
+    .string("El nombre es obligatorio y tiene que ser texto")
     .min(3, "El nombre del emprendimiento debe tener mínimo 3 carácteres"),
 
   descripcion_emprendimiento: z
-    .string({ error: "La descripción del emprendimiento es obligatoria" })
+    .string("La descripción del emprendimiento es obligatoria")
     .min(10, "Cuéntanos más sobre tu emprendimiento (mínimo 10 caracteres).")
 });
 
@@ -126,6 +126,6 @@ export const loginSchema = z.object({
   email: z
     .email("El formato del correo electrónico no es válido"),
   password: z
-    .string({ error: "La contraseña es obligatoria" })
+    .string("La contraseña es obligatoria")
     .min(1, "La contraseña no puede estar vacía"),
 });
