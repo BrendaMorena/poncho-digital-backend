@@ -1,0 +1,114 @@
+@baseUrl = http://localhost:3000
+
+###############################################################################
+### CASO DE PRUEBA: FLUJO INTEGRAL DE USUARIO A ARTESANO CON STAND
+###
+### 1. Registro del postulante (POST /usuarios/registro) -> Crea Usuario y Solicitud PENDIENTE.
+### 2. Consulta de solicitud inicial (GET /solicitudes/:id) -> Verifica estado PENDIENTE.
+### 3. Consulta de solicitudes por Admin (GET /solicitudes?estado_solicitud=PENDIENTE).
+### 4. Aprobacion por Admin (PATCH /solicitudes/:id/aprobar) -> Pasa a APROBADO y crea Artesano ACTIVO.
+### 5. Asignacion automatica de Stand por Rubro (POST /stands/asignar).
+### 6. Verificacion de Solicitud (GET /solicitudes/:id) -> Estado APROBADO.
+### 7. Verificacion de Artesano (GET /artesanos/:id) -> Estado ACTIVO con Stand asignado.
+### 8. Verificacion de Stand (GET /stands/:id) -> Estado OCUPADO.
+### 9. [Opcional] Limpieza / Teardown: Liberar stand y eliminar usuario de prueba.
+###############################################################################
+
+
+### ---------------------------------------------------------------------------
+### PASO 1: Registro del postulante (crea cuenta y solicitud PENDIENTE)
+### ---------------------------------------------------------------------------
+# @name registro
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Florencia",
+  "apellido": "Navarro",
+  "dni": "36998811",
+  "email": "florencia.tejidos@gmail.com",
+  "telefono": "3834123456",
+  "password": "PonchoSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Tejidos Navarro",
+  "descripcion_emprendimiento": "Ponchos catamarquenos tradicionales tejidos en telar criollo",
+  "rolId": 2
+}
+
+### Variables dinamicas capturadas del registro
+@solicitudId = {{registro.response.body.solicitud.id_solicitud}}
+@usuarioId = {{registro.response.body.id_usuario}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 2: Consulta de la solicitud recien creada
+### ---------------------------------------------------------------------------
+# @name verSolicitudPendiente
+GET {{baseUrl}}/solicitudes/{{solicitudId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 3: El administrador lista solicitudes pendientes
+### ---------------------------------------------------------------------------
+# @name listarPendientesAdmin
+GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE&pagina=1&limite=10
+
+
+### ---------------------------------------------------------------------------
+### PASO 4: El administrador aprueba la solicitud (crea Artesano ACTIVO)
+### ---------------------------------------------------------------------------
+# @name aprobarSolicitud
+PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/aprobar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Documentacion verificada y piezas autenticas para la Fiesta del Poncho."
+}
+
+### Variable dinamica del artesano creado
+@artesanoId = {{aprobarSolicitud.response.body.artesano.id_artesano}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 5: Asignacion automatica de Stand disponible por Rubro
+### ---------------------------------------------------------------------------
+# @name asignarStandAuto
+POST {{baseUrl}}/stands/asignar
+Content-Type: application/json
+
+{
+  "artesanoId": {{artesanoId}}
+}
+
+### Variable dinamica del stand asignado
+@standId = {{asignarStandAuto.response.body.id_stand}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 6: Re-verificacion de la Solicitud (estado APROBADO)
+### ---------------------------------------------------------------------------
+GET {{baseUrl}}/solicitudes/{{solicitudId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 7: Re-verificacion del Artesano (estado ACTIVO y Stand asignado)
+### ---------------------------------------------------------------------------
+GET {{baseUrl}}/artesanos/{{artesanoId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 8: Re-verificacion del Stand (estado OCUPADO)
+### ---------------------------------------------------------------------------
+GET {{baseUrl}}/stands/{{standId}}
+
+
+### ---------------------------------------------------------------------------
+### PASO 9: LIMPIEZA / TEARDOWN (Restaura el estado previo de la BD)
+### ---------------------------------------------------------------------------
+
+### 9.1 Liberar el Stand (vuelve a DISPONIBLE)
+PATCH {{baseUrl}}/stands/{{standId}}/liberar
+
+### 9.2 Eliminar el Usuario de prueba (en cascada elimina solicitud y artesano)
+DELETE {{baseUrl}}/usuarios/{{usuarioId}}

@@ -1,0 +1,281 @@
+@baseUrl = http://localhost:3000
+
+###############################################################################
+### FLUJO 1: REGISTRO PÚBLICO DE USUARIO (POST /usuarios/registro)
+###############################################################################
+
+### CP-REG-01: Registro exitoso - Camino feliz
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Mariana",
+  "apellido": "Gómez",
+  "dni": "35889123",
+  "email": "mariana.artesanias@gmail.com",
+  "telefono": "3834991122",
+  "password": "PonchoSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Tejidos Catamarca",
+  "descripcion_emprendimiento": "Prendas elaboradas en telar criollo con lana de oveja y vicuña"
+}
+
+### CP-REG-02: Error 400 - Email con formato inválido
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Lucas",
+  "apellido": "Velez",
+  "dni": "38112233",
+  "email": "correo-sin-formato",
+  "telefono": "3834112233",
+  "password": "Password123.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Artesanías Lucas",
+  "descripcion_emprendimiento": "Elaboración de vasijas de barro"
+}
+
+### CP-REG-03: Error 400 - Contraseña débil (menos de 8 caracteres)
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Lucas",
+  "apellido": "Velez",
+  "dni": "38112234",
+  "email": "lucas.passcorta@gmail.com",
+  "telefono": "3834112233",
+  "password": "Corta1",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Artesanías Lucas",
+  "descripcion_emprendimiento": "Elaboración de vasijas de barro"
+}
+
+### CP-REG-04: Error 400 - Contraseña sin números
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Lucas",
+  "apellido": "Velez",
+  "dni": "38112235",
+  "email": "lucas.sinletras@gmail.com",
+  "telefono": "3834112233",
+  "password": "Sololetrasinnum.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Artesanías Lucas",
+  "descripcion_emprendimiento": "Elaboración de vasijas de barro"
+}
+
+### CP-REG-05: Error 400 - Teléfono inválido (menos de 10 dígitos o con letras)
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Lucas",
+  "apellido": "Velez",
+  "dni": "38112236",
+  "email": "lucas.telefono@gmail.com",
+  "telefono": "383411",
+  "password": "Password123.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Artesanías Lucas",
+  "descripcion_emprendimiento": "Elaboración de vasijas de barro"
+}
+
+### CP-REG-06: Error 400 - Descripción del emprendimiento menor a 10 caracteres
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Lucas",
+  "apellido": "Velez",
+  "dni": "38112237",
+  "email": "lucas.desc@gmail.com",
+  "telefono": "3834112233",
+  "password": "Password123.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Artesanías Lucas",
+  "descripcion_emprendimiento": "Corta"
+}
+
+### CP-REG-07: Error 409 - Email duplicado (reintentar con email del CP-REG-01)
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Mariana Duplicada",
+  "apellido": "Gómez",
+  "dni": "40112233",
+  "email": "mariana.artesanias@gmail.com",
+  "telefono": "3834991122",
+  "password": "PonchoSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Otro Emprendimiento",
+  "descripcion_emprendimiento": "Descripción con más de diez letras"
+}
+
+### CP-REG-08: Error 409 - DNI duplicado (reintentar con DNI del CP-REG-01)
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Otro Nombre",
+  "apellido": "Otro Apellido",
+  "dni": "35889123",
+  "email": "otromail358@gmail.com",
+  "telefono": "3834991122",
+  "password": "PonchoSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Otro Emprendimiento",
+  "descripcion_emprendimiento": "Descripción con más de diez letras"
+}
+
+### CP-REG-09: Error 404 - Localidad inexistente
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Carlos",
+  "apellido": "Tapia",
+  "dni": "32111222",
+  "email": "carlos.tapia@gmail.com",
+  "telefono": "3834223344",
+  "password": "Password123.",
+  "localidadId": 99999,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Maderas del Valle",
+  "descripcion_emprendimiento": "Tallados en madera de algarrobo"
+}
+
+### CP-REG-10: Error 404 - Rubro inexistente
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Carlos",
+  "apellido": "Tapia",
+  "dni": "32111222",
+  "email": "carlos.tapia2@gmail.com",
+  "telefono": "3834223344",
+  "password": "Password123.",
+  "localidadId": 1,
+  "rubroId": 99999,
+  "nombre_emprendimiento": "Maderas del Valle",
+  "descripcion_emprendimiento": "Tallados en madera de algarrobo"
+}
+
+
+###############################################################################
+### FLUJO 2: INICIO DE SESIÓN (POST /usuarios/login)
+###############################################################################
+
+### CP-LOG-01: Login exitoso con usuario registrado en CP-REG-01
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "mariana.artesanias@gmail.com",
+  "password": "PonchoSeguro2026."
+}
+
+### CP-LOG-02: Login exitoso con usuario semilla (cargado con npm run seed)
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "usuario.test@gmail.com",
+  "password": "Password123."
+}
+
+### CP-LOG-03: Login exitoso con Administrador semilla (cargado con npm run seed)
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+### CP-LOG-04: Error 401 - Usuario inexistente
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "usuario.inexistente@gmail.com",
+  "password": "CualquierPassword123."
+}
+
+### CP-LOG-05: Error 401 - Contraseña incorrecta
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "usuario.test@gmail.com",
+  "password": "PasswordIncorrecta999."
+}
+
+### CP-LOG-06: Error 400 - Formato de email inválido
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "usuario-sin-arroba",
+  "password": "Password123."
+}
+
+### CP-LOG-07: Error 400 - Contraseña vacía
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "usuario.test@gmail.com",
+  "password": ""
+}
+
+
+###############################################################################
+### FLUJO 3: CREACIÓN DE USUARIO POR EL ADMIN (POST /usuarios/)
+###############################################################################
+
+### CP-ADM-01: Creación de usuario por Admin (asignando rolId: 2 - ORGANIZADOR)
+POST {{baseUrl}}/usuarios/
+Content-Type: application/json
+
+{
+  "nombre": "Roberto",
+  "apellido": "Páez",
+  "dni": "28111222",
+  "email": "roberto.organizador@poncho.gob.ar",
+  "telefono": "3834556677",
+  "password": "Organizador2026!",
+  "localidadId": 1,
+  "rolId": 2
+}
+
+
+###############################################################################
+### FLUJO 4: ELIMINACIÓN DE USUARIOS (DELETE /usuarios/:id)
+###############################################################################
+
+### CP-DEL-01: Eliminar usuario existente - Camino feliz (Usuario semilla ID: a0000000-0000-4000-8000-000000000003)
+DELETE {{baseUrl}}/usuarios/a0000000-0000-4000-8000-000000000003
+
+### CP-DEL-02: Comprobar que el usuario eliminado ya no existe (debe retornar 404)
+GET {{baseUrl}}/usuarios/a0000000-0000-4000-8000-000000000003
+
+### CP-DEL-03: Error 404 - Intentar eliminar un usuario con UUID inexistente
+DELETE {{baseUrl}}/usuarios/ffffffff-ffff-ffff-ffff-ffffffffffff
+
+### CP-DEL-04: Error 400 - Intentar eliminar con un ID que no es UUID válido
+DELETE {{baseUrl}}/usuarios/id-invalido-123
+

@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+enum EstadoStand {
+  DISPONIBLE
+  OCUPADO
+  MANTENIMIENTO
+}
+
+model Stand {
+  id_stand       Int @id @default(autoincrement())
+  numero_stand   Int @unique
+  estado         EstadoStand @default(DISPONIBLE)
+  coordenada     Json
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  artesanoId     Int? @unique
+  artesano       Artesano? @relation(fields: [artesanoId], references: [id_artesano], onDelete: SetNull)
+
+  sectorId       Int 
+  sector         Sector @relation(fields: [sectorId], references: [id_sector], onDelete: Restrict)
+}
+
+model Sector {
+  id_sector       Int @id @default(autoincrement())
+  codigo_sector   String @unique
+  nombre_sector   String @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  stands          Stand[]
+
+  pabellonId     Int ?
+  pabellon       Pabellon? @relation(fields: [pabellonId], references: [id_pabellon], onDelete: Restrict)
+
+  rubroId        Int?
+  rubro          Rubro?    @relation(fields: [rubroId], references: [id_rubro], onDelete: SetNull)
+}
+
+
+model Pabellon {
+  id_pabellon             Int @id @default(autoincrement())
+  nombre_pabellon         String @unique
+  descripcion_pabellon    String
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  sectores                Sector[]
+  busquedas               Busqueda[]
+}
+
+enum EstadoArtesano {
+  ACTIVO
+  INACTIVO
+  SUSPENDIDO
+}
+
+model Artesano {
+  id_artesano                     Int    @id @default(autoincrement())
+  nombre_emprendimiento           String?
+  descripcion_emprendimiento      String
+  estado                          EstadoArtesano @default(ACTIVO)
+
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
+
+  stand     Stand?
+  productos Producto[]
+
+  usuarioId String @unique @db.Uuid
+  usuario   Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade)
+
+  rubroId Int
+  rubro   Rubro @relation(fields: [rubroId], references: [id_rubro])
+}
+
+model Busqueda {
+  id_busqueda          Int      @id @default(autoincrement())
+  termino_busqueda     String?
+
+  createdAt            DateTime @default(now()) 
+  updatedAt            DateTime @updatedAt
+
+  usuarioId            String? @db.Uuid
+  usuario              Usuario? @relation(fields:[usuarioId], references:[id_usuario], onDelete: SetNull)
+
+  rubroId              Int?
+  rubro                Rubro? @relation(fields:[rubroId], references: [id_rubro], onDelete: SetNull)
+
+  localidadId          Int? 
+  localidad            Localidad? @relation(fields: [localidadId], references:[id_localidad], onDelete: SetNull)
+
+  pabellonId           Int?
+  pabellon             Pabellon? @relation(fields:[pabellonId], references:[id_pabellon], onDelete: SetNull)
+
+}
+
+model Producto {
+  id_producto       Int @id @default(autoincrement())
+  nombre_producto   String
+  precio            Float
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  artesanoId        Int
+  artesano          Artesano @relation(fields: [artesanoId], references: [id_artesano], onDelete: Cascade)
+}
+
+model Rol {
+  id_rol        Int @id @default(autoincrement())
+  nombre        String @unique 
+  descripcion   String
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  usuarios      Usuario[]
+}
+
+model Usuario {
+  id_usuario  String @id @default(uuid()) @db.Uuid
+  nombre      String
+  apellido    String
+  dni         String   @unique
+  passwordHash    String
+  email       String @unique
+  telefono    String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  artesano    Artesano?
+  solicitud   Solicitud?
+  busquedas   Busqueda[]
+
+  rolId       Int
+  rol         Rol @relation(fields:[rolId],references:[id_rol], onDelete: Restrict)
+
+  localidadId Int
+  localidad   Localidad @relation(fields:[localidadId],references:[id_localidad], onDelete: Restrict)
+
+}
+
+model Rubro {
+  id_rubro    Int      @id @default(autoincrement())
+  nombre_rubro      String   @unique
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  artesanos   Artesano[]
+  busquedas   Busqueda[]
+  solicitudes   Solicitud[]
+  sectores    Sector[]
+}
+
+
+enum EstadoSolicitud {
+  APROBADO
+  RECHAZADO
+  PENDIENTE
+  MODIFICACION_SOLICITADA
+}
+
+model Solicitud {
+  id_solicitud                  Int @id @default(autoincrement()) 
+  estado_solicitud              EstadoSolicitud @default(PENDIENTE)
+  observaciones_admin           String?
+  nombre_emprendimiento         String?
+  descripcion_emprendimiento    String
+  
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+
+  usuarioId                     String @unique @db.Uuid
+  usuario                       Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade )
+
+  rubroId                       Int
+  rubro                         Rubro @relation(fields: [rubroId], references: [id_rubro])
+}
+
+model Localidad {
+  id_localidad      Int @id @default(autoincrement())
+  nombre_locacion   String @unique
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  usuarios          Usuario[]
+  busquedas         Busqueda[]
+}
+
+model TokenRevocado {
+  jti         String @id
+  venceEn     DateTime
+  @@index([venceEn])
+}

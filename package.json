@@ -4,9 +4,10 @@
   "description": "API REST para el proyecto Poncho Digital",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "node --watch src/app.js"
-    
+    "start": "node --experimental-strip-types src/app.js",
+    "dev": "node --experimental-strip-types --watch src/app.js",
+    "seed": "node prisma/seed.js",
+    "test:flujo": "node test/flujoUsuario.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,22 @@
   },
   "homepage": "https://github.com/BrendaMorena/poncho-digital-backend#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^18.0.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "eslint": "^10.9.1",
+    "prisma": "^7.10.0"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true,
+    "@prisma/engines@7.10.0": true,
+    "prisma@7.10.0": true
   }
 }

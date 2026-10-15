@@ -1,0 +1,218 @@
+@baseUrl = http://localhost:3000
+
+############################################################
+### 1. CREACIÓN DE SOLICITUDES (POST /solicitudes)
+############################################################
+
+
+
+###
+
+# Error 400: Faltan campos requeridos (nombre o descripción)
+POST {{baseUrl}}/solicitudes
+Content-Type: application/json
+
+{
+  "descripcion_emprendimiento": "Descripción adecuada de más de 10 caracteres",
+  "usuarioId": "a0000000-0000-4000-8000-000000000003",
+  "rubroId": 1
+}
+
+###
+
+# Error 400: Descripción demasiado corta (mínimo 10 caracteres)
+POST {{baseUrl}}/solicitudes
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Artesanías Catamarca",
+  "descripcion_emprendimiento": "Corta",
+  "usuarioId": "a0000000-0000-4000-8000-000000000003",
+  "rubroId": 1
+}
+
+###
+
+############################################################
+### 2. CONSULTAR SOLICITUDES CON FILTROS Y PAGINACIÓN (GET /solicitudes)
+############################################################
+
+# 1. Listar todas las solicitudes (valores por defecto: pagina=1, limite=10, orden=id_solicitud desc)
+GET {{baseUrl}}/solicitudes
+
+###
+
+# 2. Filtrar solicitudes en estado PENDIENTE
+GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE
+
+###
+
+# 3. Filtrar solicitudes en estado APROBADO
+GET {{baseUrl}}/solicitudes?estado_solicitud=APROBADO
+
+###
+
+# 4. Filtrar solicitudes que requieren modificación
+GET {{baseUrl}}/solicitudes?estado_solicitud=MODIFICACION_SOLICITADA
+
+###
+
+# 5. Filtrar por rubro específico (ej: rubro 1 - Textil)
+GET {{baseUrl}}/solicitudes?rubroId=1
+
+###
+
+# 6. Paginación y ordenamiento por fecha de creación descendente
+GET {{baseUrl}}/solicitudes?pagina=1&limite=5&ordenPor=createdAt&direccion=desc
+
+###
+
+############################################################
+### 3. OBTENER SOLICITUD POR ID (GET /solicitudes/:id)
+############################################################
+
+# Caso de Éxito: Obtener detalle completo de la solicitud
+GET {{baseUrl}}/solicitudes/1
+
+###
+
+# Error 404: Solicitud inexistente
+GET {{baseUrl}}/solicitudes/9999
+
+###
+
+# Error 400: ID inválido (debe ser un entero positivo)
+GET {{baseUrl}}/solicitudes/invalido
+
+###
+
+############################################################
+### 4. ACCIONES DEL ORGANIZADOR (PATCH /solicitudes/:id/...)
+############################################################
+
+# 4.1 APROBAR SOLICITUD (Pasa a APROBADO y da de alta al artesano como ACTIVO)
+PATCH {{baseUrl}}/solicitudes/1/aprobar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Solicitud aprobada tras verificar autenticidad y calidad de productos tradicionales"
+}
+
+###
+
+# 4.2 SOLICITAR MODIFICACIÓN (Pasa a MODIFICACION_SOLICITADA, observaciones obligatorias)
+PATCH {{baseUrl}}/solicitudes/1/solicitar-modificacion
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Por favor detallar con mayor precisión el origen de la materia prima y el tipo de telar utilizado"
+}
+
+###
+
+# Error 400 al solicitar modificación: Observaciones vacías o muy cortas (mínimo 5 caracteres)
+PATCH {{baseUrl}}/solicitudes/1/solicitar-modificacion
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Rev"
+}
+
+###
+
+# 4.3 RECHAZAR SOLICITUD (Pasa a RECHAZADO, observaciones obligatorias)
+PATCH {{baseUrl}}/solicitudes/1/rechazar
+Content-Type: application/json
+
+{
+  "observaciones_admin": "No cumple con los requisitos mínimos de producción propia y artesanal exigidos"
+}
+
+###
+
+############################################################
+### 5. ACTUALIZAR SOLICITUD POR EL ARTESANO (PATCH /solicitudes/:id)
+############################################################
+
+# Caso de Éxito: El artesano corrige su descripción (vuelve automáticamente a PENDIENTE)
+PATCH {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{
+  "descripcion_emprendimiento": "Elaboración de ponchos catamarqueños de vicuña y oveja hilados a mano en telar criollo de cuatro cuadros"
+}
+
+###
+
+# Caso de Éxito: El artesano modifica el rubro de su postulación
+PATCH {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{
+  "rubroId": 2
+}
+
+###
+
+# Caso de Éxito: El artesano modifica el nombre de su emprendimiento
+PATCH {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{
+  "nombre_emprendimiento": "Tejidos y Telar Catamarca"
+}
+
+###
+
+# Error 400: Enviar body vacío sin campos para modificar
+PATCH {{baseUrl}}/solicitudes/1
+Content-Type: application/json
+
+{}
+
+###
+
+############################################################
+### 6. ELIMINAR SOLICITUD (DELETE /solicitudes/:id)
+############################################################
+
+# Error 400: Intentar eliminar una solicitud ya APROBADA
+DELETE {{baseUrl}}/solicitudes/1
+
+###
+
+# Error 404: Solicitud inexistente
+DELETE {{baseUrl}}/solicitudes/9999
+
+###
+
+# Error 400: ID inválido
+DELETE {{baseUrl}}/solicitudes/abc
+
+###
+
+# Caso de Éxito: Eliminar solicitud pendiente o rechazada
+DELETE {{baseUrl}}/solicitudes/2
+
+###
+
+############################################################
+### 7. AUXILIAR: REGISTRO INTEGRAL DE ARTESANO (POST /usuarios/registro)
+############################################################
+
+# Crea un Usuario y su Solicitud PENDIENTE asociada en un solo paso
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Leonel",
+  "apellido": "Flores",
+  "dni": "26062001",
+  "email": "leoflores.artesanias@gmail.com",
+  "telefono": "3834991122",
+  "password": "PonchoSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 2,
+  "nombre_emprendimiento": "Cerámicas Catamarca",
+  "descripcion_emprendimiento": "Piezas artesanales de cerámica moldeadas a mano con arcilla de la zona"
+}

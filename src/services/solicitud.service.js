@@ -1,0 +1,365 @@
+import prisma from "../config/prisma.js";
+import { crearError } from "../utils/errores.js";
+import * as artesanoService from "./artesano.service.js";
+
+const verificarUsuarioArtesano = async (usuarioId, tx = prisma) => {
+  const usuario = await tx.usuario.findUnique({
+    where: { id_usuario: usuarioId },
+    include: {
+      solicitud: true,
+      artesano: true,
+    },
+  });
+
+  if (!usuario) {
+    throw crearError(`No existe un usuario con id ${usuarioId}`, 404);
+  }
+
+  if (usuario.solicitud) {
+    throw crearError(
+      `El usuario ya cuenta con una solicitud registrada (Estado: ${usuario.solicitud.estado_solicitud})`,
+      409
+    );
+  }
+
+  if (usuario.artesano) {
+    throw crearError(
+      `El usuario ya se encuentra registrado como artesano activo con id ${usuario.artesano.id_artesano}`,
+      409
+    );
+  }
+};
+
+const verificarRubro = async (rubroId, tx = prisma) => {
+  const rubro = await tx.rubro.findUnique({
+    where: { id_rubro: rubroId },
+  });
+
+  if (!rubro) {
+    throw crearError(`No existe un rubro con id ${rubroId}`, 404);
+  }
+};
+
+
+export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
+  const { nombre_emprendimiento, descripcion_emprendimiento, usuarioId, rubroId } = crearSolicitudDTO;
+
+  await verificarUsuarioArtesano(usuarioId, tx);
+  await verificarRubro(rubroId, tx);
+
+  return tx.solicitud.create({
+    data: {
+      nombre_emprendimiento,
+      descripcion_emprendimiento,
+      usuarioId,
+      rubroId,
+      estado_solicitud: "PENDIENTE",
+    },
+    select: {
+      id_solicitud: true,
+      estado_solicitud: true,
+    },
+  });
+};
+
+export const consultarSolicitudes = async (criteriosConsulta) => {
+  const {
+    estado_solicitud,
+    usuarioId,
+    rubroId,
+    ordenPor,
+    direccion,
+    pagina,
+    limite,
+  } = criteriosConsulta;
+
+  const where = {};
+
+  if (estado_solicitud !== undefined) {
+    where.estado_solicitud = estado_solicitud;
+  }
+
+  if (usuarioId !== undefined) {
+    where.usuarioId = usuarioId;
+  }
+
+  if (rubroId !== undefined) {
+    where.rubroId = rubroId;
+  }
+
+  const desplazamiento = (pagina - 1) * limite;
+
+  const [solicitudes, total] = await prisma.$transaction([
+    prisma.solicitud.findMany({
+      where,
+      orderBy: [
+        { [ordenPor]: direccion },
+        { id_solicitud: "asc" },
+      ],
+      skip: desplazamiento,
+      take: limite,
+      select: {
+        id_solicitud: true,
+        nombre_emprendimiento: true,
+        estado_solicitud: true,
+        createdAt: true,
+        usuario: {
+          select: {
+            id_usuario: true,
+            nombre: true,
+            apellido: true,
+          },
+        },
+        rubro: {
+          select: {
+            id_rubro: true,
+            nombre_rubro: true,
+          },
+        },
+      },
+    }),
+    prisma.solicitud.count({ where }),
+  ]);
+
+  return {
+    solicitudes,
+    paginacion: {
+      pagina,
+      limite,
+      total,
+      totalPaginas: Math.ceil(total / limite),
+    },
+  };
+};
+
+export const obtenerSolicitudPorId = async (id) => {
+  return prisma.solicitud.findUnique({
+    where: { id_solicitud: id },
+    select: {
+      id_solicitud: true,
+      estado_solicitud: true,
+      nombre_emprendimiento: true,
+      descripcion_emprendimiento: true,
+      observaciones_admin: true,
+      createdAt: true,
+      updatedAt: true,
+      usuario: {
+        select: {
+          id_usuario: true,
+          nombre: true,
+          apellido: true,
+          email: true,
+          telefono: true,
+        },
+      },
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre_rubro: true,
+        },
+      },
+    },
+  });
+};
+
+export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
+  const { observaciones_admin } = datosAprobacion;
+
+  const solicitud = await prisma.solicitud.findUnique({
+    where: { id_solicitud: id },
+  });
+
+  if (!solicitud) {
+    throw crearError(`No existe una solicitud con id ${id}`, 404);
+  }
+
+  if (solicitud.estado_solicitud !== "PENDIENTE") {
+    throw crearError(
+      `Solo se pueden aprobar solicitudes en estado PENDIENTE (estado actual: ${solicitud.estado_solicitud})`,
+      400
+    );
+  }
+
+  const artesanoExistente = await prisma.artesano.findUnique({
+    where: { usuarioId: solicitud.usuarioId },
+  });
+
+  if (artesanoExistente) {
+    throw crearError("El usuario de esta solicitud ya está registrado como artesano", 409);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const solicitudActualizada = await tx.solicitud.update({
+      where: { id_solicitud: id },
+      data: {
+        estado_solicitud: "APROBADO",
+        observaciones_admin: observaciones_admin ?? solicitud.observaciones_admin ?? "Solicitud aprobada",
+      },
+      include: {
+        rubro: {
+          select: {
+            id_rubro: true,
+            nombre_rubro: true,
+          },
+        },
+      },
+    });
+
+    /*const nuevoArtesano = await tx.artesano.create({
+      data: {
+        nombre_emprendimiento: solicitud.nombre_emprendimiento,
+        descripcion: solicitud.descripcion_emprendimiento,
+        usuarioId: solicitud.usuarioId,
+        rubroId: solicitud.rubroId,
+        estado: "ACTIVO",
+      },
+      include: {
+        usuario: {
+          select: {
+            id_usuario: true,
+            nombre: true,
+            apellido: true,
+            email: true,
+            telefono: true,
+          },
+        },
+        rubro: {
+          select: {
+            id_rubro: true,
+            nombre_rubro: true,
+          },
+        },
+      },
+    });*/
+
+    const nuevoArtesano = await artesanoService.crearArtesano({
+      nombre_emprendimiento: solicitud.nombre_emprendimiento,
+      descripcion_emprendimiento: solicitud.descripcion_emprendimiento,
+      usuarioId: solicitud.usuarioId,
+      rubroId: solicitud.rubroId,
+    }, tx);
+
+    return {
+      mensaje: "Solicitud aprobada con éxito. El artesano ha sido registrado como ACTIVO y queda disponible para asignación de stand.",
+      solicitud: solicitudActualizada,
+      artesano: nuevoArtesano,
+    };
+  });
+};
+
+
+
+export const rechazarSolicitud = async (id, { observaciones_admin }) => {
+  const solicitud = await prisma.solicitud.findUnique({
+    where: { id_solicitud: id },
+  });
+
+  if (!solicitud) {
+    throw crearError(`No existe una solicitud con id ${id}`, 404);
+  }
+
+  if (solicitud.estado_solicitud !== "PENDIENTE") {
+    throw crearError(
+      `Solo se pueden rechazar solicitudes en estado PENDIENTE (estado actual: ${solicitud.estado_solicitud})`,
+      400
+    );
+  }
+
+  const solicitudActualizada = await prisma.solicitud.update({
+    where: { id_solicitud: id },
+    data: {
+      estado_solicitud: "RECHAZADO",
+      observaciones_admin,
+    },
+  });
+
+  return {
+    mensaje: "Solicitud rechazada correctamente",
+    solicitud: solicitudActualizada,
+  };
+};
+
+export const solicitarModificacion = async (id, { observaciones_admin }) => {
+  const solicitud = await prisma.solicitud.findUnique({
+    where: { id_solicitud: id },
+  });
+
+  if (!solicitud) {
+    throw crearError(`No existe una solicitud con id ${id}`, 404);
+  }
+
+  if (solicitud.estado_solicitud !== "PENDIENTE") {
+    throw crearError(
+      `Solo se pueden solicitar modificaciones a solicitudes en estado PENDIENTE (estado actual: ${solicitud.estado_solicitud})`,
+      400
+    );
+  }
+
+  const solicitudActualizada = await prisma.solicitud.update({
+    where: { id_solicitud: id },
+    data: {
+      estado_solicitud: "MODIFICACION_SOLICITADA",
+      observaciones_admin,
+    },
+  });
+
+  return {
+    mensaje: "Se ha solicitado una modificación al artesano",
+    solicitud: solicitudActualizada,
+  };
+};
+
+export const actualizarSolicitud = async (id, actualizarSolicitudDTO) => {
+  const solicitud = await prisma.solicitud.findUnique({
+    where: { id_solicitud: id },
+  });
+
+  if (!solicitud) {
+    throw crearError(`No existe una solicitud con id ${id}`, 404);
+  }
+
+  if (solicitud.estado_solicitud === "APROBADO") {
+    throw crearError("No se pueden modificar los datos de una solicitud que ya fue aprobada", 400);
+  }
+
+  if (actualizarSolicitudDTO.rubroId) {
+    await verificarRubro(actualizarSolicitudDTO.rubroId);
+  }
+
+  const dataAActualizar = {
+    ...actualizarSolicitudDTO,
+    estado_solicitud: "PENDIENTE", 
+  };
+
+  const solicitudActualizada = await prisma.solicitud.update({
+    where: { id_solicitud: id },
+    data: dataAActualizar,
+  });
+
+  return {
+    mensaje: "Solicitud actualizada con éxito; ha vuelto a estado PENDIENTE para revisión de los organizadores",
+    solicitud: solicitudActualizada,
+  };
+};
+
+
+export const eliminarSolicitud = async (id) => {
+  const solicitud = await prisma.solicitud.findUnique({
+    where: { id_solicitud: id },
+  });
+
+  if (!solicitud) {
+    throw crearError(`No existe una solicitud con id ${id}`, 404);
+  }
+
+  if (solicitud.estado_solicitud === "APROBADO") {
+    throw crearError(
+      "No se puede eliminar una solicitud aprobada porque ya tiene un artesano y stand asignados",
+      400
+    );
+  }
+
+  return prisma.solicitud.delete({
+    where: { id_solicitud: id },
+  });
+};
