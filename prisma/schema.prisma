@@ -200,3 +200,9 @@ model Localidad {
   usuarios          Usuario[]
   busquedas         Busqueda[]
 }
+
+model TokenRevocado {
+  jti         String @id
+  venceEn     DateTime
+  @@index([venceEn])
+}

@@ -1,5 +1,5 @@
-import prisma from "../config/prisma.js";
-import { crearError } from "../utils/errores.js";
+import prisma from "../../config/prisma.js";
+import { crearError } from "../../utils/errores.js";
 
 export const verificarArtesanoAprobado = async (req, res, next) => {
   try {

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const crearRubroSchema = z.object({
-  nombre: z
+  nombre_rubro: z
     .string({
       required_error: "El nombre del rubro es obligatorio",
       invalid_type_error: "El nombre debe ser un texto"
@@ -12,7 +12,7 @@ export const crearRubroSchema = z.object({
 });
 
 export const actualizarRubroSchema = z.object({
-  nombre: z
+  nombre_rubro: z
     .string({
       invalid_type_error: "El nombre debe ser un texto"
     })

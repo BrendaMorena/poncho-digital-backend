@@ -87,7 +87,7 @@ export const consultarProductos = async (criteriosConsulta) => {
             rubro:{
               select: {
                 id_rubro: true,
-                nombre:true
+                nombre_rubro: true
               }
             },
           },
@@ -120,7 +120,7 @@ export const obtenerProductoPorId = async (id) => {
           rubro: {
             select: {
               id_rubro: true,
-              nombre: true,
+              nombre_rubro: true,
             },
           },
           usuario: {

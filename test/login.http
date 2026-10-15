@@ -1,0 +1,42 @@
+@baseUrl = http://localhost:3000
+
+### 1. Login (Obtener el token)
+# @name login
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email":"admin@ponchodigital.com",
+  "password":"AdminPoncho2026!"
+}
+
+
+### Extraer el token de la respuesta del login
+@token = {{login.response.body.token}}
+
+### ========================================================
+### CASOS DE PRUEBA
+### ========================================================
+
+### Caso 1: Acceso exitoso con Bearer Token válido
+# Resultado esperado: 200 OK (devuelve la información del perfil)
+GET {{baseUrl}}/usuarios/me
+Authorization: Bearer {{token}}
+
+
+### Caso 2: Intento de acceso SIN token
+# Resultado esperado: 401 Unauthorized
+GET {{baseUrl}}/usuarios/me
+
+
+### Caso 3: Intento de acceso con token inválido o manipulado
+# Resultado esperado: 401 Unauthorized
+GET {{baseUrl}}/usuarios/me
+Authorization: Bearer token_falso_invalido_xyz
+###
+
+POST {{baseUrl}}/usuarios/logout
+Authorization: Bearer {{token}}
+
+###
+

@@ -8,7 +8,7 @@
 INSERT INTO "Rol" ("id_rol", "nombre", "descripcion", "updatedAt") VALUES
 (1, 'ADMINISTRADOR', 'Acceso total y configuración del sistema', NOW()),
 (2, 'ORGANIZADOR',   'Gestión de stands, artesanos y logística', NOW()),
-(3, 'USUARIO',       'Visitante o postulante registrado', NOW())
+(3, 'ARTESANO',       'Postulante para participar en el evento', NOW())
 ON CONFLICT ("nombre") DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('"Rol"', 'id_rol'), coalesce(max("id_rol"), 1)) FROM "Rol";
@@ -34,7 +34,7 @@ SELECT setval(pg_get_serial_sequence('"Localidad"', 'id_localidad'), coalesce(ma
 -- ============================================================
 -- 3. RUBROS ARTESANALES Y TEMÁTICOS
 -- ============================================================
-INSERT INTO "Rubro" ("nombre", "updatedAt") VALUES
+INSERT INTO "Rubro" ("nombre_rubro", "updatedAt") VALUES
 ('Textil',               NOW()),
 ('Cerámica',             NOW()),
 ('Madera',               NOW()),
@@ -44,7 +44,7 @@ INSERT INTO "Rubro" ("nombre", "updatedAt") VALUES
 ('Manualidades',         NOW()),
 ('Productos Regionales', NOW()),
 ('Gastronomía',          NOW())
-ON CONFLICT ("nombre") DO NOTHING;
+ON CONFLICT ("nombre_rubro") DO NOTHING;
 
 -- ============================================================
 -- 4. PABELLONES OFICIALES PONCHO 2026
@@ -62,31 +62,31 @@ ON CONFLICT ("nombre_pabellon") DO NOTHING;
 -- ============================================================
 INSERT INTO "Sector" ("codigo_sector", "nombre_sector", "pabellonId", "rubroId", "updatedAt") VALUES
 ('ART1',  'Sector Tradicional y Textiles', 
-    1, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre" = 'Textil' LIMIT 1), NOW()),
+    1, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Textil' LIMIT 1), NOW()),
 
 ('ART2',  'Sector Metales y Cerámica',     
-    2, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre" = 'Cerámica' LIMIT 1), NOW()),
+    2, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Cerámica' LIMIT 1), NOW()),
 
 ('MAN',   'Sector Manualidades',           
-    2, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre" = 'Manualidades' LIMIT 1), NOW()),
+    2, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Manualidades' LIMIT 1), NOW()),
 
 ('TUR',   'Sector Municipios de Catamarca', 
     3, NULL, NOW()),
 
 ('ALF',   'Sector Fábrica de Alfombras',   
-    4, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre" = 'Textil' LIMIT 1), NOW()),
+    4, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Textil' LIMIT 1), NOW()),
 
 ('CULT',  'Sector Diseño y Editoriales',   
-    5, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre" = 'Manualidades' LIMIT 1), NOW()),
+    5, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Manualidades' LIMIT 1), NOW()),
 
 ('REG',   'Sector Productos Regionales y Delicatessen', 
-    NULL, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre" = 'Productos Regionales' LIMIT 1), NOW()),
+    NULL, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Productos Regionales' LIMIT 1), NOW()),
 
 ('VERDE', 'Sector Feria Verde y Viveros',               
     NULL, NULL, NOW()),
 
 ('FOOD',  'Zona Foodtrucks y Gastronomía',              
-    NULL, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre" = 'Gastronomía' LIMIT 1), NOW())
+    NULL, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Gastronomía' LIMIT 1), NOW())
 
 ON CONFLICT ("codigo_sector") DO UPDATE 
 SET "rubroId"       = EXCLUDED."rubroId",

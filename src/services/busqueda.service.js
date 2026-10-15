@@ -54,7 +54,7 @@ export const consultarBusquedas = async (criterios) => {
       skip: desplazamiento,
       take: limite,
       include: {
-        rubro: { select: { id_rubro: true, nombre: true } },
+        rubro: { select: { id_rubro: true, nombre_rubro: true } },
         pabellon: { select: { id_pabellon: true, nombre_pabellon: true } },
         localidad: { select: { id_localidad: true, nombre_locacion: true } },
       },

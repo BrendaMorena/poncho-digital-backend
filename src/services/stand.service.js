@@ -49,7 +49,7 @@ export const obtenerStands = async (criteriosConsulta) => {
   }
 
   const orderBy = ordenarPor === "rubro"
-    ? [{ artesano: { rubro: { nombre: direccion } } }, { id_stand: "asc" }]
+    ? [{ artesano: { rubro: { nombre_rubro: direccion } } }, { id_stand: "asc" }]
     : [{ [ordenarPor]: direccion }, { id_stand: "asc" }];
 
   const selectLista = {
@@ -68,12 +68,6 @@ export const obtenerStands = async (criteriosConsulta) => {
           }
         }
       }
-    },
-    artesano: {
-      select: {
-        id_artesano: true,
-        nombre_emprendimiento: true,
-      },
     },
   };
 
@@ -124,43 +118,30 @@ export const obtenerStandPorId = async (standId) => {
     where: {
       id_stand: standId,
     },
-    include: {
+    select:{
+      id_stand: true,
+      numero_stand: true,
+      estado: true,
       sector: {
-        select: {
-          id_sector: true,
-          codigo_sector: true,
-          nombre_sector: true,
-          pabellon: {
-            select: {
-              id_pabellon: true,
-              nombre_pabellon: true,
-            },
-          },
-        },
-      },
-      artesano: {
-        select: {
-          id_artesano: true,
-          nombre_emprendimiento: true,
-          descripcion: true,
-          rubro: {
-            select: {
-              id_rubro: true,
-              nombre: true,
-            },
-          },
-          usuario: {
-            select: {
-              id_usuario: true,
-              nombre: true,
-              apellido: true,
-              email: true,
-              telefono: true,
-            },
-          },
-        },
-      },
+      select: {
+        id_sector: true,
+        codigo_sector: true,
+        nombre_sector: true,
+        pabellon: {
+          select: {
+            id_pabellon: true,
+            nombre_pabellon: true
+          }
+        }
+      }
     },
+    artesano: {
+      select: {
+        id_artesano: true,
+        nombre_emprendimiento: true,
+        },
+      }
+    }
   });
 };
 

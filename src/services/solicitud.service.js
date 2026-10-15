@@ -57,12 +57,7 @@ export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
     },
     select: {
       id_solicitud: true,
-      nombre_emprendimiento: true,
-      descripcion_emprendimiento: true,
       estado_solicitud: true,
-      usuarioId: true,
-      rubroId: true,
-      createdAt: true,
     },
   });
 };
@@ -154,7 +149,7 @@ export const obtenerSolicitudPorId = async (id) => {
       rubro: {
         select: {
           id_rubro: true,
-          nombre: true,
+          nombre_rubro: true,
         },
       },
     },
@@ -194,11 +189,11 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
         estado_solicitud: "APROBADO",
         observaciones_admin: observaciones_admin ?? solicitud.observaciones_admin ?? "Solicitud aprobada",
       },
-      include: {
+      select: {
         rubro: {
           select: {
             id_rubro: true,
-            nombre: true,
+            nombre_rubro: true,
           },
         },
       },
@@ -225,7 +220,7 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
         rubro: {
           select: {
             id_rubro: true,
-            nombre: true,
+            nombre_rubro: true,
           },
         },
       },
@@ -235,7 +230,6 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
       nombre_emprendimiento: solicitud.nombre_emprendimiento,
       descripcion: solicitud.descripcion_emprendimiento,
       usuarioId: solicitud.usuarioId,
-      rubroId: solicitud.rubroId,
     }, tx);
 
     return {

@@ -150,6 +150,8 @@ export const crearArtesano = async (crearArtesanoDTO, tx = prisma) => {
   });
 };
 
+// no devolver todo
+
 export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
   const artesano = await prisma.artesano.findUnique({
     where: { id_artesano: id }

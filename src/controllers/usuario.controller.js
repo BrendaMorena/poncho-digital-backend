@@ -1,9 +1,10 @@
 import { crearError } from "../utils/errores.js";
 import * as usuarioService from "../services/usuario.service.js";
+import { generarToken } from "../services/token.service.js";
 
 export const obtenerUsuarios = async (req, res, next) => {
   try {
-    const criteriosConsulta = req.consultaUsuariosDTO; 
+    const criteriosConsulta = req.consultaUsuariosDTO;
     const usuarios = await usuarioService.obtenerUsuarios(criteriosConsulta);
     return res.json(usuarios);
   } catch (error) {
@@ -91,11 +92,30 @@ export const registrarUsuario = async (req, res, next) => {
 export const iniciarSesion = async (req, res, next) => {
   try {
     const usuario = await usuarioService.iniciarSesion(req.iniciarSesionDTO);
+    const token = generarToken(usuario);
+
     return res.status(200).json({
       mensaje: "Credenciales verificadas correctamente.",
+      token: token,
       usuario: usuario,
     });
   } catch (error) {
-    return next(error)
+    return next(error);
+  }
+};
+
+export const obtenerMiPerfil = async (req, res, next) => {
+  try {
+    const idUsuario = req.usuario.id;
+    const usuario = await usuarioService.obtenerUsuarioPorId(idUsuario);
+    if (!usuario) {
+      res.set("WWW-Authenticate", 'Bearer error="invalid_token"');
+      return res.status(401).json({
+        mensaje: "La cuenta asociada al token no existe.",
+      });
+    }
+    return res.status(200).json({ usuario: usuario });
+  } catch (error) {
+    return next(error);
   }
 };

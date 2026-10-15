@@ -76,7 +76,7 @@ export const obtenerSectores = async (criteriosConsulta) => {
     rubro: {
       select: {
         id_rubro: true,
-        nombre: true,
+        nombre_rubro: true,
       },
     },
     _count: {
@@ -126,7 +126,7 @@ export const obtenerSectorPorId = async (sectorId) => {
       rubro: {
         select: {
           id_rubro: true,
-          nombre: true,
+          nombre_rubro: true,
         }
       },
       _count: { select: { stands: true } }
@@ -153,7 +153,7 @@ export const crearSector = async (crearSectorDTO) => {
         select: { id_pabellon: true, nombre_pabellon: true }
       },
       rubro: {
-        select: { id_rubro: true, nombre: true }
+        select: { id_rubro: true, nombre_rubro: true }
       }
     }
   });
@@ -176,7 +176,7 @@ export const actualizarSector = async (sectorId, actualizarSectorDTO) => {
         select: { id_pabellon: true, nombre_pabellon: true }
       },
       rubro: {
-        select: { id_rubro: true, nombre: true }
+        select: { id_rubro: true, nombre_rubro: true }
       }
     }
   });

@@ -5,7 +5,7 @@ export const obtenerRubros = async () => {
   return await prisma.rubro.findMany({
     select: {
       id_rubro: true,
-      nombre: true,
+      nombre_rubro: true,
       _count: {
         select: {
           artesanos: true,
@@ -13,7 +13,7 @@ export const obtenerRubros = async () => {
         },
       },
     },
-    orderBy: { nombre: "asc" },
+    orderBy: { nombre_rubro: "asc" },
   });
 };
 
@@ -22,7 +22,7 @@ export const obtenerRubroPorId = async (id) => {
     where: { id_rubro: id },
     select: {
       id_rubro: true,
-      nombre: true,
+      nombre_rubro: true,
       sectores: {
         select: {
           id_sector: true,
@@ -40,14 +40,14 @@ export const obtenerRubroPorId = async (id) => {
 };
 
 export const crearRubro = async (crearRubroDTO) => {
-  const { nombre } = crearRubroDTO;
+  const { nombre_rubro } = crearRubroDTO;
   return await prisma.rubro.create({
     data: {
-      nombre,
+      nombre_rubro,
     },
     select: {
       id_rubro: true,
-      nombre: true,
+      nombre_rubro: true,
     },
   });
 };
@@ -58,15 +58,15 @@ export const actualizarRubro = async (id, actualizarRubroDTO) => {
   });
   if (!rubro) throw crearError("Rubro no encontrado", 404);
 
-  const { nombre } = actualizarRubroDTO;
+  const { nombre_rubro } = actualizarRubroDTO;
   return await prisma.rubro.update({
     where: { id_rubro: id },
     data: {
-      nombre,
+      nombre_rubro,
     },
     select: {
       id_rubro: true,
-      nombre: true,
+      nombre_rubro: true,
     },
   });
 };
