@@ -137,10 +137,12 @@ export const crearUsuario = async (crearUsuarioDto) => {
       localidadId,
       rolId,
     }, select: {
-      nombre,
-      apellido,
-      dni,
-      localidadId
+      id_usuario: true,
+      nombre: true,
+      apellido: true,
+      dni: true,
+      email: true,
+      localidadId: true
     }
   });
 

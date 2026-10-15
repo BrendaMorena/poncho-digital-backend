@@ -66,13 +66,13 @@ enum EstadoArtesano {
 }
 
 model Artesano {
-  id_artesano           Int    @id @default(autoincrement())
-  nombre_emprendimiento String?
-  descripcion           String
-  estado                EstadoArtesano @default(ACTIVO)
+  id_artesano                     Int    @id @default(autoincrement())
+  nombre_emprendimiento           String?
+  descripcion_emprendimiento      String
+  estado                          EstadoArtesano @default(ACTIVO)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
 
   stand     Stand?
   productos Producto[]

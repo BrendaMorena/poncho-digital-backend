@@ -108,7 +108,7 @@ export const obtenerArtesanoPorId = async (id) => {
 export const crearArtesano = async (crearArtesanoDTO, tx = prisma) => {
   const {
     nombre_emprendimiento,
-    descripcion,
+    descripcion_emprendimiento,
     usuarioId,
     rubroId,
     estado = "ACTIVO",
@@ -138,7 +138,7 @@ export const crearArtesano = async (crearArtesanoDTO, tx = prisma) => {
   return await tx.artesano.create({
     data: {
       nombre_emprendimiento,
-      descripcion,
+      descripcion_emprendimiento,
       usuarioId,
       rubroId,
       estado,
@@ -160,7 +160,7 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
   
   const { 
     nombre_emprendimiento, 
-    descripcion, 
+    descripcion_emprendimiento, 
     rubroId 
   } = actualizarArtesanoDTO;
 
@@ -175,7 +175,7 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
     where: { id_artesano: id },
     data: {
       nombre_emprendimiento,
-      descripcion,
+      descripcion_emprendimiento,
       rubroId,
     },
     include: {
