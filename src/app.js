@@ -59,6 +59,27 @@ app.use("/localidades", localidadesRoutes);
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
 app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo
 
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const mensajes = {
+    P2002: "Ya existe un registro con esos datos únicos.",
+    P2003: "La operación afecta registros relacionados.",
+    P2025: "Registro no encontrado.",
+    P2034: "Hubo otro cambio simultáneo. Reintentar.",
+  };
+  const mensajeErrorPrisma = mensajes[err.code];
+  const estado = mensajeErrorPrisma
+    ? err.code === "P2025"
+      ? 404
+      : 409
+    : err.status || 500;
+  const mensaje =
+    estado >= 500
+      ? "Error interno del servidor."
+      : mensajeErrorPrisma || err.message;
+  return res.status(estado).json({ mensaje });
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
   iniciarLimpiezaRevocaciones();
