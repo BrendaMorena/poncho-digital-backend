@@ -91,19 +91,22 @@ export const iniciarSesion = async (req, res, next) => {
 
 export const obtenerMiPerfil = async (req, res, next) => {
   try {
-    const idUsuario = req.usuario.id;
-    const usuario = await usuarioService.obtenerUsuarioPorId(idUsuario);
-    if (!usuario) {
-      res.set("WWW-Authenticate", 'Bearer error="invalid_token"');
-      return res.status(401).json({
-        mensaje: "La cuenta asociada al token no existe.",
-      });
-    }
-    return res.status(200).json({ usuario: usuario });
+    return res.status(200).json({ usuario: req.contextoUsuario });
   } catch (error) {
     return next(error);
   }
 };
+
+// export const cambiarActivo = async (req, res, next) => {
+//   try {
+//     const idUsuario = req.usuarioId;
+//     const { activo } = req.actualizarActivoDTO;
+//     const usuarioActualizado = await usuarioService.cambiarActivo(idUsuario,activo);
+//     return res.status(200).json(usuarioActualizado);
+//   } catch (error) {
+//     return next(error);
+//   }
+// };
 
 
 

@@ -79,21 +79,39 @@ const [usuarios, total] = await prisma.$transaction([
   };
 };
 
-export const obtenerUsuarioPorId = async (id) =>{
-  return await prisma.usuario.findUnique({
+export const obtenerUsuarioPorId = async (id) => {
+  const usuario = await prisma.usuario.findUnique({
     where: { id_usuario: id },
     select: {
-      id_usuario: true, 
+      id_usuario: true,
       nombre: true,
       apellido: true,
       email: true,
+      activo: true, 
       rol: {
         select: {
-          nombre: true, 
-        }
-      }
-    }
+          nombre: true,
+        },
+      },
+      solicitud: {
+        select: {
+          id_solicitud: true,
+          estado_solicitud: true,
+        },
+      },
+      artesano: {
+        select: {
+          id_artesano: true,
+          estado: true,
+        },
+      },
+    },
   });
+  if (!usuario) return null;
+  return {
+    ...usuario,
+    rol: usuario.rol?.nombre,
+  };
 };
 
 
@@ -234,6 +252,7 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
         email,
         telefono,
         passwordHash,
+        activo: true,
         rolId: rolArtesano.id_rol,
         localidadId,
       },
@@ -241,6 +260,7 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
         id_usuario: true,
         nombre: true,
         apellido: true,
+        activo: true,
         createdAt: true
       }
     })
@@ -277,7 +297,7 @@ export const iniciarSesion = async (iniciarSesionDTO) => {
     usuarioEncontrado.passwordHash
   );
 
-  if (!passwordValida) {
+  if (!passwordValida || !usuarioEncontrado.activo) {
     throw crearError("Las credenciales son inválidas.", 401);
   }
 
@@ -288,3 +308,43 @@ export const iniciarSesion = async (iniciarSesionDTO) => {
     // email: usuarioEncontrado.email,
   };
 };
+
+// export const cambiarActivo = async (usuarioId, activo) => {
+//   return await prisma.$transaction(async (tx) => {
+//     const usuario = await tx.usuario.findUnique({
+//       where: { id_usuario: usuarioId },
+//       include: { rol: true },
+//     });
+//     if (!usuario) {
+//       throw crearError("El usuario no existe.", 404);
+//     }
+//     if (activo === false && usuario.rol?.nombre === "ADMINISTRADOR") {
+//       const otrosAdminsActivos = await tx.usuario.count({
+//         where: {
+//           rol: { nombre: "ADMINISTRADOR" },
+//           activo: true,
+//           id_usuario: { not: usuarioId }, 
+//         },
+//       });
+//       if (otrosAdminsActivos === 0) {
+//         throw crearError("Debe quedar un administrador activo.", 409);
+//       }
+//     }
+//     return await tx.usuario.update({
+//       where: { id_usuario: usuarioId },
+//       data: { activo },
+//       select: {
+//         id_usuario: true,
+//         nombre: true,
+//         apellido: true,
+//         email: true,
+//         activo: true,
+//         rol: {
+//           select: {
+//             nombre: true,
+//           },
+//         },
+//       },
+//     });
+//   });
+// };
