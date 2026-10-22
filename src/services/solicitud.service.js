@@ -41,8 +41,8 @@ const verificarRubro = async (rubroId, tx = prisma) => {
 };
 
 
-export const crearSolicitud = async (crearSolicitudDTO, tx = prisma) => {
-  const { nombre_emprendimiento, descripcion_emprendimiento, usuarioId, rubroId } = crearSolicitudDTO;
+export const crearSolicitud = async (crearSolicitudDTO, usuarioId, tx = prisma) => {
+  const { nombre_emprendimiento, descripcion_emprendimiento, rubroId } = crearSolicitudDTO;
 
   await verificarUsuarioArtesano(usuarioId, tx);
   await verificarRubro(rubroId, tx);
@@ -159,6 +159,91 @@ export const obtenerSolicitudPorId = async (id) => {
         },
       },
     },
+  });
+};
+
+export const obtenerMiSolicitud = async (usuarioId) => {
+  return prisma.solicitud.findUniqueOrThrow({
+    where: { usuarioId },
+    select: {
+      id_solicitud: true,
+      estado_solicitud: true,
+      nombre_emprendimiento: true,
+      descripcion_emprendimiento: true,
+      observaciones_admin: true,
+      createdAt: true,
+      updatedAt: true,
+      usuario: {
+        select: {
+          id_usuario: true,
+          nombre: true,
+          apellido: true,
+          email: true,
+          telefono: true,
+        },
+      },
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre_rubro: true,
+        },
+      },
+    },
+  });
+};
+
+export const actualizarMiSolicitud = async (usuarioId, datosActualizacion) => {
+  const solicitud = await prisma.solicitud.findUnique({
+    where: { usuarioId },
+  });
+
+  if (!solicitud) {
+    throw crearError("No posee una solicitud registrada en el sistema.", 404);
+  }
+
+  if (solicitud.estado_solicitud === "APROBADO") {
+    throw crearError("No se puede modificar una solicitud que ya ha sido aprobada.", 409);
+  }
+
+  const { nombre_emprendimiento, descripcion_emprendimiento, rubroId } = datosActualizacion;
+
+  if (rubroId) {
+    await verificarRubro(rubroId);
+  }
+
+  return prisma.solicitud.update({
+    where: { id_solicitud: solicitud.id_solicitud },
+    data: {
+      nombre_emprendimiento,
+      descripcion_emprendimiento,
+      rubroId,
+      estado_solicitud: "PENDIENTE",
+    },
+    select: {
+      id_solicitud: true,
+      estado_solicitud: true,
+      nombre_emprendimiento: true,
+      descripcion_emprendimiento: true,
+      updatedAt: true,
+    },
+  });
+};
+
+export const cancelarMiSolicitud = async (usuarioId) => {
+  const solicitud = await prisma.solicitud.findUnique({
+    where: { usuarioId },
+  });
+
+  if (!solicitud) {
+    throw crearError("No posee una solicitud registrada en el sistema.", 404);
+  }
+
+  if (solicitud.estado_solicitud === "APROBADO") {
+    throw crearError("No se puede cancelar una solicitud que ya ha sido aprobada.", 409);
+  }
+
+  return prisma.solicitud.delete({
+    where: { id_solicitud: solicitud.id_solicitud },
   });
 };
 

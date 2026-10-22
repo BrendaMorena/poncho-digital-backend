@@ -1,31 +1,31 @@
 import prisma from "../config/prisma.js";
 import { crearError } from "../utils/errores.js"
 
-const verificarArtesano = async (artesanoId) => {
-  const artesano = await prisma.artesano.findUnique({
-    where: { id_artesano: artesanoId },
-  })
+const verificarArtesano = async (usuarioId, tx = prisma) => {
+  const artesano = await tx.artesano.findUnique({
+    where: { usuarioId },
+  });
 
   if (!artesano) {
-    throw crearError(`No existe un artesano con id ${artesanoId}`, 400)
+    throw crearError("No se encontró un perfil de artesano asociado a este usuario", 404);
   }
-}
 
-export const crearProducto = async (crearProductoDTO) => {
-  const { nombre_producto, precio, artesanoId } = crearProductoDTO
+  return artesano;
+};
 
-  if (artesanoId){
-    await verificarArtesano(artesanoId)
-  }
+export const crearProducto = async (crearProductoDTO, usuarioId) => {
+  const { nombre_producto, precio } = crearProductoDTO;
+
+  const artesano = await verificarArtesano(usuarioId);
 
   return prisma.producto.create({
     data: {
       nombre_producto,
       precio,
-      artesanoId,
+      artesanoId: artesano.id_artesano,
     },
-  })
-}
+  });
+};
 
 export const consultarProductos = async (criteriosConsulta) => {
   const {
@@ -108,6 +108,26 @@ export const consultarProductos = async (criteriosConsulta) => {
   }
 }
 
+export const obtenerMisProductos = async (usuarioId) => {
+  return prisma.producto.findMany({
+    where: {
+      artesano: {
+        usuarioId: usuarioId,
+      },
+    },
+    select: {
+      id_producto: true,
+      nombre_producto: true,
+      precio: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
 export const obtenerProductoPorId = async (id) => {
   return prisma.producto.findUnique({
     where: { id_producto: id },
@@ -116,7 +136,7 @@ export const obtenerProductoPorId = async (id) => {
         select: {
           id_artesano: true,
           nombre_emprendimiento: true,
-          descripcion: true,
+          descripcion_emprendimiento: true,
           rubro: {
             select: {
               id_rubro: true,
@@ -136,10 +156,31 @@ export const obtenerProductoPorId = async (id) => {
   });
 }
 
-export const actualizarProducto = async (id, actualizarProductoDTO) => {
+export const actualizarProducto = async (id, actualizarProductoDTO, usuarioId) => {
+  const producto = await prisma.producto.findFirst({
+    where: {
+      id_producto: id,
+      artesano: {
+        usuarioId: usuarioId,
+      },
+    },
+  });
+
+  if (!producto) {
+    throw crearError(`No existe un producto con id ${id}`, 404);
+  }
+
+  const data = {};
+  if (actualizarProductoDTO.nombre_producto !== undefined) {
+    data.nombre_producto = actualizarProductoDTO.nombre_producto;
+  }
+  if (actualizarProductoDTO.precio !== undefined) {
+    data.precio = actualizarProductoDTO.precio;
+  }
+
   return prisma.producto.update({
     where: { id_producto: id },
-    data: actualizarProductoDTO,
+    data,
     include: {
       artesano: {
         select: {
@@ -151,9 +192,21 @@ export const actualizarProducto = async (id, actualizarProductoDTO) => {
   });
 };
 
+export const eliminarProducto = async (id, usuarioId) => {
+  const producto = await prisma.producto.findFirst({
+    where: {
+      id_producto: id,
+      artesano: {
+        usuarioId: usuarioId,
+      },
+    },
+  });
 
-export const eliminarProducto = async (id) => {
+  if (!producto) {
+    throw crearError(`No existe un producto con id ${id}`, 404);
+  }
+
   return prisma.producto.delete({
     where: { id_producto: id },
-  })
-}
+  });
+};

@@ -110,6 +110,43 @@ export const obtenerArtesanoPorId = async (id) => {
   });
 };
 
+export const obtenerMiArtesano = async (usuarioId) => {
+  return await prisma.artesano.findUniqueOrThrow({
+    where: { usuarioId },
+    include: {
+      usuario: { 
+        select: { 
+          nombre: true,
+          apellido: true,
+          localidad: {
+            select: {
+              id_localidad: true,
+              nombre_locacion: true,
+            },
+          },
+        }
+      },
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre_rubro: true,
+        }
+      },
+      stand: {
+        select: {
+          numero_stand: true,
+          sector: {
+            select: {
+              nombre_sector: true,
+              pabellon: { select: { nombre_pabellon: true } }
+            }
+          }
+        }
+      }
+    }
+  });
+};
+
 export const crearArtesano = async (crearArtesanoDTO, tx = prisma) => {
   const {
     nombre_emprendimiento,
@@ -189,6 +226,52 @@ export const actualizarArtesano = async (id, actualizarArtesanoDTO) => {
   
   return await prisma.artesano.update({
     where: { id_artesano: id },
+    data: {
+      nombre_emprendimiento,
+      descripcion_emprendimiento,
+      rubroId,
+    },
+    include: {
+      usuario: {
+        select: {
+          id_usuario: true,
+          nombre: true,
+          apellido: true,
+          email: true,
+          telefono: true,
+        },
+      },
+      rubro: {
+        select: {
+          id_rubro: true,
+          nombre_rubro: true,
+        },
+      },
+    },
+  });
+};
+
+export const actualizarMiArtesano = async (usuarioId, actualizarArtesanoDTO) => {
+  const artesano = await prisma.artesano.findUnique({
+    where: { usuarioId }
+  });
+  if (!artesano) throw crearError("El artesano no existe.", 404);
+  
+  const { 
+    nombre_emprendimiento, 
+    descripcion_emprendimiento, 
+    rubroId 
+  } = actualizarArtesanoDTO;
+
+  if (rubroId) {
+    const rubro = await prisma.rubro.findUnique({
+      where: { id_rubro: rubroId }
+    });
+    if (!rubro) throw crearError(`No existe un rubro con id ${rubroId}`, 404);
+  }
+  
+  return await prisma.artesano.update({
+    where: { id_artesano: artesano.id_artesano },
     data: {
       nombre_emprendimiento,
       descripcion_emprendimiento,

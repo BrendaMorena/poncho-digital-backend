@@ -20,8 +20,6 @@ export const crearSolicitudSchema = z.object({
       10,
       "La descripción del emprendimiento debe tener al menos 10 caracteres",
     ),
-  usuarioId: z
-    .uuid("El usuarioId debe ser un UUID válido"),
   rubroId: z
     .number("El rubroId es obligatorio")
     .int("El rubroId debe ser un número entero")

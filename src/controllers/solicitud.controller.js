@@ -4,7 +4,8 @@ import { crearError } from "../utils/errores.js";
 export const crearSolicitud = async (req, res, next) => {
   try {
     const crearSolicitudDTO = req.crearSolicitudDTO;
-    const nuevaSolicitud = await solicitudServices.crearSolicitud(crearSolicitudDTO);
+    const usuarioId = req.contextoUsuario.id_usuario;
+    const nuevaSolicitud = await solicitudServices.crearSolicitud(crearSolicitudDTO, usuarioId);
 
     return res.status(201).json({
       mensaje: "Solicitud registrada con éxito en estado PENDIENTE",
@@ -30,6 +31,39 @@ export const obtenerSolicitudes = async (req, res, next) => {
     const criteriosConsulta = req.consultaSolicitudesDTO;
     const resultado = await solicitudServices.consultarSolicitudes(criteriosConsulta);
     return res.json(resultado);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const obtenerMiSolicitud = async (req, res, next) => {
+  try {
+    const usuarioId = req.contextoUsuario.id_usuario;
+    const solicitud = await solicitudServices.obtenerMiSolicitud(usuarioId);
+    return res.status(200).json(solicitud);
+  } catch (error) {
+    if (error.code === "P2025") {
+      return next(crearError("No posee una solicitud registrada en el sistema.", 404));
+    }
+    return next(error);
+  }
+};
+
+export const actualizarMiSolicitud = async (req, res, next) => {
+  try {
+    const usuarioId = req.contextoUsuario.id_usuario;
+    const resultado = await solicitudServices.actualizarMiSolicitud(usuarioId, req.actualizarSolicitudDTO);
+    return res.status(200).json(resultado);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const cancelarMiSolicitud = async (req, res, next) => {
+  try {
+    const usuarioId = req.contextoUsuario.id_usuario;
+    await solicitudServices.cancelarMiSolicitud(usuarioId);
+    return res.status(204).send();
   } catch (error) {
     return next(error);
   }

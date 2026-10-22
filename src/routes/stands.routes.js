@@ -16,16 +16,64 @@ import {
 } from "../middlewares/validation/stands.middleware.js";
 import { validarStandId } from "../middlewares/base/validarId.js";
 import { capturarBusqueda } from "../middlewares/validation/busquedas.middleware.js";
+import { autenticarUsuario } from "../middlewares/auth/autenticacion.middleware.js";
+import {
+  cargarContextoUsuario,
+  soloAdmin,
+  organizadoresYAdmins,
+} from "../middlewares/auth/autorizacion.middleware.js";
 
 const router = express.Router();
 
+// Rutas públicas 
 router.get("/", validarConsultaStands, capturarBusqueda, obtenerStands);
 router.get("/:id", validarStandId, obtenerStandPorId);
-router.post("/", validarStand, crearStand);
-router.post("/asignar", validarAsignarStand, asignarStand);
-router.patch("/:id/liberar", validarStandId, liberarStand);
-router.patch("/:id", validarStandId, validarActualizarStand, actualizarStand);
-router.delete("/:id", validarStandId, eliminarStand);
+
+// Rutas de gestión de stands (ORGANIZADOR y ADMINISTRADOR)
+router.post(
+  "/",
+  autenticarUsuario,
+  cargarContextoUsuario,
+  organizadoresYAdmins,
+  validarStand,
+  crearStand
+);
+
+router.post(
+  "/asignar",
+  autenticarUsuario,
+  cargarContextoUsuario,
+  organizadoresYAdmins,
+  validarAsignarStand,
+  asignarStand
+);
+
+router.patch(
+  "/:id/liberar",
+  autenticarUsuario,
+  cargarContextoUsuario,
+  organizadoresYAdmins,
+  validarStandId,
+  liberarStand
+);
+
+router.patch(
+  "/:id",
+  autenticarUsuario,
+  cargarContextoUsuario,
+  organizadoresYAdmins,
+  validarStandId,
+  validarActualizarStand,
+  actualizarStand
+);
+
+router.delete(
+  "/:id",
+  autenticarUsuario,
+  cargarContextoUsuario,
+  soloAdmin,
+  validarStandId,
+  eliminarStand
+);
 
 export default router;
-
