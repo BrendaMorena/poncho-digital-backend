@@ -1,6 +1,5 @@
 import express from "express";
 
-//import standsRoutes from './routes/artesanos.routes.js'
 import artesanosRoutes from "./routes/artesanos.routes.js";
 import rubrosRoutes from "./routes/rubros.routes.js";
 import usuariosRoutes from "./routes/usuarios.routes.js";
@@ -41,13 +40,9 @@ app.get("/info", (req, res) => {
 });
 
 app.use("/productos", productosRoutes);
-//app.use('/', Routes);
-
 app.use("/artesanos", artesanosRoutes);
 app.use("/rubros", rubrosRoutes);
 app.use("/usuarios", usuariosRoutes);
-
-// app.use('/artesanos', artesanosRoutes);
 app.use("/stands", standsRoutes);
 app.use("/pabellones", pabellonesRoutes);
 app.use("/sectores", sectoresRoutes);
@@ -57,28 +52,7 @@ app.use("/solicitudes", solicitudesRoutes);
 app.use("/localidades", localidadesRoutes);
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
-app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo
-
-app.use((err, req, res, next) => {
-  if (res.headersSent) return next(err);
-  const mensajes = {
-    P2002: "Ya existe un registro con esos datos únicos.",
-    P2003: "La operación afecta registros relacionados.",
-    P2025: "Registro no encontrado.",
-    P2034: "Hubo otro cambio simultáneo. Reintentar.",
-  };
-  const mensajeErrorPrisma = mensajes[err.code];
-  const estado = mensajeErrorPrisma
-    ? err.code === "P2025"
-      ? 404
-      : 409
-    : err.status || 500;
-  const mensaje =
-    estado >= 500
-      ? "Error interno del servidor."
-      : mensajeErrorPrisma || err.message;
-  return res.status(estado).json({ mensaje });
-});
+app.use(manejadorErrores); // Manejador centralizado de errores (Prisma, Zod y negocio)
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);

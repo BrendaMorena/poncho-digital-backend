@@ -1,24 +1,26 @@
 @baseUrl = http://localhost:3000
 
 ###############################################################################
-### CASO DE PRUEBA: FLUJO INTEGRAL DE USUARIO A ARTESANO CON STAND
+### DEMOSTRACIÓN INTEGRAL UNIDAD 4: AUTORIZACIÓN, ROLES Y PROPIEDAD DE RECURSOS
 ###
-### 1. Registro del postulante (POST /usuarios/registro) -> Crea Usuario y Solicitud PENDIENTE.
-### 2. Consulta de solicitud inicial (GET /solicitudes/:id) -> Verifica estado PENDIENTE.
-### 3. Consulta de solicitudes por Admin (GET /solicitudes?estado_solicitud=PENDIENTE).
-### 4. Aprobacion por Admin (PATCH /solicitudes/:id/aprobar) -> Pasa a APROBADO y crea Artesano ACTIVO.
-### 5. Asignacion automatica de Stand por Rubro (POST /stands/asignar).
-### 6. Verificacion de Solicitud (GET /solicitudes/:id) -> Estado APROBADO.
-### 7. Verificacion de Artesano (GET /artesanos/:id) -> Estado ACTIVO con Stand asignado.
-### 8. Verificacion de Stand (GET /stands/:id) -> Estado OCUPADO.
-### 9. [Opcional] Limpieza / Teardown: Liberar stand y eliminar usuario de prueba.
+### Este archivo recorre los 8 criterios de evaluación de la exposición:
+###   1. Modelo de roles, campo activo y vínculos (Usuario - Artesano - Solicitud)
+###   2. Contexto de la cuenta (/usuarios/me, 401 inexistente, 403 inactiva)
+###   3. Autorización por rol (autenticación -> cuenta -> rol -> validación)
+###   4. Mapa de rutas protegidas (Públicas vs. ADMINISTRADOR vs. ARTESANO)
+###   5. Propiedad de los productos (/productos/me, filtro en where, 404 en ajenos)
+###   6. Postulación y habilitación (bloqueo en PENDIENTE, 200 al aprobar, 409 si ya resuelta)
+###   7. Gestión de cuentas (PATCH /:id/activo, protección del último admin 409)
+###   8. Capas y manejador centralizado de errores Prisma (P2002 -> 409, P2025 -> 404)
 ###############################################################################
 
 
-### ---------------------------------------------------------------------------
-### PASO 1: Registro del postulante (crea cuenta y solicitud PENDIENTE)
-### ---------------------------------------------------------------------------
-# @name registro
+### ===========================================================================
+### PASO 1: POSTULACIÓN PÚBLICA (Criterio 6)
+### Crea Usuario (activo: true), Artesano (INACTIVO) y Solicitud (PENDIENTE)
+### en una sola transacción.
+### ===========================================================================
+# @name registroPostulante
 POST {{baseUrl}}/usuarios/registro
 Content-Type: application/json
 
@@ -32,83 +34,285 @@ Content-Type: application/json
   "localidadId": 1,
   "rubroId": 1,
   "nombre_emprendimiento": "Tejidos Navarro",
-  "descripcion_emprendimiento": "Ponchos catamarquenos tradicionales tejidos en telar criollo",
-  "rolId": 2
+  "descripcion_emprendimiento": "Ponchos catamarqueños tradicionales tejidos en telar criollo"
 }
 
-### Variables dinamicas capturadas del registro
-@solicitudId = {{registro.response.body.solicitud.id_solicitud}}
-@usuarioId = {{registro.response.body.id_usuario}}
+### Variables capturadas del registro
+@usuarioId = {{registroPostulante.response.body.id_usuario}}
+@artesanoId = {{registroPostulante.response.body.artesano.id_artesano}}
+@solicitudId = {{registroPostulante.response.body.solicitud.id_solicitud}}
 
 
-### ---------------------------------------------------------------------------
-### PASO 2: Consulta de la solicitud recien creada
-### ---------------------------------------------------------------------------
-# @name verSolicitudPendiente
-GET {{baseUrl}}/solicitudes/{{solicitudId}}
-
-
-### ---------------------------------------------------------------------------
-### PASO 3: El administrador lista solicitudes pendientes
-### ---------------------------------------------------------------------------
-# @name listarPendientesAdmin
-GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE&pagina=1&limite=10
-
-
-### ---------------------------------------------------------------------------
-### PASO 4: El administrador aprueba la solicitud (crea Artesano ACTIVO)
-### ---------------------------------------------------------------------------
-# @name aprobarSolicitud
-PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/aprobar
+### 1.2 Error 409: Intentar repetir email o DNI en postulación
+POST {{baseUrl}}/usuarios/registro
 Content-Type: application/json
 
 {
-  "observaciones_admin": "Documentacion verificada y piezas autenticas para la Fiesta del Poncho."
+  "nombre": "Florencia Duplicada",
+  "apellido": "Navarro",
+  "dni": "36998811",
+  "email": "florencia.tejidos@gmail.com",
+  "telefono": "3834123456",
+  "password": "PonchoSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Tejidos Navarro 2",
+  "descripcion_emprendimiento": "Ponchos catamarqueños tradicionales tejidos en telar criollo"
 }
 
-### Variable dinamica del artesano creado
-@artesanoId = {{aprobarSolicitud.response.body.artesano.id_artesano}}
+
+### ===========================================================================
+### PASO 2: LOGIN DEL POSTULANTE Y CONTEXTO DE CUENTA (Criterio 2)
+### ===========================================================================
+# @name loginPostulante
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "florencia.tejidos@gmail.com",
+  "password": "PonchoSeguro2026."
+}
+
+### Variable capturada del login de la postulante
+@tokenArtesano = {{loginPostulante.response.body.token}}
 
 
-### ---------------------------------------------------------------------------
-### PASO 5: Asignacion automatica de Stand disponible por Rubro
-### ---------------------------------------------------------------------------
-# @name asignarStandAuto
+### 2.1 Consultar mi cuenta autenticada (200 OK: activo=true, solicitud=PENDIENTE, artesano=INACTIVO)
+GET {{baseUrl}}/usuarios/me
+Authorization: Bearer {{tokenArtesano}}
+
+
+### 2.2 Consultar mi propia solicitud (200 OK)
+GET {{baseUrl}}/solicitudes/me
+Authorization: Bearer {{tokenArtesano}}
+
+
+### ===========================================================================
+### PASO 3: BLOQUEO MIENTRAS ESTÁ PENDIENTE Y AUTORIZACIÓN POR ROL (Criterios 3, 4 y 6)
+### ===========================================================================
+
+### 3.1 Error 403: Mientras la solicitud está PENDIENTE, la cuenta NO opera productos
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesano}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho de vicuña",
+  "precio": 180000
+}
+
+
+### 3.2 Error 403: Un ARTESANO no puede aprobar solicitudes ni gestionar stands (incluso con body inválido responde 403 antes de validar)
+PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/aprobar
+Authorization: Bearer {{tokenArtesano}}
+Content-Type: application/json
+
+{}
+
+
+### 3.3 Error 401: Solicitud a ruta protegida sin token
+GET {{baseUrl}}/solicitudes
+
+
+### ===========================================================================
+### PASO 4: LOGIN DEL ADMINISTRADOR Y HABILITACIÓN DEL ARTESANO (Criterios 4 y 6)
+### ===========================================================================
+# @name loginAdmin
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+### Variables capturadas del login del Administrador
+@tokenAdmin = {{loginAdmin.response.body.token}}
+@adminId = {{loginAdmin.response.body.usuario.id_usuario}}
+
+
+### 4.1 El Administrador lista las solicitudes en estado PENDIENTE (200 OK)
+GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE&pagina=1&limite=10
+Authorization: Bearer {{tokenAdmin}}
+
+
+### 4.2 El Administrador aprueba la solicitud (200 OK -> Solicitud APROBADO y Artesano ACTIVO en la misma transacción)
+# @name aprobarSolicitud
+PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/aprobar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Documentación verificada y piezas auténticas para la Fiesta del Poncho."
+}
+
+
+### 4.3 Error 409: Intentar volver a resolver (aprobar o rechazar) una solicitud ya resuelta
+PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/rechazar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Intento de rechazar una solicitud que ya fue aprobada."
+}
+
+
+### ===========================================================================
+### PASO 5: ASIGNACIÓN DE STAND Y CONSULTA DE PERFIL PROPIO (Criterios 4 y 6)
+### ===========================================================================
+
+### 5.1 El Administrador asigna automáticamente un Stand disponible por Rubro (200 OK)
+# @name asignarStand
 POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
   "artesanoId": {{artesanoId}}
 }
 
-### Variable dinamica del stand asignado
-@standId = {{asignarStandAuto.response.body.id_stand}}
+### Variable capturada del Stand asignado
+@standId = {{asignarStand.response.body.id_stand}}
 
 
-### ---------------------------------------------------------------------------
-### PASO 6: Re-verificacion de la Solicitud (estado APROBADO)
-### ---------------------------------------------------------------------------
-GET {{baseUrl}}/solicitudes/{{solicitudId}}
+### 5.2 Florencia consulta su perfil propio de artesano habilitado con stand asignado (200 OK)
+GET {{baseUrl}}/artesanos/me
+Authorization: Bearer {{tokenArtesano}}
 
 
-### ---------------------------------------------------------------------------
-### PASO 7: Re-verificacion del Artesano (estado ACTIVO y Stand asignado)
-### ---------------------------------------------------------------------------
-GET {{baseUrl}}/artesanos/{{artesanoId}}
+### ===========================================================================
+### PASO 6: PROPIEDAD DE LOS PRODUCTOS (Criterios 4, 5 y 8)
+### ===========================================================================
+
+### 6.1 Alta de producto propio (201 Created: el artesano sale de la cuenta autenticada, nunca del body)
+# @name crearProductoPropio
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesano}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho tradicional de lana de oveja",
+  "precio": 95000
+}
+
+### Variable capturada del Producto creado
+@productoId = {{crearProductoPropio.response.body.id_producto}}
 
 
-### ---------------------------------------------------------------------------
-### PASO 8: Re-verificacion del Stand (estado OCUPADO)
-### ---------------------------------------------------------------------------
-GET {{baseUrl}}/stands/{{standId}}
+### 6.2 Error 400: Enviar artesanoId en el body es rechazado por .strict()
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesano}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho intentando forzar artesanoId",
+  "precio": 95000,
+  "artesanoId": 999
+}
 
 
-### ---------------------------------------------------------------------------
-### PASO 9: LIMPIEZA / TEARDOWN (Restaura el estado previo de la BD)
-### ---------------------------------------------------------------------------
+### 6.3 Listado de productos propios sin parámetros del cliente (200 OK)
+GET {{baseUrl}}/productos/me
+Authorization: Bearer {{tokenArtesano}}
 
-### 9.1 Liberar el Stand (vuelve a DISPONIBLE)
+
+### 6.4 Modificar producto propio filtrando por id y propietario en el where (200 OK)
+PATCH {{baseUrl}}/productos/{{productoId}}
+Authorization: Bearer {{tokenArtesano}}
+Content-Type: application/json
+
+{
+  "precio": 105000
+}
+
+
+### 6.5 Error 404 (P2025 traducido por manejador centralizado): Intentar modificar un producto ajeno o inexistente
+PATCH {{baseUrl}}/productos/999999
+Authorization: Bearer {{tokenArtesano}}
+Content-Type: application/json
+
+{
+  "precio": 50000
+}
+
+
+### 6.6 Error 403: Un ADMINISTRADOR no puede dar de alta productos (exclusivo ARTESANO)
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Producto creado por admin",
+  "precio": 10000
+}
+
+
+### ===========================================================================
+### PASO 7: GESTIÓN DE CUENTAS Y ESTADO ACTIVO (Criterios 2 y 7)
+### ===========================================================================
+
+### 7.1 Error 409: Intentar desactivar al único ADMINISTRADOR activo
+PATCH {{baseUrl}}/usuarios/{{adminId}}/activo
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "activo": false
+}
+
+
+### 7.2 El Administrador desactiva la cuenta de Florencia (200 OK)
+PATCH {{baseUrl}}/usuarios/{{usuarioId}}/activo
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "activo": false
+}
+
+
+### 7.3 Error 403: La cuenta desactivada recibe 403 con su token vigente
+GET {{baseUrl}}/usuarios/me
+Authorization: Bearer {{tokenArtesano}}
+
+
+### 7.4 Error 401: La cuenta desactivada recibe 401 en el login con el mensaje genérico
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "florencia.tejidos@gmail.com",
+  "password": "PonchoSeguro2026."
+}
+
+
+### 7.5 El Administrador reactiva la cuenta de Florencia (200 OK)
+PATCH {{baseUrl}}/usuarios/{{usuarioId}}/activo
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "activo": true
+}
+
+
+### 7.6 Reactivada la cuenta, vuelve a operar normalmente con su token vigente (200 OK)
+GET {{baseUrl}}/usuarios/me
+Authorization: Bearer {{tokenArtesano}}
+
+
+### ===========================================================================
+### PASO 8: LIMPIEZA / TEARDOWN (Restaura el estado inicial de la base de datos)
+### ===========================================================================
+
+### 8.1 Florencia elimina su propio producto (204 No Content)
+DELETE {{baseUrl}}/productos/{{productoId}}
+Authorization: Bearer {{tokenArtesano}}
+
+### 8.2 El Administrador libera el Stand (vuelve a DISPONIBLE)
 PATCH {{baseUrl}}/stands/{{standId}}/liberar
+Authorization: Bearer {{tokenAdmin}}
 
-### 9.2 Eliminar el Usuario de prueba (en cascada elimina solicitud y artesano)
+### 8.3 El Administrador elimina el usuario de prueba
 DELETE {{baseUrl}}/usuarios/{{usuarioId}}
+Authorization: Bearer {{tokenAdmin}}

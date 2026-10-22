@@ -8,6 +8,7 @@ import {
   registrarUsuario,
   iniciarSesion,
   obtenerMiPerfil,
+  cambiarActivo,
 } from "../controllers/usuario.controller.js";
 import {
   validarConsultaUsuarios,
@@ -15,45 +16,32 @@ import {
   validarActualizarUsuario,
   validarCrearUsuario,
   validarInicioSesion,
+  validarActualizarActivo,
 } from "../middlewares/validation/usuarios.middleware.js";
 import { validarUsuarioId } from "../middlewares/base/validarId.js";
 import { autenticarUsuario } from "../middlewares/auth/autenticacion.middleware.js";
 import { cerrarSesion } from "../controllers/sesion.controller.js";
-import { cargarContextoUsuario } from "../middlewares/auth/autorizacion.middleware.js"
-
+import {
+  cargarContextoUsuario,
+  soloAdmin,
+} from "../middlewares/auth/autorizacion.middleware.js";
 
 const router = express.Router();
 
+const controlesAdmin = [autenticarUsuario, cargarContextoUsuario, soloAdmin];
+
 // Rutas especiales y públicas
 router.get("/me", autenticarUsuario, cargarContextoUsuario, obtenerMiPerfil);
-router.post("/registro", validarCrearUsuario, registrarUsuario);
+router.post("/registro", validarCrearUsuario, registrarUsuario); // En el mismo registro se realiza la postulación
 router.post("/login", validarInicioSesion, iniciarSesion);
 router.post("/logout", autenticarUsuario, cerrarSesion);
 
-// Rutas CRUD
-router.get("/", validarConsultaUsuarios, obtenerUsuarios);
-router.get("/:id", validarUsuarioId, obtenerUsuarioPorId);
-router.post("/", validarCrearUsuarioAdmin, crearUsuario);
-router.patch("/:id", validarUsuarioId, validarActualizarUsuario, actualizarUsuario);
-router.delete("/:id", validarUsuarioId, eliminarUsuario);
+// Rutas CRUD (Solo ADMINISTRADOR: autenticación -> cuenta -> rol -> validación -> controlador)
+router.get("/", ...controlesAdmin, validarConsultaUsuarios, obtenerUsuarios);
+router.get("/:id", ...controlesAdmin, validarUsuarioId, obtenerUsuarioPorId);
+router.post("/", ...controlesAdmin, validarCrearUsuarioAdmin, crearUsuario);
+router.patch("/:id/activo", ...controlesAdmin, validarUsuarioId, validarActualizarActivo, cambiarActivo);
+router.patch("/:id", ...controlesAdmin, validarUsuarioId, validarActualizarUsuario, actualizarUsuario);
+router.delete("/:id", ...controlesAdmin, validarUsuarioId, eliminarUsuario);
 
 export default router;
-
-
-
-
-
-
-
-
-
-// Rutas BRENDA
-
-// import { soloAdmin, organizadoresAdmins } from "../middlewares/validation/roles.middleware.js";
-
-//router.get("/", organizadoresAdmins,validarConsultaUsuarios, obtenerUsuarios);
-//router.get("/:id", organizadoresAdmins, validarUsuarioId, obtenerUsuarioPorId);
-//router.post("/", soloAdmin, validarCrearUsuarioAdmin, crearUsuario);
-// router.patch("/:id", validarUsuarioId, validarActualizarUsuario, actualizarUsuario); para el futuro cuando ya tengamos login permitir que el uduairo pueda modificar su pass
-//router.delete("/:id", soloAdmin, validarUsuarioId, eliminarUsuario)
-// router.post("/registro", validarUsuarios(registroArtesanoSchema), registrarArtesano);

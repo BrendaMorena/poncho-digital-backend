@@ -108,7 +108,7 @@ router.delete(
   "/:id",
   autenticarUsuario,
   cargarContextoUsuario,
-  soloAdmin,
+  organizadoresYAdmins,
   validarSolicitudId,
   eliminarSolicitud
 );

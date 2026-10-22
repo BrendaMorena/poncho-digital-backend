@@ -4,6 +4,7 @@ import {
   actualizarUsuarioSchema,
   registroUsuarioSchema,
   loginSchema,
+  actualizarActivoSchema,
 } from "../../validators/usuarios.schema.js";
 import { validarSchemaBody, validarSchemaQuery } from "../base/validarSchema.js";
 
@@ -13,3 +14,4 @@ export const validarActualizarUsuario = validarSchemaBody(actualizarUsuarioSchem
 
 export const validarCrearUsuario = validarSchemaBody(registroUsuarioSchema, "registroUsuarioDTO", "Los datos enviados para el registro de usuario son inválidos");
 export const validarInicioSesion = validarSchemaBody(loginSchema, "iniciarSesionDTO", "Los datos enviados para el inicio de sesión son inválidos");
+export const validarActualizarActivo = validarSchemaBody(actualizarActivoSchema, "actualizarActivoDTO", "Campo activo inválido.");

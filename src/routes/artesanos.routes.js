@@ -24,16 +24,30 @@ import {
 
 const router = express.Router();
 
-// Rutas públicas 
+// Rutas públicas (GET /me va ANTES de GET /:id para que Express no tome "me" como :id)
 router.get("/", validarConsultaArtesanos, obtenerArtesanos);
-
-// --- Rutas de recurso propio para ARTESANO ---
-router.get("/me", autenticarUsuario, cargarContextoUsuario, soloArtesano, obtenerMiArtesano);
-router.patch("/me", autenticarUsuario, cargarContextoUsuario, soloArtesano, validarActualizarArtesano, actualizarMiArtesano);
-
 router.get("/:id", validarArtesanoId, obtenerArtesanoPorId);
 
-// Rutas administrativas (ORGANIZADOR y ADMINISTRADOR) 
+// --- Rutas de recurso propio para ARTESANO ---
+router.get(
+  "/me",
+  autenticarUsuario,
+  cargarContextoUsuario,
+  soloArtesano,
+  obtenerMiArtesano
+);
+
+router.patch(
+  "/me",
+  autenticarUsuario,
+  cargarContextoUsuario,
+  soloArtesano,
+  validarActualizarArtesano,
+  actualizarMiArtesano
+);
+
+
+// Rutas administrativas (ORGANIZADOR y ADMINISTRADOR)
 router.post(
   "/",
   autenticarUsuario,

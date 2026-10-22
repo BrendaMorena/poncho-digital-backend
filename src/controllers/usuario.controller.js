@@ -25,7 +25,6 @@ export const obtenerUsuarioPorId = async (req, res, next) => {
   }
 };
 
-
 //crear admin
 export const crearUsuario = async (req, res, next) => {
   try {
@@ -97,31 +96,13 @@ export const obtenerMiPerfil = async (req, res, next) => {
   }
 };
 
-// export const cambiarActivo = async (req, res, next) => {
-//   try {
-//     const idUsuario = req.usuarioId;
-//     const { activo } = req.actualizarActivoDTO;
-//     const usuarioActualizado = await usuarioService.cambiarActivo(idUsuario,activo);
-//     return res.status(200).json(usuarioActualizado);
-//   } catch (error) {
-//     return next(error);
-//   }
-// };
-
-
-
-// export const registrarArtesano = async (req, res, next) => {
-//   try {
-//     const datosRegistro = req.body;
-
-//     const resultado = await usuarioService.registrarArtesano(datosRegistro);
-
-//     return res.status(201).json({
-//       mensaje:
-//         "Postulación a artesano enviada con éxito. Ya puedes iniciar sesión.",
-//       datos: resultado,
-//     });
-//   } catch (error) {
-//     return next(error);
-//   }
-// };
+export const cambiarActivo = async (req, res, next) => {
+  try {
+    const idUsuario = req.usuarioId;
+    const { activo } = req.actualizarActivoDTO;
+    const usuarioActualizado = await usuarioService.cambiarActivo(idUsuario, activo);
+    return res.status(200).json(usuarioActualizado);
+  } catch (error) {
+    return next(error);
+  }
+};

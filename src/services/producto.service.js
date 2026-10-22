@@ -1,28 +1,15 @@
 import prisma from "../config/prisma.js";
-import { crearError } from "../utils/errores.js"
-
-const verificarArtesano = async (usuarioId, tx = prisma) => {
-  const artesano = await tx.artesano.findUnique({
-    where: { usuarioId },
-  });
-
-  if (!artesano) {
-    throw crearError("No se encontró un perfil de artesano asociado a este usuario", 404);
-  }
-
-  return artesano;
-};
 
 export const crearProducto = async (crearProductoDTO, usuarioId) => {
   const { nombre_producto, precio } = crearProductoDTO;
-
-  const artesano = await verificarArtesano(usuarioId);
 
   return prisma.producto.create({
     data: {
       nombre_producto,
       precio,
-      artesanoId: artesano.id_artesano,
+      artesano: {
+        connect: { usuarioId },
+      },
     },
   });
 };
@@ -38,14 +25,14 @@ export const consultarProductos = async (criteriosConsulta) => {
     direccion,
     pagina,
     limite,
-  } = criteriosConsulta
+  } = criteriosConsulta;
 
   const where = {};
 
   if (nombre_producto !== undefined) {
     where.nombre_producto = {
       contains: nombre_producto,
-      mode: 'insensitive',
+      mode: "insensitive",
     };
   }
 
@@ -70,25 +57,22 @@ export const consultarProductos = async (criteriosConsulta) => {
   const [productos, total] = await prisma.$transaction([
     prisma.producto.findMany({
       where,
-      orderBy: [
-        { [ordenPor]: direccion },
-        { id_producto: 'asc' }, 
-      ],
+      orderBy: [{ [ordenPor]: direccion }, { id_producto: "asc" }],
       skip: desplazamiento,
       take: limite,
       select: {
         id_producto: true,
         nombre_producto: true,
-        precio:true,
+        precio: true,
         artesano: {
           select: {
             id_artesano: true,
-            nombre_emprendimiento:true,
-            rubro:{
+            nombre_emprendimiento: true,
+            rubro: {
               select: {
                 id_rubro: true,
-                nombre_rubro: true
-              }
+                nombre_rubro: true,
+              },
             },
           },
         },
@@ -105,8 +89,8 @@ export const consultarProductos = async (criteriosConsulta) => {
       total,
       totalPaginas: Math.ceil(total / limite),
     },
-  }
-}
+  };
+};
 
 export const obtenerMisProductos = async (usuarioId) => {
   return prisma.producto.findMany({
@@ -154,33 +138,17 @@ export const obtenerProductoPorId = async (id) => {
       },
     },
   });
-}
+};
 
 export const actualizarProducto = async (id, actualizarProductoDTO, usuarioId) => {
-  const producto = await prisma.producto.findFirst({
+  return prisma.producto.update({
     where: {
       id_producto: id,
       artesano: {
-        usuarioId: usuarioId,
+        usuarioId,
       },
     },
-  });
-
-  if (!producto) {
-    throw crearError(`No existe un producto con id ${id}`, 404);
-  }
-
-  const data = {};
-  if (actualizarProductoDTO.nombre_producto !== undefined) {
-    data.nombre_producto = actualizarProductoDTO.nombre_producto;
-  }
-  if (actualizarProductoDTO.precio !== undefined) {
-    data.precio = actualizarProductoDTO.precio;
-  }
-
-  return prisma.producto.update({
-    where: { id_producto: id },
-    data,
+    data: actualizarProductoDTO,
     include: {
       artesano: {
         select: {
@@ -193,20 +161,12 @@ export const actualizarProducto = async (id, actualizarProductoDTO, usuarioId) =
 };
 
 export const eliminarProducto = async (id, usuarioId) => {
-  const producto = await prisma.producto.findFirst({
+  return prisma.producto.delete({
     where: {
       id_producto: id,
       artesano: {
-        usuarioId: usuarioId,
+        usuarioId,
       },
     },
-  });
-
-  if (!producto) {
-    throw crearError(`No existe un producto con id ${id}`, 404);
-  }
-
-  return prisma.producto.delete({
-    where: { id_producto: id },
   });
 };

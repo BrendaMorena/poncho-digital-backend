@@ -71,7 +71,7 @@ router.delete(
   "/:id",
   autenticarUsuario,
   cargarContextoUsuario,
-  soloAdmin,
+  organizadoresYAdmins,
   validarStandId,
   eliminarStand
 );
