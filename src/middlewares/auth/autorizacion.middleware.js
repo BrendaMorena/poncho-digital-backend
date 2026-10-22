@@ -1,6 +1,6 @@
 import prisma from "../../config/prisma.js";
 import { crearError } from "../../utils/errores.js";
-
+import { obtenerUsuarioPorId } from "../../services/usuario.service.js"
 /*
 export const cargarContextoUsuario = async (req, res, next) => {
   try {
@@ -52,4 +52,4 @@ export const autorizarRoles = (...rolesPermitidos) => (req, res, next) => {
 export const soloAdmin = autorizarRoles("ADMINISTRADOR");
 export const organizadoresYAdmins = autorizarRoles("ADMINISTRADOR", "ORGANIZADOR");
 export const soloArtesano = autorizarRoles("ARTESANO");
-import { obtenerUsuarioPorId } from "../../services/usuario.service.js"
+
