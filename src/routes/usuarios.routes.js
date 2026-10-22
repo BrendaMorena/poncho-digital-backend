@@ -19,12 +19,13 @@ import {
 import { validarUsuarioId } from "../middlewares/base/validarId.js";
 import { autenticarUsuario } from "../middlewares/auth/autenticacion.middleware.js";
 import { cerrarSesion } from "../controllers/sesion.controller.js";
+import { cargarContextoUsuario } from "../middlewares/auth/autorizacion.middleware.js"
 
 
 const router = express.Router();
 
 // Rutas especiales y públicas
-router.get("/me", autenticarUsuario, obtenerMiPerfil);
+router.get("/me", autenticarUsuario, cargarContextoUsuario, obtenerMiPerfil);
 router.post("/registro", validarCrearUsuario, registrarUsuario);
 router.post("/login", validarInicioSesion, iniciarSesion);
 router.post("/logout", autenticarUsuario, cerrarSesion);
