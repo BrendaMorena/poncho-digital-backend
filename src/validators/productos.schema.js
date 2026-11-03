@@ -7,23 +7,20 @@ const productoBaseSchema = z.object({
     .min(1, "El nombre del producto no puede estar vacío"),
 
   precio: z
-    .number( "El precio es obligatorio")
+    .number("El precio es obligatorio")
     .positive("El precio debe ser mayor a 0"),
+});
 
-  artesanoId: z
-    .number("El artesanoId es obligatorio")
-    .int("El artesanoId debe ser un número entero")
-    .positive("El artesanoId debe ser un número positivo")
-})
+// Esquema para CREAR (POST) - Sin artesanoId, se toma del token
+export const crearProductoSchema = productoBaseSchema.strict();
 
-// Esquema para CREAR (POST)
-export const crearProductoSchema = productoBaseSchema
-
-// Esquema para ACTUALIZAR (PATCH)
-export const actualizarProductoSchema = productoBaseSchema.partial()
+// Esquema para ACTUALIZAR (PATCH) - Sin artesanoId
+export const actualizarProductoSchema = productoBaseSchema
+  .partial()
+  .strict()
   .refine((data) => Object.keys(data).length > 0, {
     message: "Debe enviar al menos un campo para actualizar.",
-  })
+  });
 
 export const consultarProductoSchema = z
   .object({

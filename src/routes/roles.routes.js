@@ -12,13 +12,20 @@ import {
   validarConsultaRoles,
 } from "../middlewares/validation/roles.middleware.js";
 import { validarRolId } from "../middlewares/base/validarId.js";
+import { autenticarUsuario } from "../middlewares/auth/autenticacion.middleware.js";
+import {
+  cargarContextoUsuario,
+  soloAdmin,
+} from "../middlewares/auth/autorizacion.middleware.js";
 
 const router = express.Router();
 
-router.get("/", validarConsultaRoles, obtenerRoles);
-router.get("/:id", validarRolId, obtenerRolPorId);
-router.post("/", validarRol, crearRol);
-router.patch("/:id", validarRolId, validarActualizarRol, actualizarRol);
-router.delete("/:id", validarRolId, eliminarRol);
+const controlesAdmin = [autenticarUsuario, cargarContextoUsuario, soloAdmin];
+
+router.get("/", ...controlesAdmin, validarConsultaRoles, obtenerRoles);
+router.get("/:id", ...controlesAdmin, validarRolId, obtenerRolPorId);
+router.post("/", ...controlesAdmin, validarRol, crearRol);
+router.patch("/:id", ...controlesAdmin, validarRolId, validarActualizarRol, actualizarRol);
+router.delete("/:id", ...controlesAdmin, validarRolId, eliminarRol);
 
 export default router;

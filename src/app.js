@@ -1,6 +1,5 @@
 import express from "express";
 
-//import standsRoutes from './routes/artesanos.routes.js'
 import artesanosRoutes from "./routes/artesanos.routes.js";
 import rubrosRoutes from "./routes/rubros.routes.js";
 import usuariosRoutes from "./routes/usuarios.routes.js";
@@ -41,13 +40,9 @@ app.get("/info", (req, res) => {
 });
 
 app.use("/productos", productosRoutes);
-//app.use('/', Routes);
-
 app.use("/artesanos", artesanosRoutes);
 app.use("/rubros", rubrosRoutes);
 app.use("/usuarios", usuariosRoutes);
-
-// app.use('/artesanos', artesanosRoutes);
 app.use("/stands", standsRoutes);
 app.use("/pabellones", pabellonesRoutes);
 app.use("/sectores", sectoresRoutes);
@@ -57,7 +52,7 @@ app.use("/solicitudes", solicitudesRoutes);
 app.use("/localidades", localidadesRoutes);
 
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
-app.use(manejadorErrores); // Middleware de manejo de errores, siempre va al ultimo
+app.use(manejadorErrores); // Manejador centralizado de errores (Prisma, Zod y negocio)
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);

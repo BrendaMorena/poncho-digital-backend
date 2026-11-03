@@ -78,7 +78,7 @@ model Artesano {
   productos Producto[]
 
   usuarioId String @unique @db.Uuid
-  usuario   Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Cascade)
+  usuario   Usuario @relation(fields: [usuarioId], references: [id_usuario], onDelete: Restrict)
 
   rubroId Int
   rubro   Rubro @relation(fields: [rubroId], references: [id_rubro])
@@ -136,6 +136,7 @@ model Usuario {
   passwordHash    String
   email       String @unique
   telefono    String
+  activo      Boolean  @default(true)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

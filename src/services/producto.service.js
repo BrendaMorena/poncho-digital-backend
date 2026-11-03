@@ -1,31 +1,18 @@
 import prisma from "../config/prisma.js";
-import { crearError } from "../utils/errores.js"
 
-const verificarArtesano = async (artesanoId) => {
-  const artesano = await prisma.artesano.findUnique({
-    where: { id_artesano: artesanoId },
-  })
-
-  if (!artesano) {
-    throw crearError(`No existe un artesano con id ${artesanoId}`, 400)
-  }
-}
-
-export const crearProducto = async (crearProductoDTO) => {
-  const { nombre_producto, precio, artesanoId } = crearProductoDTO
-
-  if (artesanoId){
-    await verificarArtesano(artesanoId)
-  }
+export const crearProducto = async (crearProductoDTO, usuarioId) => {
+  const { nombre_producto, precio } = crearProductoDTO;
 
   return prisma.producto.create({
     data: {
       nombre_producto,
       precio,
-      artesanoId,
+      artesano: {
+        connect: { usuarioId },
+      },
     },
-  })
-}
+  });
+};
 
 export const consultarProductos = async (criteriosConsulta) => {
   const {
@@ -38,14 +25,14 @@ export const consultarProductos = async (criteriosConsulta) => {
     direccion,
     pagina,
     limite,
-  } = criteriosConsulta
+  } = criteriosConsulta;
 
   const where = {};
 
   if (nombre_producto !== undefined) {
     where.nombre_producto = {
       contains: nombre_producto,
-      mode: 'insensitive',
+      mode: "insensitive",
     };
   }
 
@@ -70,25 +57,22 @@ export const consultarProductos = async (criteriosConsulta) => {
   const [productos, total] = await prisma.$transaction([
     prisma.producto.findMany({
       where,
-      orderBy: [
-        { [ordenPor]: direccion },
-        { id_producto: 'asc' }, 
-      ],
+      orderBy: [{ [ordenPor]: direccion }, { id_producto: "asc" }],
       skip: desplazamiento,
       take: limite,
       select: {
         id_producto: true,
         nombre_producto: true,
-        precio:true,
+        precio: true,
         artesano: {
           select: {
             id_artesano: true,
-            nombre_emprendimiento:true,
-            rubro:{
+            nombre_emprendimiento: true,
+            rubro: {
               select: {
                 id_rubro: true,
-                nombre_rubro: true
-              }
+                nombre_rubro: true,
+              },
             },
           },
         },
@@ -105,8 +89,28 @@ export const consultarProductos = async (criteriosConsulta) => {
       total,
       totalPaginas: Math.ceil(total / limite),
     },
-  }
-}
+  };
+};
+
+export const obtenerMisProductos = async (usuarioId) => {
+  return prisma.producto.findMany({
+    where: {
+      artesano: {
+        usuarioId: usuarioId,
+      },
+    },
+    select: {
+      id_producto: true,
+      nombre_producto: true,
+      precio: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
 
 export const obtenerProductoPorId = async (id) => {
   return prisma.producto.findUnique({
@@ -116,7 +120,7 @@ export const obtenerProductoPorId = async (id) => {
         select: {
           id_artesano: true,
           nombre_emprendimiento: true,
-          descripcion: true,
+          descripcion_emprendimiento: true,
           rubro: {
             select: {
               id_rubro: true,
@@ -134,11 +138,16 @@ export const obtenerProductoPorId = async (id) => {
       },
     },
   });
-}
+};
 
-export const actualizarProducto = async (id, actualizarProductoDTO) => {
+export const actualizarProducto = async (id, actualizarProductoDTO, usuarioId) => {
   return prisma.producto.update({
-    where: { id_producto: id },
+    where: {
+      id_producto: id,
+      artesano: {
+        usuarioId,
+      },
+    },
     data: actualizarProductoDTO,
     include: {
       artesano: {
@@ -151,9 +160,13 @@ export const actualizarProducto = async (id, actualizarProductoDTO) => {
   });
 };
 
-
-export const eliminarProducto = async (id) => {
+export const eliminarProducto = async (id, usuarioId) => {
   return prisma.producto.delete({
-    where: { id_producto: id },
-  })
-}
+    where: {
+      id_producto: id,
+      artesano: {
+        usuarioId,
+      },
+    },
+  });
+};

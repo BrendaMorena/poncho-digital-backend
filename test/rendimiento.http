@@ -1,0 +1,53 @@
+@baseUrl = http://localhost:3000
+
+###############################################################################
+### TRABAJO DE INVESTIGACIÓN APLICADA - GRUPO 1: MEDICIÓN DE RENDIMIENTO
+### Alumnos: Agüero Vélez Lucas, Barrionuevo Brenda, Reyna Sebastián
+### Materia: Desarrollo Backend - Tecnicatura en Diseño de Software (UNCa)
+###############################################################################
+### INSTRUCCIONES PARA REALIZAR LAS PRUEBAS CON REST CLIENT:
+### 1. Asegurarse de tener el backend corriendo (`npm run dev`).
+### 2. Para cada endpoint, hacer clic en "Send Request" 10 veces consecutivas.
+### 3. Luego de cada clic, observar en la barra de estado inferior de VS Code
+###    (o en el encabezado de respuesta) los valores:
+###       - Time: XX ms  (tiempo de respuesta)
+###       - Size: XX B / KB (tamaño del payload)
+### 4. Anotar los 10 valores para calcular: Mínimo, Máximo y Promedio.
+###############################################################################
+
+### ===========================================================================
+### PRUEBA 1: ENDPOINT A (LIVIANO) - GET /localidades
+### ===========================================================================
+### Características:
+### - Consulta simple a tabla única sin relaciones ('localidad').
+### - Operación Prisma: $transaction([ findMany, count ]).
+### - Payload pequeño (solo id_localidad y nombre_locacion).
+###
+### ---------------------------------------------------------------------------
+GET {{baseUrl}}/localidades
+
+### ===========================================================================
+### PRUEBA 2: ENDPOINT B (COMPLEJO) - GET /artesanos
+### ===========================================================================
+### Características:
+### - Consulta multinivel con cláusula 'include' en 3 niveles:
+###     * usuario -> localidad
+###     * rubro
+###     * stand -> sector -> pabellon
+### - Operación Prisma: $transaction([ findMany con includes, count ]).
+### - Payload voluminoso con objetos anidados complejos.
+###
+### ---------------------------------------------------------------------------
+GET {{baseUrl}}/artesanos
+
+### ===========================================================================
+### PRUEBA COMPLEMENTARIA: COMPARACIÓN CON FILTRO / PAGINACIÓN
+### ===========================================================================
+### Permite evaluar el comportamiento limitando el conjunto a 5 registros:
+
+### Paginado Liviano:
+GET {{baseUrl}}/localidades?pagina=1&limite=5
+
+###
+### Paginado Complejo con Relaciones:
+GET {{baseUrl}}/artesanos?pagina=1&limite=5

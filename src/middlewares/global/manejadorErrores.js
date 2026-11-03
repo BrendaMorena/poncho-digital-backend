@@ -1,17 +1,40 @@
 export const manejadorErrores = (err, req, res, next) => {
-    const status = err.status || 500;
+  if (res.headersSent) return next(err);
 
-    if ( status >= 500 ) {
-        console.error(err);
-        return res.status(status).json({ error: 'Error interno del servidor' });
-    }
+  const mensajesPrisma = {
+    P2002: "Ya existe un registro con esos datos únicos.",
+    P2003: "La operación afecta registros relacionados.",
+    P2025: "Registro no encontrado.",
+    P2034: "Hubo otro cambio simultáneo. Reintentar.",
+  };
 
-    // Si el error trae detalles de Zod
-    if (err.detalles) {
-        return res.status(status).json({ error: err.message, detalles: err.detalles });
-    }
-    // si no trae detalles, 
-    return res.status(status).json({ error: err.message });
+  const mensajeErrorPrisma = mensajesPrisma[err.code];
+  const status = mensajeErrorPrisma
+    ? err.code === "P2025"
+      ? 404
+      : 409
+    : err.status || 500;
 
+  if (status >= 500) {
+    console.error(err);
+    return res.status(status).json({
+      error: "Error interno del servidor.",
+      mensaje: "Error interno del servidor.",
+    });
+  }
 
-}
+  const mensaje = mensajeErrorPrisma || err.message;
+
+  if (err.detalles) {
+    return res.status(status).json({
+      error: mensaje,
+      mensaje,
+      detalles: err.detalles,
+    });
+  }
+
+  return res.status(status).json({
+    error: mensaje,
+    mensaje,
+  });
+};

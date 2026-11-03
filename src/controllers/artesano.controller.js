@@ -28,6 +28,18 @@ try{
     return next(error);}
 };
 
+export const obtenerMiArtesano = async (req, res, next) => {
+  try {
+    const usuarioId = req.contextoUsuario.id_usuario;
+    const artesano = await artesanoService.obtenerMiArtesano(usuarioId);
+    return res.status(200).json(artesano);
+  } catch (error) {
+    if (error.code === "P2025") {
+      return next(crearError("No posee un perfil de artesano registrado en el sistema.", 404));
+    }
+    return next(error);
+  }
+};
 
 export const crearArtesano = async (req, res, next) => {
   try {
@@ -50,6 +62,17 @@ export const actualizarArtesano = async (req, res, next) => {
     const artesanoActualizado = await artesanoService.actualizarArtesano(idArtesano, actualizarArtesanoDTO);
     
     return res.json(artesanoActualizado);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const actualizarMiArtesano = async (req, res, next) => {
+  try {
+    const usuarioId = req.contextoUsuario.id_usuario;
+    const actualizarArtesanoDTO = req.actualizarArtesanoDTO;
+    const artesanoActualizado = await artesanoService.actualizarMiArtesano(usuarioId, actualizarArtesanoDTO);
+    return res.status(200).json(artesanoActualizado);
   } catch (error) {
     return next(error);
   }
