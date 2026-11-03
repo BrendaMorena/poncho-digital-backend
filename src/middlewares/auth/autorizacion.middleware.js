@@ -32,6 +32,10 @@ export const soloAdmin = autorizarRoles("ADMINISTRADOR");
 export const organizadoresYAdmins = autorizarRoles("ADMINISTRADOR", "ORGANIZADOR");
 export const soloArtesano = autorizarRoles("ARTESANO");
 
+
+
+
+
 export const soloArtesanoHabilitado = (req, res, next) => {
   const usuario = req.contextoUsuario;
   const nombreRol =

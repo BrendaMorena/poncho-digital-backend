@@ -133,6 +133,6 @@ export const loginSchema = z.object({
 // 5. SCHEMA PARA ACTIVAR / DESACTIVAR CUENTA
 export const actualizarActivoSchema = z
   .object({
-    activo: z.boolean({ error: "El campo activo debe ser un valor booleano (true o false)" }),
+    activo: z.boolean( "El campo activo debe ser un valor booleano (true o false)" ),
   })
   .strict();

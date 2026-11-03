@@ -24,9 +24,8 @@ import {
 
 const router = express.Router();
 
-// Rutas públicas (GET /me va ANTES de GET /:id para que Express no tome "me" como :id)
+// Rutas públicas (GET /me va ANTES de GET /:id)
 router.get("/", validarConsultaArtesanos, obtenerArtesanos);
-router.get("/:id", validarArtesanoId, obtenerArtesanoPorId);
 
 // --- Rutas de recurso propio para ARTESANO ---
 router.get(
@@ -46,6 +45,7 @@ router.patch(
   actualizarMiArtesano
 );
 
+router.get("/:id", validarArtesanoId, obtenerArtesanoPorId);
 
 // Rutas administrativas (ORGANIZADOR y ADMINISTRADOR)
 router.post(

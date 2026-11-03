@@ -323,7 +323,6 @@ export const registrarUsuario = async (registrarUsuarioDTO) => {
       },
     });
 
-    // Se crea el Artesano en estado INACTIVO mientras la solicitud está PENDIENTE
     const nuevoArtesano = await tx.artesano.create({
       data: {
         nombre_emprendimiento,

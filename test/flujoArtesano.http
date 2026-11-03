@@ -1,4 +1,4 @@
-@baseUrl = http://127.0.0.1:5500
+@baseUrl = http://localhost:3000
 
 ###############################################################################
 ### CASO DE PRUEBA: FLUJO INTEGRAL DEL MÓDULO ARTESANOS
