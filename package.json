@@ -10,8 +10,8 @@
     "test:flujo": "node test/flujoUsuario.js",
     "test:unitario": "node --test test/productos.test.js test/productos-schema.test.js",
     "db:test:preparar": "node --env-file=.env.test node_modules/prisma/build/index.js migrate deploy",
-    "test": "node --env-file=.env.test --test tests/productos-integracion.test.js",
-    "test:integracion": "node --env-file=.env.test --test tests/productos-integracion.test.js"
+    "test": "node --test test/productos.test.js test/productos-schema.test.js",
+    "test:integracion": "node --env-file=.env.test --test test/productos-integracion.test.js"
   },
   "repository": {
     "type": "git",
