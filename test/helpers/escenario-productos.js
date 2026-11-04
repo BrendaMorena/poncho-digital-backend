@@ -74,3 +74,37 @@ export async function crearEscenario(app, prisma) {
 
   return { ana, bruno, rubro };
 }
+
+// // Aseguramos que exista el rol ADMINISTRADOR
+// const rolAdmin = await prisma.rol.upsert({
+//   where: { nombre: "ADMINISTRADOR" },
+//   update: {},
+//   create: { nombre: "ADMINISTRADOR", descripcion: "Acceso total" },
+// });
+// // Creamos un usuario administrador directamente en la base
+// import bcrypt from "bcrypt";
+// const passwordHash = await bcrypt.hash(password, 10);
+// const usuarioAdmin = await prisma.usuario.create({
+//   data: {
+//     nombre: "Admin",
+//     apellido: "Test",
+//     dni: "99999999",
+//     email: `admin.${Date.now()}@test.com`,
+//     telefono: "3834999999",
+//     passwordHash,
+//     activo: true,
+//     localidadId: localidad.id_localidad,
+//     rolId: rolAdmin.id_rol,
+//   },
+// });
+// // Iniciamos sesión como Admin para obtener su token
+// const { body: loginAdmin } = await request(app)
+//   .post("/usuarios/login")
+//   .send({ email: usuarioAdmin.email, password })
+//   .expect(200);
+// const admin = {
+//   usuario: usuarioAdmin,
+//   token: loginAdmin.token,
+// };
+
+// return { ana, bruno, admin, rubro };

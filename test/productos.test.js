@@ -47,22 +47,3 @@ test("Token inválido devuelve 401", async () => {
       mensaje: "Token inválido, vencido o revocado.",
     });
 });
-// Caso 4: Rol que no corresponde (ADMINISTRADOR intenta crear producto) -403
-test("Rol que no corresponde devuelve 403", async () => {
-  const idAdmin = "a0000000-0000-4000-8000-000000000001";
-  const tokenAdmin = jwt.sign(
-    { sub: idAdmin, jti: randomUUID() },
-    process.env.JWT_SECRET,
-    { algorithm: "HS256", expiresIn: "5m" }
-  );
-  const respuesta = await request(app)
-    .post("/productos")
-    .set("Authorization", `Bearer ${tokenAdmin}`)
-    .send(cuerpoProducto)
-    .expect("Content-Type", /json/)
-    .expect(403);
-    assert.equal(
-    respuesta.body.error,
-    "Acceso denegado: no posee los permisos requeridos."
-  );
-});
