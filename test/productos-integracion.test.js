@@ -41,9 +41,9 @@ const crearProducto = (token, producto) =>
     .set("Authorization", `Bearer ${token}`)
     .send(producto);
 
-// -------------------------------------------------------------
+
 // Test 1: Persistencia y propiedad 
-// -------------------------------------------------------------
+
 test("Alta correcta de producto se guarda en PostgreSQL asociada a la cuenta autenticada", async () => {
   const { ana } = datos;
 
@@ -64,9 +64,9 @@ test("Alta correcta de producto se guarda en PostgreSQL asociada a la cuenta aut
   assert.equal(productoEnBD.artesanoId, ana.artesano.id_artesano);
 });
 
-// -------------------------------------------------------------
+
 // Test 2: Listar productos propios excluyendo ajenos
-// -------------------------------------------------------------
+
 test("GET /productos/me devuelve únicamente los productos del artesano autenticado", async () => {
   const { ana, bruno } = datos;
 
@@ -83,9 +83,9 @@ test("GET /productos/me devuelve únicamente los productos del artesano autentic
   assert.ok(!ids.includes(prodBruno.id_producto));
 });
 
-// -------------------------------------------------------------
-// Test 3: Acceso a recurso ajeno -> 404 
-// -------------------------------------------------------------
+
+// Test 3: Acceso a recurso ajeno 404 
+
 test("Ana no puede modificar un producto existente de Bruno (devuelve 404) y el registro sigue perteneciendo a Bruno", async () => {
   const { ana, bruno } = datos;
 
