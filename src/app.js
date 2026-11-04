@@ -19,7 +19,7 @@ import { z } from "zod";
 import "./config/jwt.js";
 
 z.config(z.locales.es());
-const app = express();
+export const app = express();
 app.use(logger); // Middleware de registro de solicitudes
 app.use(express.json());
 
@@ -54,7 +54,8 @@ app.use("/localidades", localidadesRoutes);
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
 app.use(manejadorErrores); // Manejador centralizado de errores (Prisma, Zod y negocio)
 
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
-  iniciarLimpiezaRevocaciones();
-});
+if (process.env.NODE_ENV !== "test")
+  app.listen(PORT, () => {
+    console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
+    iniciarLimpiezaRevocaciones();
+  });
