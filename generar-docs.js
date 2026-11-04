@@ -20,7 +20,7 @@ const doc = {
 
 // El analizador usa / para resolver imports, también en Windows.
 const ruta = (archivo) =>
-  fileURLToPath(new URL(archivo, import.meta.url)).replaceAll("\\", "/");
+  fileURLToPath(new URL(archivo, import.meta.url)).replaceAll("\\", "/"); 
 const outputFile = ruta("./swagger-output.json");
 const routes = [ruta("./src/app.js")];
 const generar = swaggerAutogen({ openapi: "3.0.0" });
