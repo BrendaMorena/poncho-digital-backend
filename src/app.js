@@ -54,8 +54,11 @@ app.use("/localidades", localidadesRoutes);
 app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
 app.use(manejadorErrores); // Manejador centralizado de errores (Prisma, Zod y negocio)
 
-if (process.env.NODE_ENV !== "test")
+
+if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
+    console.log(`Servidor escuchando en http://localhost:${PORT}`);
     iniciarLimpiezaRevocaciones();
   });
+}
+
