@@ -1,0 +1,249 @@
+@baseUrl = http://localhost:5500
+
+###############################################################################
+### FLUJO DEMOSTRATIVO: ASIGNACIÓN Y GESTIÓN DE STANDS
+### 
+### Perspectivas evaluadas:
+###   1. ARTESANO: Visualización de recurso propio (/artesanos/me) e intentos no autorizados.
+###   2. ORGANIZADOR / ADMIN: Control operativo (asignación manual, automática y liberación).
+###
+### Casos Positivos y Negativos contemplados:
+###   - 200 OK: Asignación manual, asignación automática, consulta propia y liberación.
+###   - 400 Bad Request: Artesano no activo, payload inválido, liberar stand ya disponible.
+###   - 401 Unauthorized: Peticiones sin token o token expirado.
+###   - 403 Forbidden: Artesano intentando autoasignarse o liberar stands.
+###   - 404 Not Found: Artesano o stand inexistente en base de datos.
+###   - 409 Conflict: Stand ya ocupado, artesano con stand previo, cupos agotados por rubro.
+###############################################################################
+
+
+# =============================================================================
+# FASE 0: AUTENTICACIÓN INICIAL
+# =============================================================================
+
+### 0.1 Login como ADMINISTRADOR / ORGANIZADOR
+# @name loginAdmin
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+### Token de Administrador / Organizador
+@tokenAdmin = {{loginAdmin.response.body.token}}
+
+
+### 0.2 Login como ARTESANO (Usuario con perfil activo y solicitud aprobada)
+# @name loginArtesano
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "florencia.tejidos@gmail.com",
+  "password": "PonchoSeguro2026."
+}
+
+### Token de Artesano
+@tokenArtesano = {{loginArtesano.response.body.token}}
+
+
+# =============================================================================
+# FASE 1: PERSPECTIVA ARTESANO - ESTADO PREVIO A LA ASIGNACIÓN
+# =============================================================================
+
+### CP-ART-01 [Positivo]: Artesano consulta su perfil antes de tener stand asignado
+### Resultado esperado: 200 OK -> La propiedad 'stand' debe ser null.
+GET {{baseUrl}}/artesanos/me
+Authorization: Bearer {{tokenArtesano}}
+
+###
+
+### CP-ART-02 [Negativo - 403]: Artesano intenta autoasignarse un stand
+### Resultado esperado: 403 Forbidden ("Acceso denegado: no posee los permisos requeridos.")
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenArtesano}}
+Content-Type: application/json
+
+{
+  "artesanoId": 1,
+  "standId": 1
+}
+
+###
+
+### CP-ART-03 [Negativo - 403]: Artesano intenta liberar un stand del predio
+### Resultado esperado: 403 Forbidden ("Acceso denegado: no posee los permisos requeridos.")
+PATCH {{baseUrl}}/stands/1/liberar
+Authorization: Bearer {{tokenArtesano}}
+
+###
+
+### CP-ART-04 [Negativo - 401]: Intento de consultar perfil sin token
+### Resultado esperado: 401 Unauthorized ("Se requiere un token de acceso.")
+GET {{baseUrl}}/artesanos/me
+
+
+# =============================================================================
+# FASE 2: PERSPECTIVA ADMIN - CASOS NEGATIVOS DE ASIGNACIÓN
+# =============================================================================
+
+### CP-ADM-01 [Negativo - 400]: Body vacío o sin artesanoId
+### Resultado esperado: 400 Bad Request (Fallo en validación de esquema Zod)
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{}
+
+###
+
+### CP-ADM-02 [Negativo - 404]: Asignar a un artesano que no existe en el sistema
+### Resultado esperado: 404 Not Found ("No existe un artesano con id 9999")
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 9999,
+  "standId": 1
+}
+
+###
+
+### CP-ADM-03 [Negativo - 404]: Asignar a un stand que no existe en el sistema
+### Resultado esperado: 404 Not Found ("No existe un stand con id 9999")
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 1,
+  "standId": 9999
+}
+
+###
+
+### CP-ADM-04 [Negativo - 400]: Asignar a un artesano en estado no ACTIVO (INACTIVO o SUSPENDIDO)
+### Resultado esperado: 400 Bad Request ("Solo se puede asignar un stand a artesanos en estado ACTIVO...")
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 999,
+  "standId": 1
+}
+
+
+# =============================================================================
+# FASE 3: PERSPECTIVA ADMIN - ASIGNACIONES EXITOSAS Y CONFLICTOS (409)
+# =============================================================================
+
+### CP-ADM-05 [Positivo]: Asignación MANUAL de stand específico a un artesano activo
+### Resultado esperado: 200 OK -> Stand pasa a estado 'OCUPADO' y se asocia al artesano.
+# @name asignacionManual
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 1,
+  "standId": 1
+}
+
+### Variable del stand recién asignado
+@standAsignadoId = {{asignacionManual.response.body.id_stand}}
+
+###
+
+### CP-ADM-06 [Negativo - 409]: Reasignación - El artesano YA tiene un stand asignado
+### Resultado esperado: 409 Conflict ("El artesano con id X ya tiene asignado el stand número 'Y'...")
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 1,
+  "standId": 2
+}
+
+###
+
+### CP-ADM-07 [Negativo - 409]: Stand ya ocupado por otro artesano
+### Resultado esperado: 409 Conflict ("El stand 'X' (id: Y) no está disponible...")
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 2,
+  "standId": 1
+}
+
+###
+
+### CP-ADM-08 [Positivo]: Asignación AUTOMÁTICA por rubro (sin indicar standId)
+### El sistema busca el primer stand DISPONIBLE en el sector correspondiente al rubro del artesano.
+### Resultado esperado: 200 OK -> Stand asignado automáticamente en estado 'OCUPADO'.
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 2
+}
+
+###
+
+### CP-ADM-09 [Negativo - 409]: Asignación automática sin cupo en el rubro
+### Ocurre cuando ya no existen stands disponibles en los sectores asociados al rubro del artesano.
+### Resultado esperado: 409 Conflict ("No hay stands disponibles en el predio para el rubro...")
+POST {{baseUrl}}/stands/asignar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "artesanoId": 3
+}
+
+
+# =============================================================================
+# FASE 4: PERSPECTIVA ARTESANO - VERIFICACIÓN POST-ASIGNACIÓN
+# =============================================================================
+
+### CP-ART-05 [Positivo]: Artesano verifica su propio stand asignado
+### Resultado esperado: 200 OK -> La propiedad 'stand' contiene número, sector y pabellón.
+GET {{baseUrl}}/artesanos/me
+Authorization: Bearer {{tokenArtesano}}
+
+###
+
+### CP-ART-06 [Positivo]: Consulta pública del stand para verificar visualización en catálogo/mapa
+### Resultado esperado: 200 OK -> Stand visible con estado OCUPADO y datos del emprendimiento.
+GET {{baseUrl}}/stands/1
+
+
+# =============================================================================
+# FASE 5: LIBERACIÓN DE STANDS (ADMIN) Y VERIFICACIÓN DE IMPACTO
+# =============================================================================
+
+### CP-ADM-10 [Negativo - 400]: Intentar liberar un stand que ya está disponible
+### Resultado esperado: 400 Bad Request ("El stand con id X ya se encuentra disponible...")
+PATCH {{baseUrl}}/stands/10/liberar
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### CP-ADM-11 [Positivo]: Admin libera el stand previamente ocupado
+### Resultado esperado: 200 OK -> Stand vuelve a estado 'DISPONIBLE' y 'artesano' queda en null.
+PATCH {{baseUrl}}/stands/1/liberar
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### CP-ART-07 [Positivo]: Artesano vuelve a consultar su perfil propio
+### Resultado esperado: 200 OK -> El stand vuelve a reflejarse como null tras la liberación.
+GET {{baseUrl}}/artesanos/me
+Authorization: Bearer {{tokenArtesano}}
