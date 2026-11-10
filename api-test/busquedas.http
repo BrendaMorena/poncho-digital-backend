@@ -1,19 +1,66 @@
 @baseUrl = http://localhost:3000
 
 ############################################################
-### 1. CREACIÓN MANUAL DE BÚSQUEDAS (POST /busquedas)
+### 0. AUTENTICACIÓN PREVIA (TOKENS PARA RUTAS PROTEGIDAS)
+############################################################
+# Nota:
+# - POST /busquedas es público.
+# - GET /busquedas y GET /busquedas/:id requieren rol ORGANIZADOR o ADMINISTRADOR.
+# - DELETE /busquedas/:id requiere rol ADMINISTRADOR exclusivamente (soloAdmin).
+
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPassword2026!"
+}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.token}}
+
+# @name loginOrganizador
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "organizador@ponchodigital.com",
+  "password": "Organizador2026!"
+}
+
+###
+@tokenOrganizador = {{loginOrganizador.response.body.token}}
+
+# @name loginArtesano
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "rosa.quinteros@ponchodigital.com",
+  "password": "Artesano2026!"
+}
+
+###
+@tokenArtesano = {{loginArtesano.response.body.token}}
+
+
+############################################################
+### 1. CREACIÓN MANUAL DE BÚSQUEDAS (POST /busquedas - PÚBLICO)
 ############################################################
 
-# Caso de Éxito 1: Búsqueda con término libre y rubro
+# Caso de Éxito 1: Búsqueda con término libre y rubro (guarda @busquedaId)
+# @name crearBusqueda
 POST {{baseUrl}}/busquedas
 Content-Type: application/json
 
 {
   "termino_busqueda": "Poncho de Vicuña",
-  "rubroId": 2
+  "rubroId": 1
 }
 
 ###
+@busquedaId = {{crearBusqueda.response.body.id_busqueda}}
 
 # Caso de Éxito 2: Búsqueda filtrada por pabellón y localidad
 POST {{baseUrl}}/busquedas
@@ -56,96 +103,142 @@ Content-Type: application/json
 
 ############################################################
 ### 2. CONSULTAR BÚSQUEDAS CON PAGINACIÓN (GET /busquedas)
+###    Requiere ORGANIZADOR o ADMINISTRADOR
 ############################################################
 
-# 1. Obtener historial (con valores por defecto: pagina=1, limite=10, direccion=desc)
+# 1. Obtener historial como ORGANIZADOR (valores por defecto: pagina=1, limite=10, direccion=desc)
 GET {{baseUrl}}/busquedas
+Authorization: Bearer {{tokenOrganizador}}
 
 ###
 
 # 2. Paginación: Página 1, 2 registros por página
 GET {{baseUrl}}/busquedas?pagina=1&limite=2
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # 3. Paginación: Página 2, 2 registros por página
 GET {{baseUrl}}/busquedas?pagina=2&limite=2
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # 4. Filtrar por coincidencia de término (ej: 'poncho')
 GET {{baseUrl}}/busquedas?termino_busqueda=poncho
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # 5. Filtrar por rubro específico
-GET {{baseUrl}}/busquedas?rubroId=2
+GET {{baseUrl}}/busquedas?rubroId=1
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # 6. Filtrar por rango de fechas (desde / hasta en formato ISO YYYY-MM-DD)
 GET {{baseUrl}}/busquedas?fechaDesde=2026-01-01&fechaHasta=2026-12-31
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # 7. Ordenar alfabéticamente ascendente por término de búsqueda
 GET {{baseUrl}}/busquedas?ordenarPor=termino_busqueda&direccion=asc
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # Error 400: Parámetros inválidos (límite mayor a 50 o página inválida)
 GET {{baseUrl}}/busquedas?pagina=-1&limite=999
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+# Error 401: Sin token de autenticación
+GET {{baseUrl}}/busquedas
+
+###
+
+# Error 403: Rol ARTESANO no tiene permiso para consultar telemetría de búsquedas
+GET {{baseUrl}}/busquedas
+Authorization: Bearer {{tokenArtesano}}
 
 ###
 
 ############################################################
 ### 3. OBTENER BÚSQUEDA POR ID (GET /busquedas/:id)
+###    Requiere ORGANIZADOR o ADMINISTRADOR
 ############################################################
 
-# Caso de Éxito: Obtener búsqueda ID 1
-GET {{baseUrl}}/busquedas/1
+# Caso de Éxito: Obtener la búsqueda creada en el Paso 1
+GET {{baseUrl}}/busquedas/{{busquedaId}}
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # Error 404: Búsqueda inexistente
 GET {{baseUrl}}/busquedas/99999
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # Error 400: ID inválido (no es entero positivo)
 GET {{baseUrl}}/busquedas/invalido
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 ############################################################
 ### 4. ELIMINAR BÚSQUEDA (DELETE /busquedas/:id)
+###    Requiere ADMINISTRADOR exclusivamente (soloAdmin)
 ############################################################
+
+# Error 403: ORGANIZADOR intenta eliminar una búsqueda (soloAdmin)
+DELETE {{baseUrl}}/busquedas/{{busquedaId}}
+Authorization: Bearer {{tokenOrganizador}}
+
+###
 
 # Error 404: Intentar eliminar búsqueda inexistente
 DELETE {{baseUrl}}/busquedas/99999
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 # Error 400: ID inválido
 DELETE {{baseUrl}}/busquedas/abc
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
-# Caso de Éxito: Eliminar búsqueda existente
-# (Reemplazar con el ID creado en el POST anterior)
-DELETE {{baseUrl}}/busquedas/1
+# Caso de Éxito (204 No Content): Eliminar búsqueda existente como ADMINISTRADOR
+DELETE {{baseUrl}}/busquedas/{{busquedaId}}
+Authorization: Bearer {{tokenAdmin}}
 
 ###
 
 ############################################################
 ### 5. PROBAR LA TELEMETRÍA AUTOMÁTICA (capturarBusqueda)
 ############################################################
+# Al consultar cualquiera de los 3 catálogos públicos (/stands, /productos, /artesanos)
+# con un término de texto o filtro de negocio, el middleware 'capturarBusqueda'
+# registra silenciosamente la consulta en la tabla de búsquedas.
 
-# Al consultar stands con un término o filtro, el middleware
-# 'capturarBusqueda' debe registrar silenciosamente en /busquedas
-GET {{baseUrl}}/stands?termino_busqueda=cestos
+# 5.1 Búsqueda pública en Stands (por término y rubro)
+GET {{baseUrl}}/stands?termino_busqueda=Hilados&rubroId=1
 
 ###
 
-# Verificar que la búsqueda anterior se registró en el historial:
-GET {{baseUrl}}/busquedas?limite=1
+# 5.2 Búsqueda pública en Productos (por nombre_producto y rubro)
+GET {{baseUrl}}/productos?nombre_producto=Poncho&rubroId=1
+
+###
+
+# 5.3 Búsqueda pública en Artesanos (por nombre_emprendimiento)
+GET {{baseUrl}}/artesanos?nombre_emprendimiento=Yokavil
+
+###
+
+# 5.4 Verificar como ADMIN que las 3 búsquedas anteriores se registraron en el historial:
+GET {{baseUrl}}/busquedas?limite=5
+Authorization: Bearer {{tokenAdmin}}

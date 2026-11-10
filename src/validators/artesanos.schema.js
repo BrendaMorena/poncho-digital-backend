@@ -31,10 +31,10 @@ export const actualizarArtesanoSchema = z.object({
 });
 
 export const consultarArtesanosSchema = z.object({
+  nombre_emprendimiento: z.string().trim().min(1, "El nombre del emprendimiento no puede estar vacío").optional(),
+  rubroId: z.coerce.number().int().positive("El ID de rubro debe ser un entero positivo").optional(),
   pagina: z.coerce.number().int().positive().optional().default(1),
   limite: z.coerce.number().int().positive().max(100).optional().default(10),
   ordenarPor: z.enum(['createdAt', 'id_artesano', 'nombre', 'apellido']).optional().default('createdAt'),
   direccion: z.enum(['asc', 'desc']).optional().default('desc')
 });
-
-

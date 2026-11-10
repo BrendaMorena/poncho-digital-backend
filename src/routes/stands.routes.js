@@ -34,6 +34,7 @@ router.get(
      #swagger.auto = false
      #swagger.security = []
      #swagger.parameters['numero_stand'] = { in: "query", description: "Número exacto del stand.", "@schema": { type: "integer", minimum: 1 } }
+     #swagger.parameters['termino_busqueda'] = { in: "query", description: "Coincidencia parcial por nombre de emprendimiento, nombre o apellido del artesano.", "@schema": { type: "string" } }
      #swagger.parameters['estado'] = { in: "query", description: "Estado del stand.", "@schema": { type: "string", enum: ["DISPONIBLE", "OCUPADO", "MANTENIMIENTO"] } }
      #swagger.parameters['sectorId'] = { in: "query", description: "ID del sector.", "@schema": { type: "integer", minimum: 1 } }
      #swagger.parameters['rubroId'] = { in: "query", description: "ID del rubro del artesano ocupante.", "@schema": { type: "integer", minimum: 1 } }
