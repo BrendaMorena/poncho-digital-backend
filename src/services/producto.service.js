@@ -27,7 +27,11 @@ export const consultarProductos = async (criteriosConsulta) => {
     limite,
   } = criteriosConsulta;
 
-  const where = {};
+  const where = {
+    artesano: {
+      estado: "ACTIVO",
+    },
+  };
 
   if (nombre_producto !== undefined) {
     where.nombre_producto = {
@@ -41,9 +45,7 @@ export const consultarProductos = async (criteriosConsulta) => {
   }
 
   if (rubroId !== undefined) {
-    where.artesano = {
-      rubroId: rubroId,
-    };
+    where.artesano.rubroId = rubroId;
   }
 
   if (precioDesde !== undefined || precioHasta !== undefined) {
