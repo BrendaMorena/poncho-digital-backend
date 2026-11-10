@@ -115,8 +115,13 @@ export const obtenerMisProductos = async (usuarioId) => {
 };
 
 export const obtenerProductoPorId = async (id) => {
-  return prisma.producto.findUnique({
-    where: { id_producto: id },
+  return prisma.producto.findFirst({
+    where: {
+      id_producto: id,
+      artesano: {
+        estado: "ACTIVO",
+      },
+    },
     include: {
       artesano: {
         select: {

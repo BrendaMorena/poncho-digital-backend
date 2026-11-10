@@ -25,7 +25,7 @@ const verificarStand = async (idStand) => {
 }
 
 export const obtenerStands = async (criteriosConsulta) => {
-  const { numero_stand, estado, sectorId, rubroId, ordenarPor, direccion, pagina, limite } = criteriosConsulta
+  const { numero_stand, estado, sectorId, rubroId, termino_busqueda, ordenarPor, direccion, pagina, limite } = criteriosConsulta
   
   const where = {}
 
@@ -46,6 +46,30 @@ export const obtenerStands = async (criteriosConsulta) => {
       ...where.artesano,
       rubroId: rubroId,
     };
+  }
+
+  if (termino_busqueda) {
+    where.OR = [
+      {
+        artesano: {
+          nombre_emprendimiento: { contains: termino_busqueda, mode: "insensitive" },
+        },
+      },
+      {
+        artesano: {
+          usuario: {
+            nombre: { contains: termino_busqueda, mode: "insensitive" },
+          },
+        },
+      },
+      {
+        artesano: {
+          usuario: {
+            apellido: { contains: termino_busqueda, mode: "insensitive" },
+          },
+        },
+      },
+    ];
   }
 
   const orderBy = ordenarPor === "rubro"

@@ -14,12 +14,14 @@ import {
   validarConsultaArtesanos,
 } from "../middlewares/validation/artesanos.middleware.js";
 import { validarArtesanoId } from "../middlewares/base/validarId.js";
+import { capturarBusqueda } from "../middlewares/validation/busquedas.middleware.js";
 import { autenticarUsuario } from "../middlewares/auth/autenticacion.middleware.js";
 import {
   cargarContextoUsuario,
   soloAdmin,
   organizadoresYAdmins,
   soloArtesano,
+  soloArtesanoHabilitado,
 } from "../middlewares/auth/autorizacion.middleware.js";
 
 const router = express.Router();
@@ -32,6 +34,8 @@ router.get(
      #swagger.description = "Acceso público. Devuelve los artesanos en estado ACTIVO de forma paginada."
      #swagger.auto = false
      #swagger.security = []
+     #swagger.parameters['nombre_emprendimiento'] = { in: "query", description: "Coincidencia parcial por nombre del emprendimiento.", "@schema": { type: "string" } }
+     #swagger.parameters['rubroId'] = { in: "query", description: "ID del rubro artesanal.", "@schema": { type: "integer", minimum: 1 } }
      #swagger.parameters['ordenarPor'] = { in: "query", description: "Campo de ordenamiento.", "@schema": { type: "string", enum: ["createdAt", "id_artesano", "nombre", "apellido"], default: "createdAt" } }
      #swagger.parameters['direccion'] = { in: "query", description: "Sentido del orden.", "@schema": { type: "string", enum: ["asc", "desc"], default: "desc" } }
      #swagger.parameters['pagina'] = { in: "query", description: "Página solicitada.", "@schema": { type: "integer", minimum: 1, default: 1 } }
@@ -42,6 +46,7 @@ router.get(
      #swagger.responses[400] = { description: "Parámetros de consulta inválidos." }
   */
   validarConsultaArtesanos,
+  capturarBusqueda,
   obtenerArtesanos
 );
 
@@ -90,7 +95,7 @@ router.patch(
   */
   autenticarUsuario,
   cargarContextoUsuario,
-  soloArtesano,
+  soloArtesanoHabilitado,
   validarActualizarArtesano,
   actualizarMiArtesano
 );

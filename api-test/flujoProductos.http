@@ -363,19 +363,31 @@ DELETE {{baseUrl}}/artesanos/{{artesanoAId}}
 Authorization: Bearer {{tokenAdmin}}
 
 ### 6.4 Listar productos del Artesano A en el catálogo público (200 OK -> lista vacía [])
-### Como el Artesano A ahora está INACTIVO, sus productos dejan de exponerse en el catálogo
+### Como el Artesano A ahora está INACTIVO, sus productos quedan ocultos en las rutas públicas
 GET {{baseUrl}}/productos?artesanoId={{artesanoAId}}
 
-### 6.5 Error 403: Artesano A (ahora INACTIVO) intenta operar o consultar sus productos propios
+### 6.5 Verificar que el Artesano A (INACTIVO) NO perdió la propiedad de sus productos (200 OK)
+### En su ruta privada GET /productos/me sigue viendo su Producto 1 intacto (baja lógica, no física)
 GET {{baseUrl}}/productos/me
 Authorization: Bearer {{tokenArtesanoA}}
 
-### 6.6 Desloguear al Administrador (POST /usuarios/logout -> 204 No Content)
+### 6.6 Error 403: Artesano A (ahora INACTIVO) intenta publicar un nuevo producto
+### Aunque conserva la propiedad de los anteriores, no puede operar (POST/PATCH/DELETE) mientras esté INACTIVO
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho estando inactivo",
+  "precio": 110000
+}
+
+### 6.7 Desloguear al Administrador (POST /usuarios/logout -> 204 No Content)
 ### Registra el jti del token en la tabla TokenRevocado
 POST {{baseUrl}}/usuarios/logout
 Authorization: Bearer {{tokenAdmin}}
 
-### 6.7 Error 401: Intentar reutilizar el token del Administrador luego del logout
+### 6.8 Error 401: Intentar reutilizar el token del Administrador luego del logout
 GET {{baseUrl}}/usuarios/me
 Authorization: Bearer {{tokenAdmin}}
 

@@ -47,9 +47,11 @@ export const soloArtesanoHabilitado = (req, res, next) => {
     );
   }
 
+  const esLectura = req.method === "GET";
+
   if (
     !usuario.artesano ||
-    usuario.artesano.estado !== "ACTIVO" ||
+    (!esLectura && usuario.artesano.estado !== "ACTIVO") ||
     (usuario.solicitud && usuario.solicitud.estado_solicitud !== "APROBADO")
   ) {
     return next(
