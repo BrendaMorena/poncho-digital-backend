@@ -1,0 +1,260 @@
+@baseUrl = http://localhost:3000
+###############################################################################
+### DEFENSA LABORATORIO - SEBA: CICLO DE VIDA Y GESTIÓN DE USUARIOS
+### 
+### Flujo integral:
+###   Fase 1: Registro de Usuario y Validaciones de Unicidad
+###   Fase 2: Autenticación, Estado Pendiente y Revocación de Sesión (Logout)
+###   Fase 3: Auditoría y Aprobación de Solicitud (Organización)
+###   Fase 4: Habilitación de la Cuenta y Asignación de Stand
+###   Fase 5: Reglas de Negocio de Cuenta (Protección del Último Admin)
+###   Fase 6: Eliminación, Control de Roles y Cascada Referencial
+###############################################################################
+
+### ===========================================================================
+### FASE 1: REGISTRO DE USUARIO Y VALIDACIONES
+### ===========================================================================
+### [ERROR 400 Bad Request]: Registro con formato inválido o campos faltantes
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "email": "correo-invalido",
+  "password": "123"
+}
+### 1.1 Registro exitoso de Postulante (201 Created / 200 OK)
+###     Crea en una sola transacción: Usuario (activo: true), Artesano (INACTIVO) y Solicitud (PENDIENTE)
+
+# @name registroPostulante
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Sebastian",
+  "apellido": "Reyna",
+  "dni": "37111222",
+  "email": "seba.artesanias@gmail.com",
+  "telefono": "3834998877",
+  "password": "PasswordSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Tejidos Catamarca",
+  "descripcion_emprendimiento": "Producción artesanal de ponchos y mantas en telar criollo"
+}
+
+### Variables capturadas de la respuesta
+@usuarioId = {{registroPostulante.response.body.id_usuario}}
+@artesanoId = {{registroPostulante.response.body.artesano.id_artesano}}
+@solicitudId = {{registroPostulante.response.body.solicitud.id_solicitud}}
+
+### [ERROR 409 Conflict]: Intentar registrar mismo Email ya existente
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Sebastian Clon",
+  "apellido": "Reyna",
+  "dni": "39111222",
+  "email": "seba.artesanias@gmail.com",
+  "telefono": "3834998877",
+  "password": "PasswordSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Tejidos Catamarca 2",
+  "descripcion_emprendimiento": "Intento duplicado"
+}
+
+### [ERROR 409 Conflict]: Intentar registrar mismo DNI ya existente
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Sebastian Clon",
+  "apellido": "Reyna",
+  "dni": "37111222",
+  "email": "seba99.artesanias@gmail.com",
+  "telefono": "3834998877",
+  "password": "PasswordSeguro2026.",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Tejidos Catamarca 2",
+  "descripcion_emprendimiento": "Intento duplicado"
+}
+### ===========================================================================
+### FASE 2: LOGIN, CONTEXTO DE CUENTA Y LOGOUT (REVOCACIÓN)
+### ===========================================================================
+### [ERROR 401 Unauthorized]: Intento de login con credenciales erróneas (contraseña invalida)
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "seba.artesanias@gmail.com",
+  "password": "PasswordIncorrecta!"
+}
+
+### [ERROR 401 Unauthorized]: Intento de login con credenciales erróneas (correo invalido)
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "seba99.artesanias@gmail.com",
+  "password": "PasswordSeguro2026."
+}
+
+### 2.1 Login exitoso del usuario registrado (200 OK)
+
+# @name loginUsuario
+
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "seba.artesanias@gmail.com",
+  "password": "PasswordSeguro2026."
+}
+
+###
+@tokenUsuario = {{loginUsuario.response.body.token}}
+
+### 2.2 Usuario consulta el contexto de su cuenta autenticada (200 OK)
+GET {{baseUrl}}/usuarios/me
+Authorization: Bearer {{tokenUsuario}}
+
+### 2.3 Usuario consulta su solicitud y verifica estado PENDIENTE (200 OK)
+
+GET {{baseUrl}}/solicitudes/me
+Authorization: Bearer {{tokenUsuario}}
+
+### [ERROR 403 Forbidden]: El usuario intenta auto-aprobar su propia solicitud
+PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/aprobar
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Intento de auto-aprobar mi postulación."
+}
+
+### 2.4 Deslogueo / Cierre de sesión del usuario (204)
+POST {{baseUrl}}/usuarios/logout
+Authorization: Bearer {{tokenUsuario}}
+
+### [ERROR 401 Unauthorized]: Token revocado tras logout 
+GET {{baseUrl}}/solicitudes/me
+Authorization: Bearer {{tokenUsuario}}
+### ===========================================================================
+### FASE 3: AUDITORÍA Y APROBACIÓN (ORGANIZADOR / ADMINISTRADOR)
+### ===========================================================================
+# @name loginAdmin
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.token}}
+@adminId = {{loginAdmin.response.body.usuario.id_usuario}}
+
+### 3.1 Organizador/Admin lista solicitudes con filtro PENDIENTE (200 OK)
+GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE&pagina=1&limite=10
+Authorization: Bearer {{tokenAdmin}}
+
+### [ERROR 404 Not Found]: Consultar solicitud con ID inexistente
+GET {{baseUrl}}/solicitudes/99999
+Authorization: Bearer {{tokenAdmin}}
+
+### 3.2 Organizador/Admin consulta la solicitud específica del usuario por su ID (200 OK)
+GET {{baseUrl}}/solicitudes/{{solicitudId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 3.3 Organizador/Admin aprueba la solicitud (200 OK)
+###     Pasa solicitud a APROBADO y activa al artesano (ACTIVO)
+PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/aprobar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Documentación validada y piezas artesanales tradicionales aprobadas."
+}
+
+//intentaraprobar la solicitud como usuario
+### [ERROR 409 Conflict]: Intentar resolver una solicitud que ya fue resuelta
+PATCH {{baseUrl}}/solicitudes/{{solicitudId}}/rechazar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Intento de rechazar una solicitud ya aprobada."
+}
+### ===========================================================================
+### FASE 4: VERIFICACIÓN DE HABILITACIÓN
+### ===========================================================================
+
+### 4. Nuevo login del usuario con su cuenta ya habilitada
+
+# @name loginUsuarioHabilitado
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "seba.artesanias@gmail.com",
+  "password": "PasswordSeguro2026."
+}
+
+###
+@tokenHabilitado = {{loginUsuarioHabilitado.response.body.token}}
+
+### 4.4 El usuario consulta su solicitud y verifica que ahora está APROBADA (200 OK)
+GET {{baseUrl}}/solicitudes/me
+Authorization: Bearer {{tokenHabilitado}}
+### ===========================================================================
+### FASE 5: REGLAS DE NEGOCIO DE CUENTA (PROTECCIÓN ÚLTIMO ADMIN)
+### ===========================================================================
+
+### [ERROR 409 Conflict]: Regla de negocio crítica: No se puede desactivar al único Admin
+PATCH {{baseUrl}}/usuarios/{{adminId}}/activo
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "activo": false
+}
+
+### [ERROR 403 Forbidden]: Un usuario/artesano NO puede cambiar el estado lógico (activo) de otro usuario
+PATCH {{baseUrl}}/usuarios/{{adminId}}/activo
+Authorization: Bearer {{tokenHabilitado}}
+Content-Type: application/json
+
+{
+  "activo": false
+}
+
+### ===========================================================================
+### FASE 6: ELIMINACIÓN FISICA DEL USUARIO Y EFECTOS EN CASCADA
+### ===========================================================================
+### [ERROR 403 Forbidden]: Un usuario/artesano común NO puede eliminar usuarios
+DELETE {{baseUrl}}/usuarios/{{usuarioId}}
+Authorization: Bearer {{tokenHabilitado}}
+
+### 6.1 El Administrador elimina la cuenta del usuario (200 OK)
+###     (Transacción atómica: libera el stand, borra artesano y borra usuario)
+DELETE {{baseUrl}}/usuarios/{{usuarioId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 6.3 [VERIFICACIÓN : ERROR 404]: El perfil artesano del usuario fue eliminado en cascada
+GET {{baseUrl}}/artesanos/{{artesanoId}}
+
+### 6.4 [VERIFICACIÓN 3: ERROR 404]: La solicitud del usuario fue eliminada en cascada
+GET {{baseUrl}}/solicitudes/{{solicitudId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 6.5 [VERIFICACIÓN 4: ERROR 404]: El usuario ya no existe en el sistema
+GET {{baseUrl}}/usuarios/{{usuarioId}}
+Authorization: Bearer {{tokenAdmin}}
+
+
+
+
