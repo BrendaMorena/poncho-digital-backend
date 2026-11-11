@@ -14,7 +14,17 @@
 ###   - 403 Forbidden: Artesano intentando autoasignarse o liberar stands.
 ###   - 404 Not Found: Artesano o stand inexistente en base de datos.
 ###   - 409 Conflict: Stand ya ocupado, artesano con stand previo, cupos agotados por rubro.
+###   - TEARDOWN: Liberación total al final para permitir re-ejecución infinita del archivo.
 ###############################################################################
+
+### IDs de referencia del seed de desarrollo:
+@artesanoId = 59
+@artesanoIdB = 60
+@artesanoIdSinCupo = 61
+@artesanoInactivoId = 45
+@standId = 21
+@otroStandId = 23
+@standCeramicaId = 25
 
 
 # =============================================================================
@@ -41,8 +51,8 @@ POST {{baseUrl}}/usuarios/login
 Content-Type: application/json
 
 {
-  "email": "florencia.tejidos@gmail.com",
-  "password": "PonchoSeguro2026."
+  "email": "rosa.quinteros@ponchodigital.com",
+  "password": "Artesano2026!"
 }
 
 ### Token de Artesano
@@ -67,15 +77,15 @@ Authorization: Bearer {{tokenArtesano}}
 Content-Type: application/json
 
 {
-  "artesanoId": 1,
-  "standId": 1
+  "artesanoId": {{artesanoId}},
+  "standId": {{standId}}
 }
 
 ###
 
 ### CP-ART-03 [Negativo - 403]: Artesano intenta liberar un stand del predio
 ### Resultado esperado: 403 Forbidden ("Acceso denegado: no posee los permisos requeridos.")
-PATCH {{baseUrl}}/stands/1/liberar
+PATCH {{baseUrl}}/stands/{{standId}}/liberar
 Authorization: Bearer {{tokenArtesano}}
 
 ###
@@ -100,40 +110,40 @@ Content-Type: application/json
 ###
 
 ### CP-ADM-02 [Negativo - 404]: Asignar a un artesano que no existe en el sistema
-### Resultado esperado: 404 Not Found ("No existe un artesano con id 9999")
+### Resultado esperado: 404 Not Found ("No existe un artesano con id 999999")
 POST {{baseUrl}}/stands/asignar
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 9999,
-  "standId": 1
+  "artesanoId": 999999,
+  "standId": {{standId}}
 }
 
 ###
 
 ### CP-ADM-03 [Negativo - 404]: Asignar a un stand que no existe en el sistema
-### Resultado esperado: 404 Not Found ("No existe un stand con id 9999")
+### Resultado esperado: 404 Not Found ("No existe un stand con id 999999")
 POST {{baseUrl}}/stands/asignar
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 1,
-  "standId": 9999
+  "artesanoId": {{artesanoId}},
+  "standId": 999999
 }
 
 ###
 
 ### CP-ADM-04 [Negativo - 400]: Asignar a un artesano en estado no ACTIVO (INACTIVO o SUSPENDIDO)
-### Resultado esperado: 400 Bad Request ("Solo se puede asignar un stand a artesanos en estado ACTIVO...")
+### Resultado esperado: 400 Bad Request ("Solo se puede asignar un stand a artesanos en estado ACTIVO (estado actual: INACTIVO)")
 POST {{baseUrl}}/stands/asignar
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 999,
-  "standId": 1
+  "artesanoId": {{artesanoInactivoId}},
+  "standId": {{standId}}
 }
 
 
@@ -149,63 +159,60 @@ Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 1,
-  "standId": 1
+  "artesanoId": {{artesanoId}},
+  "standId": {{standId}}
 }
-
-### Variable del stand recién asignado
-@standAsignadoId = {{asignacionManual.response.body.id_stand}}
 
 ###
 
 ### CP-ADM-06 [Negativo - 409]: Reasignación - El artesano YA tiene un stand asignado
-### Resultado esperado: 409 Conflict ("El artesano con id X ya tiene asignado el stand número 'Y'...")
+### Resultado esperado: 409 Conflict ("El artesano con id 59 ya tiene asignado el stand número '1'...")
 POST {{baseUrl}}/stands/asignar
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 1,
-  "standId": 2
+  "artesanoId": {{artesanoId}},
+  "standId": {{otroStandId}}
 }
 
 ###
 
 ### CP-ADM-07 [Negativo - 409]: Stand ya ocupado por otro artesano
-### Resultado esperado: 409 Conflict ("El stand 'X' (id: Y) no está disponible...")
+### Resultado esperado: 409 Conflict ("El stand '1' (id: 21) no está disponible...")
 POST {{baseUrl}}/stands/asignar
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 2,
-  "standId": 1
+  "artesanoId": {{artesanoIdB}},
+  "standId": {{standId}}
 }
 
 ###
 
 ### CP-ADM-08 [Positivo]: Asignación AUTOMÁTICA por rubro (sin indicar standId)
 ### El sistema busca el primer stand DISPONIBLE en el sector correspondiente al rubro del artesano.
-### Resultado esperado: 200 OK -> Stand asignado automáticamente en estado 'OCUPADO'.
+### Resultado esperado: 200 OK -> Stand de Cerámica (25) asignado automáticamente en estado 'OCUPADO'.
 POST {{baseUrl}}/stands/asignar
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 2
+  "artesanoId": {{artesanoIdB}}
 }
 
 ###
 
 ### CP-ADM-09 [Negativo - 409]: Asignación automática sin cupo en el rubro
-### Ocurre cuando ya no existen stands disponibles en los sectores asociados al rubro del artesano.
-### Resultado esperado: 409 Conflict ("No hay stands disponibles en el predio para el rubro...")
+### Ocurre cuando un artesano activo de un rubro sin stands (Elena Vega - Metal y Orfebrería) intenta asignación automática.
+### Resultado esperado: 409 Conflict ("No hay stands disponibles en el predio para el rubro del artesano...")
 POST {{baseUrl}}/stands/asignar
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {
-  "artesanoId": 3
+  "artesanoId": {{artesanoIdSinCupo}}
 }
 
 
@@ -222,7 +229,7 @@ Authorization: Bearer {{tokenArtesano}}
 
 ### CP-ART-06 [Positivo]: Consulta pública del stand para verificar visualización en catálogo/mapa
 ### Resultado esperado: 200 OK -> Stand visible con estado OCUPADO y datos del emprendimiento.
-GET {{baseUrl}}/stands/1
+GET {{baseUrl}}/stands/{{standId}}
 
 
 # =============================================================================
@@ -231,14 +238,14 @@ GET {{baseUrl}}/stands/1
 
 ### CP-ADM-10 [Negativo - 400]: Intentar liberar un stand que ya está disponible
 ### Resultado esperado: 400 Bad Request ("El stand con id X ya se encuentra disponible...")
-PATCH {{baseUrl}}/stands/10/liberar
+PATCH {{baseUrl}}/stands/{{otroStandId}}/liberar
 Authorization: Bearer {{tokenAdmin}}
 
 ###
 
-### CP-ADM-11 [Positivo]: Admin libera el stand previamente ocupado
+### CP-ADM-11 [Positivo]: Admin libera el stand previamente ocupado (Stand 21)
 ### Resultado esperado: 200 OK -> Stand vuelve a estado 'DISPONIBLE' y 'artesano' queda en null.
-PATCH {{baseUrl}}/stands/1/liberar
+PATCH {{baseUrl}}/stands/{{standId}}/liberar
 Authorization: Bearer {{tokenAdmin}}
 
 ###
@@ -247,3 +254,26 @@ Authorization: Bearer {{tokenAdmin}}
 ### Resultado esperado: 200 OK -> El stand vuelve a reflejarse como null tras la liberación.
 GET {{baseUrl}}/artesanos/me
 Authorization: Bearer {{tokenArtesano}}
+
+
+# =============================================================================
+# FASE 6: RESTAURACIÓN TOTAL / TEARDOWN (PARA RE-EJECUTAR DESDE CERO)
+# =============================================================================
+
+### CP-RESET-01 [Limpieza]: Liberar Stand 21 (Stand 1 del Artesano principal)
+### Nota: Si ya se ejecutó CP-ADM-11 devolverá 400 (ya disponible). Si quedó ocupado, devolverá 200 y lo liberará.
+PATCH {{baseUrl}}/stands/{{standId}}/liberar
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### CP-RESET-02 [Limpieza]: Liberar Stand 25 (asignado automáticamente a Artesano B)
+### Resultado esperado: 200 OK -> Stand 25 vuelve a DISPONIBLE, dejando la BD 100% limpia para otra corrida.
+PATCH {{baseUrl}}/stands/{{standCeramicaId}}/liberar
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### CP-RESET-03 [Verificación]: Comprobar catálogo público - Todos los stands vuelven a estar DISPONIBLES
+### Resultado esperado: 200 OK -> Todos los stands retornan en estado DISPONIBLE.
+GET {{baseUrl}}/stands?estado=DISPONIBLE&limite=10
