@@ -14,7 +14,7 @@
 ### ===========================================================================
 ### FASE 1: REGISTRO DE USUARIO Y VALIDACIONES
 ### ===========================================================================
-### [ERROR 400 Bad Request]: Registro con formato inválido o campos faltantes
+### [ERROR 400 Bad Request]: Registro con formato inválido y campos faltantes
 POST {{baseUrl}}/usuarios/registro
 Content-Type: application/json
 
@@ -223,7 +223,7 @@ Content-Type: application/json
   "activo": false
 }
 
-### [ERROR 403 Forbidden]: Un usuario/artesano NO puede cambiar el estado lógico (activo) de otro usuario
+### [ERROR 403 Forbidden]: Ahora vamos a intentar modificar el estado ajeno de otro usuario
 PATCH {{baseUrl}}/usuarios/{{adminId}}/activo
 Authorization: Bearer {{tokenHabilitado}}
 Content-Type: application/json
@@ -235,7 +235,7 @@ Content-Type: application/json
 ### ===========================================================================
 ### FASE 6: ELIMINACIÓN FISICA DEL USUARIO Y EFECTOS EN CASCADA
 ### ===========================================================================
-### [ERROR 403 Forbidden]: Un usuario/artesano común NO puede eliminar usuarios
+### [ERROR 403 Forbidden]: Un usuario común NO puede eliminar usuarios
 DELETE {{baseUrl}}/usuarios/{{usuarioId}}
 Authorization: Bearer {{tokenHabilitado}}
 
