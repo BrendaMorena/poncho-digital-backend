@@ -260,13 +260,6 @@ Authorization: Bearer {{tokenArtesano}}
 # FASE 6: RESTAURACIÓN TOTAL / TEARDOWN (PARA RE-EJECUTAR DESDE CERO)
 # =============================================================================
 
-### CP-RESET-01 [Limpieza]: Liberar Stand 21 (Stand 1 del Artesano principal)
-### Nota: Si ya se ejecutó CP-ADM-11 devolverá 400 (ya disponible). Si quedó ocupado, devolverá 200 y lo liberará.
-PATCH {{baseUrl}}/stands/{{standId}}/liberar
-Authorization: Bearer {{tokenAdmin}}
-
-###
-
 ### CP-RESET-02 [Limpieza]: Liberar Stand 25 (asignado automáticamente a Artesano B)
 ### Resultado esperado: 200 OK -> Stand 25 vuelve a DISPONIBLE, dejando la BD 100% limpia para otra corrida.
 PATCH {{baseUrl}}/stands/{{standCeramicaId}}/liberar
@@ -276,4 +269,4 @@ Authorization: Bearer {{tokenAdmin}}
 
 ### CP-RESET-03 [Verificación]: Comprobar catálogo público - Todos los stands vuelven a estar DISPONIBLES
 ### Resultado esperado: 200 OK -> Todos los stands retornan en estado DISPONIBLE.
-GET {{baseUrl}}/stands?estado=DISPONIBLE&limite=10
+GET {{baseUrl}}/stands?estado=DISPONIBLE&pagina=1&limite=10
