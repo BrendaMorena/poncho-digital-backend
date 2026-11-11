@@ -129,7 +129,7 @@ Authorization: Bearer {{tokenAdminSetup}}
 Content-Type: application/json
 
 {
-  "observaciones_admin": "Artesano B habilitado para pruebas de aislamiento."
+  "observaciones_admin": "Artesano B habilitado"
 }
 
 
@@ -309,10 +309,16 @@ Content-Type: application/json
   "precio": 1000
 }
 
+### 4.4.b Verificar que el Producto 1 NO fue modificado y conserva su precio (200 OK)
+GET {{baseUrl}}/productos/{{producto1Id}}
+
+
 ### 4.5 Error 404 (Propiedad del recurso): Artesano B intenta eliminar el Producto 1 de Artesano A
 DELETE {{baseUrl}}/productos/{{producto1Id}}
 Authorization: Bearer {{tokenArtesanoB}}
 
+### 4.5.b Verificar que el Producto 1 NO fue eliminado y sigue existiendo (200 OK)
+GET {{baseUrl}}/productos/{{producto1Id}}
 
 ### ===========================================================================
 ### PASO 5: ELIMINACIÓN DE PRODUCTO PROPIO (ARTESANO A)
@@ -360,6 +366,10 @@ Content-Type: application/json
 ### 6.3 El Administrador da de baja al Artesano A (DELETE /artesanos/:id -> 200 OK)
 ### Realiza baja lógica: pasa a estado INACTIVO y libera su stand si tuviera uno
 DELETE {{baseUrl}}/artesanos/{{artesanoAId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 6.3.b El Administrador consulta la cuenta de Artesano A y verifica su estado INACTIVO (200 OK)
+GET {{baseUrl}}/usuarios/{{usuarioAId}}
 Authorization: Bearer {{tokenAdmin}}
 
 ### 6.4 Listar productos del Artesano A en el catálogo público (200 OK -> lista vacía [])
