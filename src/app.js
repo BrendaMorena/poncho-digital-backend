@@ -1,3 +1,4 @@
+import prisma from "./config/prisma.js";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { readFileSync } from "node:fs";
@@ -115,8 +116,15 @@ app.use(noEncontrado); // Middleware de manejo de rutas no encontradas
 app.use(manejadorErrores); // Manejador centralizado de errores (Prisma, Zod y negocio)
 
 // Al importar app desde las pruebas no se abre un puerto ni se inicia la tarea.
-if (process.env.NODE_ENV !== "test")
+if (process.env.NODE_ENV !== "test") {
+  try {
+    await prisma.$connect();
+    console.log("Conectado a la base de datos PostgreSQL.");
+  } catch (error) {
+    console.error("Error al conectar con la base de datos:", error.message);
+  }
   app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
     iniciarLimpiezaRevocaciones();
   });
+}

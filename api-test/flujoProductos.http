@@ -5,26 +5,26 @@
 ### Responsable: Lucas
 ###
 ### Resumen del flujo:
-###   0. Preparación del escenario (Alta y habilitación de Artesano A, Artesano B y Postulante Pendiente)
-###   1. Catálogo público, paginación y errores 400 / 401
-###   2. Login Artesano A, rechazos de esquema (400 artesanoId / precio) y alta de 2 productos (201)
-###   3. Búsqueda por nombre, listado de recursos propios (/productos/me), actualización (PATCH) y detalle por ID (200 / 404)
-###   4. Seguridad y propiedad cruzada: rechazo a artesano PENDIENTE (403) y rechazo a Artesano B sobre producto de A (404)
-###   5. Eliminación de producto propio (DELETE 204) y verificación (404)
-###   6. Rol Administrador: rechazo al crear producto (403), baja lógica de Artesano A (DELETE /artesanos/:id),
-###      ocultamiento de productos en catálogo público, bloqueo de Artesano A inactivo (403) y Logout con token revocado (401)
-###   7. Limpieza / Teardown del escenario (para poder re-ejecutar el flujo infinitas veces)
+###   Fase 0: Preparación del escenario (Alta y habilitación de Artesanos A y B, C queda Pendiente)
+###   Fase 1: Catálogo público, paginación y errores de acceso iniciales (400 / 401)
+###   Fase 2: Login Artesano A, rechazos de esquema (400) y alta de 2 productos (201)
+###   Fase 3: Búsqueda por nombre, listado propio (/productos/me), actualización (PATCH) y detalle (200 / 404 / 400)
+###   Fase 4: Seguridad y propiedad cruzada: rechazo a artesano PENDIENTE (403) y rechazo a Artesano B (404)
+###   Fase 5: Eliminación de producto propio (DELETE 204) y verificación de persistencia (404 / 200)
+###   Fase 6: Rol Administrador: bloqueo al crear (403), baja lógica (DELETE 200),
+###           ocultamiento público, conservación de propiedad en /me, bloqueo inactivo (403) y Logout (401)
+###   Fase 7: Limpieza / Teardown del escenario (para re-ejecutar el flujo)
 ###############################################################################
 
 
 ### ===========================================================================
-### PASO 0: PREPARACIÓN DEL ESCENARIO (Pre-requisito para las pruebas)
+### FASE 0: PREPARACIÓN DEL ESCENARIO (Pre-requisito para las pruebas)
 ### 1. Se postulan los artesanos desde la web pública (quedan PENDIENTES)
 ### 2. El Administrador se loguea y lista la bandeja de solicitudes PENDIENTES
 ### 3. El Administrador aprueba a los Artesanos A y B (el C queda PENDIENTE)
 ### ===========================================================================
 
-### 0.1 Registrar Artesano A (Postulación pública)
+### 0.1 [201 Created]: Registrar Artesano A (Postulación pública)
 # @name registroArtesanoA
 POST {{baseUrl}}/usuarios/registro
 Content-Type: application/json
@@ -48,7 +48,7 @@ Content-Type: application/json
 @solicitudAId = {{registroArtesanoA.response.body.solicitud.id_solicitud}}
 
 
-### 0.2 Registrar Artesano B (Postulación pública)
+### 0.2 [201 Created]: Registrar Artesano B (Postulación pública)
 # @name registroArtesanoB
 POST {{baseUrl}}/usuarios/registro
 Content-Type: application/json
@@ -72,14 +72,14 @@ Content-Type: application/json
 @solicitudBId = {{registroArtesanoB.response.body.solicitud.id_solicitud}}
 
 
-### 0.3 Registrar Artesano C (Postulación pública - Se dejará PENDIENTE para probar bloqueo 403)
+### 0.3 [201 Created]: Registrar Artesano C (Postulación pública - Se dejará PENDIENTE)
 # @name registroArtesanoPendiente
 POST {{baseUrl}}/usuarios/registro
 Content-Type: application/json
 
 {
   "nombre": "Pedro",
-  "apellido": "Postulante",
+  "apellido": "Cebayo",
   "dni": "38555666",
   "email": "pedro.pendiente@ponchodigital.com",
   "telefono": "3834555666",
@@ -94,7 +94,7 @@ Content-Type: application/json
 @usuarioPendienteId = {{registroArtesanoPendiente.response.body.id_usuario}}
 
 
-### 0.4 Login del Administrador (Para revisar la bandeja y aprobar)
+### 0.4 [200 OK]: Login del Administrador (Para revisar bandeja y aprobar)
 # @name loginAdminSetup
 POST {{baseUrl}}/usuarios/login
 Content-Type: application/json
@@ -108,12 +108,12 @@ Content-Type: application/json
 @tokenAdminSetup = {{loginAdminSetup.response.body.token}}
 
 
-### 0.5 Listar solicitudes PENDIENTES (Bandeja de entrada del Administrador -> 200 OK)
+### 0.5 [200 OK]: Listar solicitudes PENDIENTES (Bandeja de entrada del Administrador)
 GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE&pagina=1&limite=10
 Authorization: Bearer {{tokenAdminSetup}}
 
 
-### 0.6 Aprobar solicitud de Artesano A (Queda APROBADO y el artesano pasa a ACTIVO)
+### 0.6 [200 OK]: Aprobar solicitud de Artesano A (Queda APROBADO y el artesano pasa a ACTIVO)
 PATCH {{baseUrl}}/solicitudes/{{solicitudAId}}/aprobar
 Authorization: Bearer {{tokenAdminSetup}}
 Content-Type: application/json
@@ -123,7 +123,7 @@ Content-Type: application/json
 }
 
 
-### 0.7 Aprobar solicitud de Artesano B (Queda APROBADO y el artesano pasa a ACTIVO)
+### 0.7 [200 OK]: Aprobar solicitud de Artesano B (Queda APROBADO y el artesano pasa a ACTIVO)
 PATCH {{baseUrl}}/solicitudes/{{solicitudBId}}/aprobar
 Authorization: Bearer {{tokenAdminSetup}}
 Content-Type: application/json
@@ -134,16 +134,16 @@ Content-Type: application/json
 
 
 ### ===========================================================================
-### PASO 1: CATÁLOGO PÚBLICO, PAGINACIÓN Y ERRORES INICIALES (400 / 401)
+### FASE 1: CATÁLOGO PÚBLICO, PAGINACIÓN Y ERRORES INICIALES (400 / 401)
 ### ===========================================================================
 
-### 1.1 Listar productos con paginación (200 OK - Acceso público sin token)
+### 1.1 [200 OK]: Listar productos con paginación (Acceso público sin token)
 GET {{baseUrl}}/productos?pagina=1&limite=5&ordenPor=precio&direccion=asc
 
-### 1.2 Error 400: Filtro de rango de precios invertido (precioDesde > precioHasta)
+### [ERROR 400 Bad Request]: Filtro de rango de precios invertido (precioDesde > precioHasta)
 GET {{baseUrl}}/productos?precioDesde=100000&precioHasta=10000
 
-### 1.3 Error 401: Intentar crear un producto sin estar autenticado (sin token)
+### [ERROR 401 Unauthorized]: Intentar crear un producto sin estar autenticado (sin token)
 POST {{baseUrl}}/productos
 Content-Type: application/json
 
@@ -154,10 +154,10 @@ Content-Type: application/json
 
 
 ### ===========================================================================
-### PASO 2: LOGIN ARTESANO A, VALIDACIONES DE ESQUEMA Y ALTA DE PRODUCTOS
+### FASE 2: LOGIN ARTESANO A, VALIDACIONES DE ESQUEMA Y ALTA DE PRODUCTOS
 ### ===========================================================================
 
-### 2.1 Loguear Artesano A habilitado (200 OK)
+### 2.1 [200 OK]: Loguear Artesano A habilitado
 # @name loginArtesanoA
 POST {{baseUrl}}/usuarios/login
 Content-Type: application/json
@@ -170,7 +170,7 @@ Content-Type: application/json
 ###
 @tokenArtesanoA = {{loginArtesanoA.response.body.token}}
 
-### 2.2 Error 400 (Regla Crítica): Enviar artesanoId en el body es rechazado por Zod .strict()
+### [ERROR 400 Bad Request]: Enviar artesanoId en el body es rechazado por Zod .strict()
 ### (El artesano propietario se extrae exclusivamente del token JWT, nunca del cliente)
 POST {{baseUrl}}/productos
 Authorization: Bearer {{tokenArtesanoA}}
@@ -182,7 +182,7 @@ Content-Type: application/json
   "artesanoId": 1
 }
 
-### 2.3 Error 400: Datos inválidos en el body (nombre vacío y precio negativo)
+### [ERROR 400 Bad Request]: Datos inválidos en el body (nombre vacío y precio negativo)
 POST {{baseUrl}}/productos
 Authorization: Bearer {{tokenArtesanoA}}
 Content-Type: application/json
@@ -192,7 +192,7 @@ Content-Type: application/json
   "precio": -500
 }
 
-### 2.4 Crear Producto 1 válido (201 Created - Asociado automáticamente a Artesano A)
+### 2.2 [201 Created]: Crear Producto 1 válido (Asociado automáticamente a Artesano A)
 # @name crearProducto1
 POST {{baseUrl}}/productos
 Authorization: Bearer {{tokenArtesanoA}}
@@ -206,7 +206,7 @@ Content-Type: application/json
 ###
 @producto1Id = {{crearProducto1.response.body.id_producto}}
 
-### 2.5 Crear Producto 2 válido (201 Created - Para demostrar eliminación individual más adelante)
+### 2.3 [201 Created]: Crear Producto 2 válido (Para demostrar eliminación individual más adelante)
 # @name crearProducto2
 POST {{baseUrl}}/productos
 Authorization: Bearer {{tokenArtesanoA}}
@@ -222,17 +222,17 @@ Content-Type: application/json
 
 
 ### ===========================================================================
-### PASO 3: BÚSQUEDA, RECURSO PROPIO (/me), ACTUALIZACIÓN Y DETALLE POR ID
+### FASE 3: BÚSQUEDA, RECURSO PROPIO (/me), ACTUALIZACIÓN Y DETALLE POR ID
 ### ===========================================================================
 
-### 3.1 Buscar en el catálogo público por nombre del producto recién creado (200 OK)
+### 3.1 [200 OK]: Buscar en el catálogo público por nombre del producto recién creado
 GET {{baseUrl}}/productos?nombre_producto=Belicho
 
-### 3.2 Consultar únicamente mis propios productos (GET /productos/me -> 200 OK)
+### 3.2 [200 OK]: Consultar únicamente mis propios productos (GET /productos/me)
 GET {{baseUrl}}/productos/me
 Authorization: Bearer {{tokenArtesanoA}}
 
-### 3.3 Actualizar Producto 1 propio (PATCH /productos/:id -> 200 OK)
+### 3.3 [200 OK]: Actualizar Producto 1 propio (PATCH /productos/:id)
 PATCH {{baseUrl}}/productos/{{producto1Id}}
 Authorization: Bearer {{tokenArtesanoA}}
 Content-Type: application/json
@@ -242,28 +242,28 @@ Content-Type: application/json
   "precio": 195000
 }
 
-### 3.4 Error 400 en actualización: Enviar body vacío {}
+### [ERROR 400 Bad Request]: Enviar body vacío {} en actualización
 PATCH {{baseUrl}}/productos/{{producto1Id}}
 Authorization: Bearer {{tokenArtesanoA}}
 Content-Type: application/json
 
 {}
 
-### 3.5 Consultar Producto 1 por ID para verificar los cambios aplicados (200 OK)
+### 3.4 [200 OK]: Consultar Producto 1 por ID para verificar los cambios aplicados
 GET {{baseUrl}}/productos/{{producto1Id}}
 
-### 3.6 Error 404: Consultar producto con ID inexistente
+### [ERROR 404 Not Found]: Consultar producto con ID inexistente
 GET {{baseUrl}}/productos/999999
 
-### 3.7 Error 400: Consultar producto con ID inválido (no numérico)
+### [ERROR 400 Bad Request]: Consultar producto con ID inválido (no numérico)
 GET {{baseUrl}}/productos/id-invalido
 
 
 ### ===========================================================================
-### PASO 4: SEGURIDAD Y PROPIEDAD CRUZADA (OTROS ARTESANOS)
+### FASE 4: SEGURIDAD, ESTADO PENDIENTE Y PROPIEDAD CRUZADA
 ### ===========================================================================
 
-### 4.1 Login de Artesano C (cuya solicitud sigue PENDIENTE)
+### 4.1 [200 OK]: Login de Artesano C (cuya postulación sigue PENDIENTE)
 # @name loginArtesanoPendiente
 POST {{baseUrl}}/usuarios/login
 Content-Type: application/json
@@ -276,7 +276,11 @@ Content-Type: application/json
 ###
 @tokenPendiente = {{loginArtesanoPendiente.response.body.token}}
 
-### 4.2 Error 403: Artesano no habilitado (PENDIENTE) intenta crear un producto
+### 4.2 [200 OK]: Artesano C consulta su solicitud y comprueba estado PENDIENTE
+GET {{baseUrl}}/solicitudes/me
+Authorization: Bearer {{tokenPendiente}}
+
+### [ERROR 403 Forbidden]: Artesano no habilitado (PENDIENTE) intenta crear un producto
 POST {{baseUrl}}/productos
 Authorization: Bearer {{tokenPendiente}}
 Content-Type: application/json
@@ -286,7 +290,7 @@ Content-Type: application/json
   "precio": 80000
 }
 
-### 4.3 Login de Artesano B (Habilitado, pero NO es dueño de los productos de Artesano A)
+### 4.3 [200 OK]: Login de Artesano B (Habilitado, pero NO es dueño de los productos de A)
 # @name loginArtesanoB
 POST {{baseUrl}}/usuarios/login
 Content-Type: application/json
@@ -299,7 +303,7 @@ Content-Type: application/json
 ###
 @tokenArtesanoB = {{loginArtesanoB.response.body.token}}
 
-### 4.4 Error 404 (Propiedad del recurso): Artesano B intenta modificar el Producto 1 de Artesano A
+### [ERROR 404 Not Found]: Artesano B intenta modificar el Producto 1 de Artesano A
 ### El filtro where verifica { id_producto, artesano: { usuarioId } } -> Prisma P2025 -> 404
 PATCH {{baseUrl}}/productos/{{producto1Id}}
 Authorization: Bearer {{tokenArtesanoB}}
@@ -309,37 +313,37 @@ Content-Type: application/json
   "precio": 1000
 }
 
-### 4.4.b Verificar que el Producto 1 NO fue modificado y conserva su precio (200 OK)
+### 4.4 [VERIFICACIÓN : 200 OK]: Verificar que el Producto 1 NO fue modificado y conserva su precio
 GET {{baseUrl}}/productos/{{producto1Id}}
 
-
-### 4.5 Error 404 (Propiedad del recurso): Artesano B intenta eliminar el Producto 1 de Artesano A
+### [ERROR 404 Not Found]: Artesano B intenta eliminar el Producto 1 de Artesano A
 DELETE {{baseUrl}}/productos/{{producto1Id}}
 Authorization: Bearer {{tokenArtesanoB}}
 
-### 4.5.b Verificar que el Producto 1 NO fue eliminado y sigue existiendo (200 OK)
+### 4.5 [VERIFICACIÓN : 200 OK]: Verificar que el Producto 1 NO fue eliminado y sigue existiendo
 GET {{baseUrl}}/productos/{{producto1Id}}
 
+
 ### ===========================================================================
-### PASO 5: ELIMINACIÓN DE PRODUCTO PROPIO (ARTESANO A)
+### FASE 5: ELIMINACIÓN DE PRODUCTO PROPIO (ARTESANO A)
 ### ===========================================================================
 
-### 5.1 Artesano A elimina su Producto 2 (204 No Content)
+### 5.1 [204 No Content]: Artesano A elimina su Producto 2 propio
 DELETE {{baseUrl}}/productos/{{producto2Id}}
 Authorization: Bearer {{tokenArtesanoA}}
 
-### 5.2 Verificar que el Producto 2 ya no existe (404 Not Found)
+### 5.2 [VERIFICACIÓN : ERROR 404]: Verificar que el Producto 2 ya no existe
 GET {{baseUrl}}/productos/{{producto2Id}}
 
-### 5.3 Verificar que el Producto 1 de Artesano A sigue disponible en el catálogo (200 OK)
+### 5.3 [200 OK]: Verificar que el Producto 1 de Artesano A sigue disponible en el catálogo
 GET {{baseUrl}}/productos?artesanoId={{artesanoAId}}
 
 
 ### ===========================================================================
-### PASO 6: ADMINISTRADOR, BAJA LÓGICA DEL ARTESANO Y REVOCACIÓN DE TOKEN
+### FASE 6: ADMINISTRADOR, BAJA LÓGICA DEL ARTESANO Y REVOCACIÓN DE TOKEN
 ### ===========================================================================
 
-### 6.1 Login del Administrador (200 OK)
+### 6.1 [200 OK]: Login del Administrador
 # @name loginAdminFlujo
 POST {{baseUrl}}/usuarios/login
 Content-Type: application/json
@@ -352,7 +356,7 @@ Content-Type: application/json
 ###
 @tokenAdmin = {{loginAdminFlujo.response.body.token}}
 
-### 6.2 Error 403 (Control de Rol): El Administrador intenta crear un producto
+### [ERROR 403 Forbidden]: El Administrador intenta crear un producto (Control de Rol)
 ### (Exclusivo para rol ARTESANO habilitado)
 POST {{baseUrl}}/productos
 Authorization: Bearer {{tokenAdmin}}
@@ -363,26 +367,26 @@ Content-Type: application/json
   "precio": 50000
 }
 
-### 6.3 El Administrador da de baja al Artesano A (DELETE /artesanos/:id -> 200 OK)
+### 6.2 [200 OK]: El Administrador da de baja al Artesano A (DELETE /artesanos/:id)
 ### Realiza baja lógica: pasa a estado INACTIVO y libera su stand si tuviera uno
 DELETE {{baseUrl}}/artesanos/{{artesanoAId}}
 Authorization: Bearer {{tokenAdmin}}
 
-### 6.3.b El Administrador consulta la cuenta de Artesano A y verifica su estado INACTIVO (200 OK)
+### 6.3 [200 OK]: El Administrador consulta la cuenta de Artesano A y verifica su estado INACTIVO
 GET {{baseUrl}}/usuarios/{{usuarioAId}}
 Authorization: Bearer {{tokenAdmin}}
 
-### 6.4 Listar productos del Artesano A en el catálogo público (200 OK -> lista vacía [])
+### 6.4 [200 OK]: Listar productos del Artesano A en el catálogo público (Lista vacía [] por baja lógica)
 ### Como el Artesano A ahora está INACTIVO, sus productos quedan ocultos en las rutas públicas
 GET {{baseUrl}}/productos?artesanoId={{artesanoAId}}
 
-### 6.5 Verificar que el Artesano A (INACTIVO) NO perdió la propiedad de sus productos (200 OK)
+### 6.5 [200 OK]: Verificar que el Artesano A (INACTIVO) NO perdió la propiedad de sus productos
 ### En su ruta privada GET /productos/me sigue viendo su Producto 1 intacto (baja lógica, no física)
 GET {{baseUrl}}/productos/me
 Authorization: Bearer {{tokenArtesanoA}}
 
-### 6.6 Error 403: Artesano A (ahora INACTIVO) intenta publicar un nuevo producto
-### Aunque conserva la propiedad de los anteriores, no puede operar (POST/PATCH/DELETE) mientras esté INACTIVO
+### [ERROR 403 Forbidden]: Artesano A (ahora INACTIVO) intenta publicar un nuevo producto
+### Aunque conserva la propiedad de los anteriores, no puede operar mientras esté INACTIVO
 POST {{baseUrl}}/productos
 Authorization: Bearer {{tokenArtesanoA}}
 Content-Type: application/json
@@ -392,21 +396,21 @@ Content-Type: application/json
   "precio": 110000
 }
 
-### 6.7 Desloguear al Administrador (POST /usuarios/logout -> 204 No Content)
+### 6.6 [204 No Content]: Desloguear al Administrador (POST /usuarios/logout)
 ### Registra el jti del token en la tabla TokenRevocado
 POST {{baseUrl}}/usuarios/logout
 Authorization: Bearer {{tokenAdmin}}
 
-### 6.8 Error 401: Intentar reutilizar el token del Administrador luego del logout
+### [ERROR 401 Unauthorized]: Intentar reutilizar el token del Administrador luego del logout
 GET {{baseUrl}}/usuarios/me
 Authorization: Bearer {{tokenAdmin}}
 
 
 ### ===========================================================================
-### PASO 7: LIMPIEZA / TEARDOWN (Opcional - Restaura la BD para re-ejecutar el flujo)
+### FASE 7: LIMPIEZA / TEARDOWN (Restaura la BD para re-ejecutar el flujo)
 ### ===========================================================================
 
-### 7.1 Nuevo login de Admin (porque el token anterior fue revocado en el paso 6.6)
+### 7.1 [200 OK]: Nuevo login de Admin (el token anterior fue revocado en 6.6)
 # @name loginAdminTeardown
 POST {{baseUrl}}/usuarios/login
 Content-Type: application/json
@@ -419,14 +423,14 @@ Content-Type: application/json
 ###
 @tokenAdminClean = {{loginAdminTeardown.response.body.token}}
 
-### 7.2 Eliminar usuarios de prueba (borra en cascada solicitudes, artesanos y productos restantes)
+### 7.2 [200 OK]: Eliminar Usuario A (borra en cascada solicitud, artesano y productos restantes)
 DELETE {{baseUrl}}/usuarios/{{usuarioAId}}
 Authorization: Bearer {{tokenAdminClean}}
 
-###
+### 7.3 [200 OK]: Eliminar Usuario B
 DELETE {{baseUrl}}/usuarios/{{usuarioBId}}
 Authorization: Bearer {{tokenAdminClean}}
 
-###
+### 7.4 [200 OK]: Eliminar Usuario Pendiente (C)
 DELETE {{baseUrl}}/usuarios/{{usuarioPendienteId}}
 Authorization: Bearer {{tokenAdminClean}}
