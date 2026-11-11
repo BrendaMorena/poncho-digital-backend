@@ -1,0 +1,92 @@
+@baseUrl = http://localhost:3000
+
+###############################################################################
+### PRUEBA DEL MIDDLEWARE DE CAPTURA AUTOMÁTICA DE BÚSQUEDAS (capturarBusqueda)
+###
+### Objetivo:
+###   Demostrar cómo el middleware intercepta las consultas públicas (GET)
+###   en los distintos módulos (productos, artesanos, stands) y registra
+###   silenciosamente la telemetría en la base de datos (tabla Busqueda).
+###
+### Casos representativos:
+###   1. Búsqueda por nombre de producto (nombre_producto -> termino_busqueda)
+###   2. Búsqueda por rubro puro (rubroId)
+###   3. Búsqueda combinada (nombre_producto + rubroId)
+###   4. Búsqueda por emprendimiento de artesano (nombre_emprendimiento -> termino_busqueda)
+###   5. Búsqueda directa en stands (termino_busqueda)
+###   6. Control negativo: Consulta sin criterios (paginación pura -> NO se registra)
+###   7. Verificación del Administrador: Consultar el historial capturado (/busquedas)
+###############################################################################
+
+
+### ===========================================================================
+### PASO 1: BÚSQUEDAS PÚBLICAS DISPARADORAS (Simulación de usuarios y visitantes)
+### ===========================================================================
+
+### 1.1 Módulo Productos: Búsqueda por texto libre de producto
+### El middleware mapea 'nombre_producto' -> 'termino_busqueda' ("vicuña")
+GET {{baseUrl}}/productos?nombre_producto=Vicuña
+
+###
+### 1.2 Módulo Productos: Búsqueda por categoría/rubro (sin texto)
+### El middleware detecta 'rubroId' (1 = Textil) y lo guarda aunque no haya término de texto
+GET {{baseUrl}}/productos?rubroId=1
+
+###
+### 1.3 Módulo Productos: Búsqueda combinada (texto + rubro)
+### El middleware capta simultáneamente 'termino_busqueda' ("vasija") y 'rubroId' (2 = Cerámica)
+GET {{baseUrl}}/productos?nombre_producto=Vasija&rubroId=2
+
+###
+### 1.4 Módulo Artesanos: Búsqueda por nombre de emprendimiento
+### El middleware mapea 'nombre_emprendimiento' -> 'termino_busqueda' ("belichos")
+GET {{baseUrl}}/artesanos?nombre_emprendimiento=Belichos
+
+###
+### 1.5 Módulo Stands: Búsqueda directa por término
+### El middleware capta 'termino_busqueda' directamente ("madera")
+GET {{baseUrl}}/stands?termino_busqueda=madera
+
+
+### ===========================================================================
+### PASO 2: CONTROLES DE FILTRO (Casos que el middleware NO debe registrar)
+### ===========================================================================
+
+### 2.1 Paginación simple sin criterios de búsqueda
+### Como no contiene término, rubroId, pabellonId ni localidadId, el middleware lo ignora
+GET {{baseUrl}}/productos?pagina=1&limite=5
+
+### 2.2 Consulta con error 400 (rango de precios invertido)
+### Al devolver status >= 400, el middleware descarta la petición y no registra nada
+GET {{baseUrl}}/productos?precioDesde=90000&precioHasta=10000
+
+
+### ===========================================================================
+### PASO 3: VERIFICACIÓN DEL HISTORIAL COMO ADMINISTRADOR
+### ===========================================================================
+
+### 3.1 Iniciar sesión como Administrador para obtener token
+# @name loginAdmin
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.token}}
+
+### 3.2 Listar las últimas búsquedas capturadas (200 OK)
+### Verifica que los casos 1.1 al 1.5 quedaron guardados con sus campos normalizados
+GET {{baseUrl}}/busquedas?pagina=1&limite=10&ordenarPor=createdAt&direccion=desc
+Authorization: Bearer {{tokenAdmin}}
+
+### 3.3 Filtrar en el historial por el término capturado ("vicuña")
+GET {{baseUrl}}/busquedas?termino_busqueda=vicuña
+Authorization: Bearer {{tokenAdmin}}
+
+### 3.4 Filtrar en el historial por rubro capturado (rubroId = 2)
+GET {{baseUrl}}/busquedas?rubroId=2
+Authorization: Bearer {{tokenAdmin}}

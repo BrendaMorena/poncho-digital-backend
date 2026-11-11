@@ -1,0 +1,436 @@
+@baseUrl = http://localhost:3000
+
+###############################################################################
+### DEFENSA FINAL - FLUJO CRÍTICO DE PRODUCTOS, PROPIEDAD Y BAJA DE ARTESANO
+### Responsable: Lucas
+###
+### Resumen del flujo:
+###   Fase 0: Preparación del escenario (Alta y habilitación de Artesanos A y B, C queda Pendiente)
+###   Fase 1: Catálogo público, paginación y errores de acceso iniciales (400 / 401)
+###   Fase 2: Login Artesano A, rechazos de esquema (400) y alta de 2 productos (201)
+###   Fase 3: Búsqueda por nombre, listado propio (/productos/me), actualización (PATCH) y detalle (200 / 404 / 400)
+###   Fase 4: Seguridad y propiedad cruzada: rechazo a artesano PENDIENTE (403) y rechazo a Artesano B (404)
+###   Fase 5: Eliminación de producto propio (DELETE 204) y verificación de persistencia (404 / 200)
+###   Fase 6: Rol Administrador: bloqueo al crear (403), baja lógica (DELETE 200),
+###           ocultamiento público, conservación de propiedad en /me, bloqueo inactivo (403) y Logout (401)
+###   Fase 7: Limpieza / Teardown del escenario (para re-ejecutar el flujo)
+###############################################################################
+
+
+### ===========================================================================
+### FASE 0: PREPARACIÓN DEL ESCENARIO (Pre-requisito para las pruebas)
+### 1. Se postulan los artesanos desde la web pública (quedan PENDIENTES)
+### 2. El Administrador se loguea y lista la bandeja de solicitudes PENDIENTES
+### 3. El Administrador aprueba a los Artesanos A y B (el C queda PENDIENTE)
+### ===========================================================================
+
+### 0.1 [201 Created]: Registrar Artesano A (Postulación pública)
+# @name registroArtesanoA
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Lucas",
+  "apellido": "Tejedor",
+  "dni": "38111222",
+  "email": "lucas.tejedor@ponchodigital.com",
+  "telefono": "3834111222",
+  "password": "Artesano2026!",
+  "localidadId": 1,
+  "rubroId": 1,
+  "nombre_emprendimiento": "Telares Belichos",
+  "descripcion_emprendimiento": "Tejidos tradicionales en fibra de vicuña y oveja"
+}
+
+###
+@usuarioAId = {{registroArtesanoA.response.body.id_usuario}}
+@artesanoAId = {{registroArtesanoA.response.body.artesano.id_artesano}}
+@solicitudAId = {{registroArtesanoA.response.body.solicitud.id_solicitud}}
+
+
+### 0.2 [201 Created]: Registrar Artesano B (Postulación pública)
+# @name registroArtesanoB
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Martín",
+  "apellido": "Alfarero",
+  "dni": "38333444",
+  "email": "martin.alfarero@ponchodigital.com",
+  "telefono": "3834333444",
+  "password": "Artesano2026!",
+  "localidadId": 1,
+  "rubroId": 2,
+  "nombre_emprendimiento": "Barro Catamarqueño",
+  "descripcion_emprendimiento": "Piezas de alfarería y cerámica horneada a leña"
+}
+
+###
+@usuarioBId = {{registroArtesanoB.response.body.id_usuario}}
+@artesanoBId = {{registroArtesanoB.response.body.artesano.id_artesano}}
+@solicitudBId = {{registroArtesanoB.response.body.solicitud.id_solicitud}}
+
+
+### 0.3 [201 Created]: Registrar Artesano C (Postulación pública - Se dejará PENDIENTE)
+# @name registroArtesanoPendiente
+POST {{baseUrl}}/usuarios/registro
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Cebayo",
+  "dni": "38555666",
+  "email": "pedro.pendiente@ponchodigital.com",
+  "telefono": "3834555666",
+  "password": "Artesano2026!",
+  "localidadId": 1,
+  "rubroId": 3,
+  "nombre_emprendimiento": "Maderas del Valle",
+  "descripcion_emprendimiento": "Tallado artesanal en madera de algarrobo"
+}
+
+###
+@usuarioPendienteId = {{registroArtesanoPendiente.response.body.id_usuario}}
+
+
+### 0.4 [200 OK]: Login del Administrador (Para revisar bandeja y aprobar)
+# @name loginAdminSetup
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+###
+@tokenAdminSetup = {{loginAdminSetup.response.body.token}}
+
+
+### 0.5 [200 OK]: Listar solicitudes PENDIENTES (Bandeja de entrada del Administrador)
+GET {{baseUrl}}/solicitudes?estado_solicitud=PENDIENTE&pagina=1&limite=10
+Authorization: Bearer {{tokenAdminSetup}}
+
+
+### 0.6 [200 OK]: Aprobar solicitud de Artesano A (Queda APROBADO y el artesano pasa a ACTIVO)
+PATCH {{baseUrl}}/solicitudes/{{solicitudAId}}/aprobar
+Authorization: Bearer {{tokenAdminSetup}}
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Artesano A habilitado para operar productos."
+}
+
+
+### 0.7 [200 OK]: Aprobar solicitud de Artesano B (Queda APROBADO y el artesano pasa a ACTIVO)
+PATCH {{baseUrl}}/solicitudes/{{solicitudBId}}/aprobar
+Authorization: Bearer {{tokenAdminSetup}}
+Content-Type: application/json
+
+{
+  "observaciones_admin": "Artesano B habilitado"
+}
+
+
+### ===========================================================================
+### FASE 1: CATÁLOGO PÚBLICO, PAGINACIÓN Y ERRORES INICIALES (400 / 401)
+### ===========================================================================
+
+### 1.1 [200 OK]: Listar productos con paginación (Acceso público sin token)
+GET {{baseUrl}}/productos?pagina=1&limite=5&ordenPor=precio&direccion=asc
+
+### [ERROR 400 Bad Request]: Filtro de rango de precios invertido (precioDesde > precioHasta)
+GET {{baseUrl}}/productos?precioDesde=100000&precioHasta=10000
+
+### [ERROR 401 Unauthorized]: Intentar crear un producto sin estar autenticado (sin token)
+POST {{baseUrl}}/productos
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho sin token",
+  "precio": 90000
+}
+
+
+### ===========================================================================
+### FASE 2: LOGIN ARTESANO A, VALIDACIONES DE ESQUEMA Y ALTA DE PRODUCTOS
+### ===========================================================================
+
+### 2.1 [200 OK]: Loguear Artesano A habilitado
+# @name loginArtesanoA
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "lucas.tejedor@ponchodigital.com",
+  "password": "Artesano2026!"
+}
+
+###
+@tokenArtesanoA = {{loginArtesanoA.response.body.token}}
+
+### [ERROR 400 Bad Request]: Enviar artesanoId en el body es rechazado por Zod .strict()
+### (El artesano propietario se extrae exclusivamente del token JWT, nunca del cliente)
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho intentando forzar artesanoId",
+  "precio": 120000,
+  "artesanoId": 1
+}
+
+### [ERROR 400 Bad Request]: Datos inválidos en el body (nombre vacío y precio negativo)
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "   ",
+  "precio": -500
+}
+
+### 2.2 [201 Created]: Crear Producto 1 válido (Asociado automáticamente a Artesano A)
+# @name crearProducto1
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho Belicho de Vicuña",
+  "precio": 180000
+}
+
+###
+@producto1Id = {{crearProducto1.response.body.id_producto}}
+
+### 2.3 [201 Created]: Crear Producto 2 válido (Para demostrar eliminación individual más adelante)
+# @name crearProducto2
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Bufanda de Lana de Oveja",
+  "precio": 35000
+}
+
+###
+@producto2Id = {{crearProducto2.response.body.id_producto}}
+
+
+### ===========================================================================
+### FASE 3: BÚSQUEDA, RECURSO PROPIO (/me), ACTUALIZACIÓN Y DETALLE POR ID
+### ===========================================================================
+
+### 3.1 [200 OK]: Buscar en el catálogo público por nombre del producto recién creado
+GET {{baseUrl}}/productos?nombre_producto=Belicho
+
+### 3.2 [200 OK]: Consultar únicamente mis propios productos (GET /productos/me)
+GET {{baseUrl}}/productos/me
+Authorization: Bearer {{tokenArtesanoA}}
+
+### 3.3 [200 OK]: Actualizar Producto 1 propio (PATCH /productos/:id)
+PATCH {{baseUrl}}/productos/{{producto1Id}}
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho Belicho de Vicuña Premium",
+  "precio": 195000
+}
+
+### [ERROR 400 Bad Request]: Enviar body vacío {} en actualización
+PATCH {{baseUrl}}/productos/{{producto1Id}}
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{}
+
+### 3.4 [200 OK]: Consultar Producto 1 por ID para verificar los cambios aplicados
+GET {{baseUrl}}/productos/{{producto1Id}}
+
+### [ERROR 404 Not Found]: Consultar producto con ID inexistente
+GET {{baseUrl}}/productos/999999
+
+### [ERROR 400 Bad Request]: Consultar producto con ID inválido (no numérico)
+GET {{baseUrl}}/productos/id-invalido
+
+
+### ===========================================================================
+### FASE 4: SEGURIDAD, ESTADO PENDIENTE Y PROPIEDAD CRUZADA
+### ===========================================================================
+
+### 4.1 [200 OK]: Login de Artesano C (cuya postulación sigue PENDIENTE)
+# @name loginArtesanoPendiente
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "pedro.pendiente@ponchodigital.com",
+  "password": "Artesano2026!"
+}
+
+###
+@tokenPendiente = {{loginArtesanoPendiente.response.body.token}}
+
+### 4.2 [200 OK]: Artesano C consulta su solicitud y comprueba estado PENDIENTE
+GET {{baseUrl}}/solicitudes/me
+Authorization: Bearer {{tokenPendiente}}
+
+### [ERROR 403 Forbidden]: Artesano no habilitado (PENDIENTE) intenta crear un producto
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenPendiente}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Mesa de algarrobo",
+  "precio": 80000
+}
+
+### 4.3 [200 OK]: Login de Artesano B (Habilitado, pero NO es dueño de los productos de A)
+# @name loginArtesanoB
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "martin.alfarero@ponchodigital.com",
+  "password": "Artesano2026!"
+}
+
+###
+@tokenArtesanoB = {{loginArtesanoB.response.body.token}}
+
+### [ERROR 404 Not Found]: Artesano B intenta modificar el Producto 1 de Artesano A
+### El filtro where verifica { id_producto, artesano: { usuarioId } } -> Prisma P2025 -> 404
+PATCH {{baseUrl}}/productos/{{producto1Id}}
+Authorization: Bearer {{tokenArtesanoB}}
+Content-Type: application/json
+
+{
+  "precio": 1000
+}
+
+### 4.4 [VERIFICACIÓN : 200 OK]: Verificar que el Producto 1 NO fue modificado y conserva su precio
+GET {{baseUrl}}/productos/{{producto1Id}}
+
+### [ERROR 404 Not Found]: Artesano B intenta eliminar el Producto 1 de Artesano A
+DELETE {{baseUrl}}/productos/{{producto1Id}}
+Authorization: Bearer {{tokenArtesanoB}}
+
+### 4.5 [VERIFICACIÓN : 200 OK]: Verificar que el Producto 1 NO fue eliminado y sigue existiendo
+GET {{baseUrl}}/productos/{{producto1Id}}
+
+
+### ===========================================================================
+### FASE 5: ELIMINACIÓN DE PRODUCTO PROPIO (ARTESANO A)
+### ===========================================================================
+
+### 5.1 [204 No Content]: Artesano A elimina su Producto 2 propio
+DELETE {{baseUrl}}/productos/{{producto2Id}}
+Authorization: Bearer {{tokenArtesanoA}}
+
+### 5.2 [VERIFICACIÓN : ERROR 404]: Verificar que el Producto 2 ya no existe
+GET {{baseUrl}}/productos/{{producto2Id}}
+
+### 5.3 [200 OK]: Verificar que el Producto 1 de Artesano A sigue disponible en el catálogo
+GET {{baseUrl}}/productos?artesanoId={{artesanoAId}}
+
+
+### ===========================================================================
+### FASE 6: ADMINISTRADOR, BAJA LÓGICA DEL ARTESANO Y REVOCACIÓN DE TOKEN
+### ===========================================================================
+
+### 6.1 [200 OK]: Login del Administrador
+# @name loginAdminFlujo
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+###
+@tokenAdmin = {{loginAdminFlujo.response.body.token}}
+
+### [ERROR 403 Forbidden]: El Administrador intenta crear un producto (Control de Rol)
+### (Exclusivo para rol ARTESANO habilitado)
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Producto creado por Admin",
+  "precio": 50000
+}
+
+### 6.2 [200 OK]: El Administrador da de baja al Artesano A (DELETE /artesanos/:id)
+### Realiza baja lógica: pasa a estado INACTIVO y libera su stand si tuviera uno
+DELETE {{baseUrl}}/artesanos/{{artesanoAId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 6.3 [200 OK]: El Administrador consulta la cuenta de Artesano A y verifica su estado INACTIVO
+GET {{baseUrl}}/usuarios/{{usuarioAId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 6.4 [200 OK]: Listar productos del Artesano A en el catálogo público (Lista vacía [] por baja lógica)
+### Como el Artesano A ahora está INACTIVO, sus productos quedan ocultos en las rutas públicas
+GET {{baseUrl}}/productos?artesanoId={{artesanoAId}}
+
+### 6.5 [200 OK]: Verificar que el Artesano A (INACTIVO) NO perdió la propiedad de sus productos
+### En su ruta privada GET /productos/me sigue viendo su Producto 1 intacto (baja lógica, no física)
+GET {{baseUrl}}/productos/me
+Authorization: Bearer {{tokenArtesanoA}}
+
+### [ERROR 403 Forbidden]: Artesano A (ahora INACTIVO) intenta publicar un nuevo producto
+### Aunque conserva la propiedad de los anteriores, no puede operar mientras esté INACTIVO
+POST {{baseUrl}}/productos
+Authorization: Bearer {{tokenArtesanoA}}
+Content-Type: application/json
+
+{
+  "nombre_producto": "Poncho estando inactivo",
+  "precio": 110000
+}
+
+### 6.6 [204 No Content]: Desloguear al Administrador (POST /usuarios/logout)
+### Registra el jti del token en la tabla TokenRevocado
+POST {{baseUrl}}/usuarios/logout
+Authorization: Bearer {{tokenAdmin}}
+
+### [ERROR 401 Unauthorized]: Intentar reutilizar el token del Administrador luego del logout
+GET {{baseUrl}}/usuarios/me
+Authorization: Bearer {{tokenAdmin}}
+
+
+### ===========================================================================
+### FASE 7: LIMPIEZA / TEARDOWN (Restaura la BD para re-ejecutar el flujo)
+### ===========================================================================
+
+### 7.1 [200 OK]: Nuevo login de Admin (el token anterior fue revocado en 6.6)
+# @name loginAdminTeardown
+POST {{baseUrl}}/usuarios/login
+Content-Type: application/json
+
+{
+  "email": "admin@ponchodigital.com",
+  "password": "AdminPoncho2026!"
+}
+
+###
+@tokenAdminClean = {{loginAdminTeardown.response.body.token}}
+
+### 7.2 [200 OK]: Eliminar Usuario A (borra en cascada solicitud, artesano y productos restantes)
+DELETE {{baseUrl}}/usuarios/{{usuarioAId}}
+Authorization: Bearer {{tokenAdminClean}}
+
+### 7.3 [200 OK]: Eliminar Usuario B
+DELETE {{baseUrl}}/usuarios/{{usuarioBId}}
+Authorization: Bearer {{tokenAdminClean}}
+
+### 7.4 [200 OK]: Eliminar Usuario Pendiente (C)
+DELETE {{baseUrl}}/usuarios/{{usuarioPendienteId}}
+Authorization: Bearer {{tokenAdminClean}}

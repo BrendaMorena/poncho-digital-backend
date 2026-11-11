@@ -113,72 +113,21 @@ test("Ana no puede modificar un producto existente de Bruno (devuelve 404) y el 
   assert.equal(enBD.artesanoId, bruno.artesano.id_artesano);
 });
 
-//Caso agregado que fallo en la presentacion
 
-// // Test 4: Rol no permitido -> 403 (Criterio 2.2)
-// test("Un usuario con rol ADMINISTRADOR no puede crear productos (devuelve 403 Forbidden)", async () => {
-//   const { admin } = datos;
-//   const respuesta = await request(app)
-//     .post("/productos")
-//     .set("Authorization", `Bearer ${admin.token}`)
-//     .send({
-//       nombre_producto: "Producto no autorizado",
-//       precio: 50000,
-//     })
-//     .expect("Content-Type", /json/)
-//     .expect(403);
-//   assert.equal(
-//     respuesta.body.error,
-//     "Acceso denegado: no posee los permisos requeridos."
-//   );
-// });
+// Test 4: Rol no permitido 403
 
+test("Un usuario con rol ADMINISTRADOR no puede crear productos (devuelve 403 Forbidden)", async () => {
+  const { admin } = datos;
 
+  const respuesta = await crearProducto(admin.token, {
+    nombre_producto: "Producto no autorizado",
+    precio: 50000,
+  })
+    .expect("Content-Type", /json/)
+    .expect(403);
 
-
-
-
-
-
-
-
-// // Caso 4: Rol que no corresponde (ADMINISTRADOR intenta crear producto) 403
-// test("Rol que no corresponde devuelve 403", async () => {
-//   // 1. Asegurar que exista el rol ADMINISTRADOR en la BD
-//   const rolAdmin = await prisma.rol.upsert({
-//     where: { nombre: "ADMINISTRADOR" },
-//     update: {},
-//     create: { nombre: "ADMINISTRADOR", descripcion: "Rol de administrador" },
-//   });
-//   // 2. Necesitamos una localidad (reutilizamos la del escenario)
-//   const localidad = await prisma.localidad.findFirst();
-//   // 3. Crear un usuario ADMINISTRADOR real en la BD
-//   const bcrypt = await import("bcrypt");
-//   const adminEnBD = await prisma.usuario.create({
-//     data: {
-//       nombre: "Carlos",
-//       apellido: "Admin",
-//       dni: "99999999",
-//       email: "carlos.admin@test.com",
-//       passwordHash: await bcrypt.hash("PasswordSeguro2026!", 10),
-//       telefono: "3834000000",
-//       rolId: rolAdmin.id_rol,
-//       localidadId: localidad.id_localidad,
-//     },
-//   });
-//   // 4. Login para obtener un token JWT válido de este admin
-//   const { body: login } = await request(app)
-//     .post("/usuarios/login")
-//     .send({ email: "carlos.admin@test.com", password: "PasswordSeguro2026!" })
-//     .expect(200);
-//   // 5. Intentar crear un producto con el token del ADMIN  debe dar 403
-//   const respuesta = await request(app)
-//     .post("/productos")
-//     .set("Authorization", `Bearer ${login.token}`)
-//     .send({ nombre_producto: "Poncho Intruso", precio: 50000 })
-//     .expect(403);
-//   assert.equal(
-//     respuesta.body.error,
-//     "Acceso denegado: no posee los permisos requeridos."
-//   );
-// });
+  assert.equal(
+    respuesta.body.error,
+    "Acceso denegado: no posee los permisos requeridos."
+  );
+});

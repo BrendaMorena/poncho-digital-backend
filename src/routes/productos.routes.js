@@ -13,6 +13,7 @@ import {
   validarConsultaProducto,
 } from "../middlewares/validation/producto.middleware.js";
 import { validarProductoId } from "../middlewares/base/validarId.js";
+import { capturarBusqueda } from "../middlewares/validation/busquedas.middleware.js";
 import { autenticarUsuario } from "../middlewares/auth/autenticacion.middleware.js";
 import {
   cargarContextoUsuario,
@@ -44,6 +45,7 @@ router.get(
     #swagger.responses[400] = { description: "Filtros inválidos o rango de precios invertido." }
 */
   validarConsultaProducto,
+  capturarBusqueda,
   obtenerProductos,
 );
 

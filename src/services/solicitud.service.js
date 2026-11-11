@@ -280,13 +280,11 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
         observaciones_admin:
           observaciones_admin ?? solicitud.observaciones_admin ?? "Solicitud aprobada",
       },
-      include: {
-        rubro: {
-          select: {
-            id_rubro: true,
-            nombre_rubro: true,
-          },
-        },
+      select: {
+        id_solicitud: true,
+        estado_solicitud: true,
+        observaciones_admin: true,
+        updatedAt: true,
       },
     });
 
@@ -311,7 +309,11 @@ export const aprobarSolicitud = async (id, datosAprobacion = {}) => {
           rubroId: solicitud.rubroId,
           estado: "ACTIVO",
         },
-        include: {
+        select: {
+          id_artesano: true,
+          nombre_emprendimiento: true,
+          descripcion_emprendimiento: true,
+          estado: true,
           usuario: {
             select: {
               id_usuario: true,

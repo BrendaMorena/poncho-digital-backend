@@ -9,18 +9,30 @@ export const validarConsultaBusqueda = validarSchemaQuery(consultaBusquedaSchema
 
 
 export const capturarBusqueda = (req, res, next) => {
-  if(req.method !== "GET") return next()
-  res.on('finish', async ()=>{
+  if (req.method !== "GET") return next();
+  res.on("finish", async () => {
     try {
       if (res.statusCode < 200 || res.statusCode >= 300) return;
 
-      const resultado = busquedaSchema.safeParse(req.query);
-      if (!resultado.success) return
+      const termino =
+        req.query.termino_busqueda ||
+        req.query.nombre_producto ||
+        req.query.nombre_emprendimiento;
 
-      await busquedaService.crearBusqueda(resultado.data)
+      const payload = {
+        termino_busqueda: termino,
+        rubroId: req.query.rubroId,
+        pabellonId: req.query.pabellonId,
+        localidadId: req.query.localidadId,
+      };
+
+      const resultado = busquedaSchema.safeParse(payload);
+      if (!resultado.success) return;
+
+      await busquedaService.crearBusqueda(resultado.data);
     } catch (error) {
-      console.error("Error al registrar la busqueda", error.message)
+      console.error("Error al registrar la busqueda", error.message);
     }
-  })
+  });
   return next();
 };

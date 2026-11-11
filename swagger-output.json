@@ -429,6 +429,23 @@
         "description": "Acceso público. Devuelve los artesanos en estado ACTIVO de forma paginada.",
         "parameters": [
           {
+            "name": "nombre_emprendimiento",
+            "in": "query",
+            "description": "Coincidencia parcial por nombre del emprendimiento.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rubroId",
+            "in": "query",
+            "description": "ID del rubro artesanal.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
             "name": "ordenarPor",
             "in": "query",
             "description": "Campo de ordenamiento.",
@@ -1523,6 +1540,14 @@
             "schema": {
               "type": "integer",
               "minimum": 1
+            }
+          },
+          {
+            "name": "termino_busqueda",
+            "in": "query",
+            "description": "Coincidencia parcial por nombre de emprendimiento, nombre o apellido del artesano.",
+            "schema": {
+              "type": "string"
             }
           },
           {

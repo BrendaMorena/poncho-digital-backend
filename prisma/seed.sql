@@ -128,8 +128,10 @@ SET "estado"     = EXCLUDED."estado",
 -- ============================================================
 -- 7. USUARIOS INICIALES (Para probar login y permisos)
 -- Hashes generados con bcrypt (10 rounds):
--- Password de Admin: 'AdminPoncho2026!'
--- Password de Usuario: 'Password123.'
+-- Password de Admin:       'AdminPoncho2026!'
+-- Password de Organizador: 'Organizador2026!'
+-- Password de Artesanos:   'Artesano2026!'
+-- Password de Usuario:     'Password123.'
 -- ============================================================
 INSERT INTO "Usuario" ("id_usuario", "nombre", "apellido", "dni", "email", "telefono", "passwordHash", "rolId", "localidadId", "updatedAt") VALUES
 -- Admin (rolId: 1)
@@ -137,9 +139,88 @@ INSERT INTO "Usuario" ("id_usuario", "nombre", "apellido", "dni", "email", "tele
  'Administrador', 'Poncho', '11111111', 'admin@ponchodigital.com', '3834111111', 
  '$2b$10$efWDIKJqRwZUYTUhRjKD/uPeE3EoHD02gzQx6ABCjmGvV6IwgyNOK', 1, 1, NOW()),
 
+-- Organizador (rolId: 2)
+('a0000000-0000-4000-8000-000000000002'::uuid, 
+ 'Organizador', 'Feria', '22222222', 'organizador@ponchodigital.com', '3834222222', 
+ '$2b$10$DYk98Ep0hbuI84JGTiUthexJQqjwf4RUf.Lw88ZLCY.jEU1fma0Tm', 2, 1, NOW()),
+
 -- Usuario estándar / Visitante (rolId: 3)
 ('a0000000-0000-4000-8000-000000000003'::uuid, 
  'Usuario', 'Prueba', '33333333', 'usuario.test@gmail.com', '3834333333', 
- '$2b$10$MH5.p5piJc/uvyfTEn3wh.c.Vsv1kF/ADEIKIXj5QvRyWpOKllvJS', 3, 1, NOW())
+ '$2b$10$MH5.p5piJc/uvyfTEn3wh.c.Vsv1kF/ADEIKIXj5QvRyWpOKllvJS', 3, 1, NOW()),
 
-ON CONFLICT ("email") DO UPDATE SET "id_usuario" = EXCLUDED."id_usuario";
+-- Artesanos iniciales habilitados (rolId: 3, password: 'Artesano2026!')
+('a0000000-0000-4000-8000-000000000004'::uuid, 
+ 'Rosa', 'Quinteros', '28444555', 'rosa.quinteros@ponchodigital.com', '3834444555', 
+ '$2b$10$uE6sbrEWLaYs8gLWrJNuTOoIlcv9Wi8Ffx0ndFdr/hFrSOPLmFvYy', 3, 4, NOW()),
+
+('a0000000-0000-4000-8000-000000000005'::uuid, 
+ 'Carlos', 'Mamaní', '29666777', 'carlos.mamani@ponchodigital.com', '3834666777', 
+ '$2b$10$uE6sbrEWLaYs8gLWrJNuTOoIlcv9Wi8Ffx0ndFdr/hFrSOPLmFvYy', 3, 6, NOW()),
+
+('a0000000-0000-4000-8000-000000000006'::uuid, 
+ 'Elena', 'Vega', '31888999', 'elena.vega@ponchodigital.com', '3834888999', 
+ '$2b$10$uE6sbrEWLaYs8gLWrJNuTOoIlcv9Wi8Ffx0ndFdr/hFrSOPLmFvYy', 3, 7, NOW())
+
+ON CONFLICT ("email") DO UPDATE 
+SET "id_usuario"   = EXCLUDED."id_usuario",
+    "passwordHash" = EXCLUDED."passwordHash",
+    "rolId"        = EXCLUDED."rolId",
+    "activo"       = true,
+    "updatedAt"    = NOW();
+
+-- ============================================================
+-- 8. SOLICITUDES APROBADAS DE LOS ARTESANOS INICIALES
+-- ============================================================
+INSERT INTO "Solicitud" ("estado_solicitud", "observaciones_admin", "nombre_emprendimiento", "descripcion_emprendimiento", "usuarioId", "rubroId", "updatedAt") VALUES
+('APROBADO'::"EstadoSolicitud", 'Artesana textil de Belén verificada.', 'Hilados de Belén', 'Tejidos tradicionales en fibra de llama, oveja y vicuña en telar criollo', 'a0000000-0000-4000-8000-000000000004'::uuid, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Textil' LIMIT 1), NOW()),
+('APROBADO'::"EstadoSolicitud", 'Taller de cerámica de Santa María aprobado.', 'Alfarería Yokavil', 'Vasijas, cuencos y esculturas en arcilla roja horneada a leña', 'a0000000-0000-4000-8000-000000000005'::uuid, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Cerámica' LIMIT 1), NOW()),
+('APROBADO'::"EstadoSolicitud", 'Orfebrería en rodocrosita de Andalgalá aprobada.', 'Joyas del Aconquija', 'Orfebrería en plata y piedra nacional rodocrosita (Rosa del Inca)', 'a0000000-0000-4000-8000-000000000006'::uuid, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Metal y Orfebrería' LIMIT 1), NOW())
+ON CONFLICT ("usuarioId") DO UPDATE
+SET "estado_solicitud"           = EXCLUDED."estado_solicitud",
+    "nombre_emprendimiento"      = EXCLUDED."nombre_emprendimiento",
+    "descripcion_emprendimiento" = EXCLUDED."descripcion_emprendimiento",
+    "rubroId"                    = EXCLUDED."rubroId",
+    "updatedAt"                  = NOW();
+
+-- ============================================================
+-- 9. PERFILES DE ARTESANOS ACTIVOS
+-- ============================================================
+INSERT INTO "Artesano" ("nombre_emprendimiento", "descripcion_emprendimiento", "estado", "usuarioId", "rubroId", "updatedAt") VALUES
+('Hilados de Belén', 'Tejidos tradicionales en fibra de llama, oveja y vicuña en telar criollo', 'ACTIVO'::"EstadoArtesano", 'a0000000-0000-4000-8000-000000000004'::uuid, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Textil' LIMIT 1), NOW()),
+('Alfarería Yokavil', 'Vasijas, cuencos y esculturas en arcilla roja horneada a leña', 'ACTIVO'::"EstadoArtesano", 'a0000000-0000-4000-8000-000000000005'::uuid, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Cerámica' LIMIT 1), NOW()),
+('Joyas del Aconquija', 'Orfebrería en plata y piedra nacional rodocrosita (Rosa del Inca)', 'ACTIVO'::"EstadoArtesano", 'a0000000-0000-4000-8000-000000000006'::uuid, (SELECT "id_rubro" FROM "Rubro" WHERE "nombre_rubro" = 'Metal y Orfebrería' LIMIT 1), NOW())
+ON CONFLICT ("usuarioId") DO UPDATE
+SET "estado"                     = 'ACTIVO'::"EstadoArtesano",
+    "nombre_emprendimiento"      = EXCLUDED."nombre_emprendimiento",
+    "descripcion_emprendimiento" = EXCLUDED."descripcion_emprendimiento",
+    "rubroId"                    = EXCLUDED."rubroId",
+    "updatedAt"                  = NOW();
+
+-- ============================================================
+-- 10. PRODUCTOS DEL CATÁLOGO INICIAL (10 Productos para paginación y filtros)
+-- ============================================================
+DELETE FROM "Producto" WHERE "artesanoId" IN (
+  SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" IN (
+    'a0000000-0000-4000-8000-000000000004'::uuid,
+    'a0000000-0000-4000-8000-000000000005'::uuid,
+    'a0000000-0000-4000-8000-000000000006'::uuid
+  )
+);
+
+INSERT INTO "Producto" ("nombre_producto", "precio", "artesanoId", "updatedAt") VALUES
+-- Productos de Rosa Quinteros (Hilados de Belén - Textil)
+('Poncho Catamarqueño Tradicional', 165000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000004'::uuid), NOW()),
+('Ruana de Fibra de Llama',          85000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000004'::uuid), NOW()),
+('Chalina de Vicuña Belicha',       220000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000004'::uuid), NOW()),
+('Manta Rústica de Telar Criollo',   68000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000004'::uuid), NOW()),
+
+-- Productos de Carlos Mamaní (Alfarería Yokavil - Cerámica)
+('Vasija Ceremonial Santamariana',   42000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000005'::uuid), NOW()),
+('Juego de Cuencos de Greda',        25000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000005'::uuid), NOW()),
+('Tinaja de Barro Cocido a Leña',    54000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000005'::uuid), NOW()),
+
+-- Productos de Elena Vega (Joyas del Aconquija - Metal y Orfebrería)
+('Anillo de Plata y Rodocrosita',    38000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000006'::uuid), NOW()),
+('Dije Rosa del Inca Engarzado',     45000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000006'::uuid), NOW()),
+('Cuchillo Criollo con Cabo de Alpaca', 92000, (SELECT "id_artesano" FROM "Artesano" WHERE "usuarioId" = 'a0000000-0000-4000-8000-000000000006'::uuid), NOW());
