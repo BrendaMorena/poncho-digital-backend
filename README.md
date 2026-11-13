@@ -334,8 +334,7 @@ poncho-digital-backend/
 │   ├── tareas/                   # Tareas programadas en background (limpieza de tokens)
 │   ├── utils/                    # Funciones utilitarias y formateadores de error
 │   ├── validators/               # Definición de esquemas de validación Zod
-│   ├── app.js                    # Configuración principal de Express y arranque
-│   └── app_test.js               # Instancia de aplicación configurada para pruebas
+│   └── app.js                    # Configuración principal de Express y arranque
 ├── test/                         # Suite de pruebas automatizadas
 │   ├── helpers/                  # Utilidades para preparación y limpieza de base en tests
 │   ├── productos.test.js         # Pruebas unitarias de autorización en endpoints
